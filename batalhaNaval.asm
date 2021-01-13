@@ -10,8 +10,6 @@
 
 .text
 	main:	
-		li $t0, 132
-		li $t1, 156
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
@@ -112,16 +110,11 @@
 	sw $s0, 3584($t2)
 	sw $s0, 3712($t2)
 	
-	loop:
-	beq $t0,$t1 exit
-		addi $s1, $t0, 4
-	addi $t0,$t0,4	
-	
-	j loop
-	
-	exit:
-	
-		
+	sw $s1, 132($t2)
+	sw $s1, 136($t2)
+	sw $s1, 144($t2)
+	sw $s1, 148($t2)
+	sw $s1, 156($t2)
 	sw $s1, 260($t2)
 	sw $s1, 264($t2)
 	sw $s1, 272($t2)
