@@ -8,19 +8,34 @@
 
 .data	
 
+ 	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n"
+ 	maquina_jogando: .asciiz "\nMáquina está processando a jogada...\n"
+ 	linha: .asciiz "\n"
+ 	txt_jogada_H: .asciiz "Coluna: "
+ 	txt_jogada_V: .asciiz "Linha: "
+
 .text
 	main:	
-	
+		
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
 		
-	cor_destroyers:
-	     addi $s1, $zero, 0x808080 #Cinza
-	     jr $ra
+		jal titulo_jogo
+		jal maquina_escolhe_jogada
+		
+		
+		#jogo1:			
+			#jal verifica_vitoria
+			#j jogada_player1
+		#jogo2:
+			#jal verifica_vitoria
+			#j jogada_player2
+	
 		
 	cores:
 	     addi $s1, $zero, 0x0000b3 #Azul
+	     addi $s2, $zero, 0xFF0000 #vermelha
 	    jr $ra
 	
 	define_fundo:
@@ -28,8 +43,7 @@
 		add $t2, $zero, $t1
 		lui $t2, 0x1000		#posiÃ§Ã£o inicial dos dados para serem pintados
 		jr $ra
-		
-		
+	
 	desenha_tabuleiro:
 	
 	#Cores de cordenadas verticais
@@ -111,11 +125,15 @@
         sw $s0, 3200($t2)
 	sw $s0, 3328($t2)
 	
-	addi $s0, $zero, 0xFFFF00 #Amarelo	
+	addi $s0, $zero, 0xFFFF00 #Amarelo
 	
+		
+	#===========================================================================
+		
 	sw $s0, 3584($t2)
 	sw $s0, 3712($t2)
 	
+	#Inicio linha 0
 	sw $s1, 132($t2)	
 	sw $s1, 136($t2)
 	
@@ -183,6 +201,8 @@
 	sw $s1, 528($t2)
 	sw $s1, 532($t2)
 	
+	
+	#Inicio linha 1
 	sw $s1, 540($t2)
 	sw $s1, 544($t2)
 	
@@ -206,7 +226,7 @@
 	
 	sw $s1, 624($t2)
 	sw $s1, 628($t2)
-	
+
 	sw $s1, 644($t2)
 	sw $s1, 648($t2)
 	
@@ -238,6 +258,7 @@
 	sw $s1, 752($t2)
 	sw $s1, 756($t2)
 	
+	#Inicio linha 2
 	sw $s1, 900($t2)
 	sw $s1, 904($t2)
 	
@@ -247,6 +268,7 @@
 	sw $s1, 924($t2)
 	sw $s1, 928($t2)
 	
+
 	sw $s1, 936($t2)
 	sw $s1, 940($t2)
 	
@@ -277,6 +299,7 @@
 	sw $s1, 1052($t2)
 	sw $s1, 1056($t2)
 	
+
 	sw $s1, 1064($t2)
 	sw $s1, 1068($t2)
 	
@@ -298,6 +321,7 @@
 	sw $s1, 1136($t2)
 	sw $s1, 1140($t2)																																																																																																																																																																																																																																																																
 	
+	#Inicio linha 3
 	sw $s1, 1284($t2)
 	sw $s1, 1288($t2)
 	
@@ -332,6 +356,7 @@
 	sw $s1, 1412($t2)
 	sw $s1, 1416($t2)
 	
+	
 	sw $s1, 1424($t2)
 	sw $s1, 1428($t2)
 	
@@ -359,11 +384,10 @@
 	sw $s1, 1520($t2)
 	sw $s1, 1524($t2)
 	
-	sw $s1, 1520($t2)
-	sw $s1, 1524($t2)
-	
+	#Inicio linha 4
 	sw $s1, 1668($t2)
-sw $s1, 1672($t2)
+	sw $s1, 1672($t2)
+	
 sw $s1, 1680($t2)
 sw $s1, 1684($t2)
 sw $s1, 1692($t2)
@@ -382,6 +406,7 @@ sw $s1, 1764($t2)
 sw $s1, 1768($t2)
 sw $s1, 1776($t2)
 sw $s1, 1780($t2)
+
 sw $s1, 1796($t2)
 sw $s1, 1800($t2)
 sw $s1, 1808($t2)
@@ -403,6 +428,7 @@ sw $s1, 1896($t2)
 sw $s1, 1904($t2)
 sw $s1, 1908($t2)
 
+#Inicio linha 5
 sw $s1, 2052($t2)
 sw $s1, 2056($t2)
 sw $s1, 2064($t2)
@@ -423,6 +449,7 @@ sw $s1, 2148($t2)
 sw $s1, 2152($t2)
 sw $s1, 2160($t2)
 sw $s1, 2164($t2)
+
 sw $s1, 2180($t2)
 sw $s1, 2184($t2)
 sw $s1, 2192($t2)
@@ -443,6 +470,7 @@ sw $s1, 2276($t2)
 sw $s1, 2280($t2)
 sw $s1, 2288($t2)
 sw $s1, 2292($t2)
+#inicio linha 6
 sw $s1, 2436($t2)
 sw $s1, 2440($t2)
 sw $s1, 2448($t2)
@@ -463,6 +491,7 @@ sw $s1, 2532($t2)
 sw $s1, 2536($t2)
 sw $s1, 2544($t2)
 sw $s1, 2548($t2)
+
 sw $s1, 2564($t2)
 sw $s1, 2568($t2)
 sw $s1, 2576($t2)
@@ -483,10 +512,14 @@ sw $s1, 2660($t2)
 sw $s1, 2664($t2)
 sw $s1, 2672($t2)
 sw $s1, 2676($t2)
+
+#inicio linha 7
 sw $s1, 2820($t2)
 sw $s1, 2824($t2)
+
 sw $s1, 2832($t2)
 sw $s1, 2836($t2)
+
 sw $s1, 2844($t2)
 sw $s1, 2848($t2)
 sw $s1, 2856($t2)
@@ -503,6 +536,7 @@ sw $s1, 2916($t2)
 sw $s1, 2920($t2)
 sw $s1, 2928($t2)
 sw $s1, 2932($t2)
+#fddf
 sw $s1, 2948($t2)
 sw $s1, 2952($t2)
 sw $s1, 2960($t2)
@@ -756,12 +790,169 @@ sw $s0, 4088($t2)
 addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4092($t2)
 sw $s0, 4096($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
-sw $s0, 4100($t2)
-sw $s0, 4104($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
-sw $s0, 4108($t2)
-sw $s0, 4112($t2)
+
+jr $ra
+
+titulo_jogo:	
+	la $a0,  titulo
+	li $v0, 4
+	syscall	
+jr $ra	
+
+	maquina_escolhe_jogada:	
+		la $a0, maquina_jogando
+		li $v0, 4
+	        syscall	
+		li $v0, 32
+		li $a0, 4000
+		syscall
+		
+		jal opcao_H
+		jal jogada_horizontal
+			add $t5,$zero,$a0
+			jal quebra_linha
+		jal opcao_V
+		jal jogada_vertical
+			add $t6,$zero,$a0
+  
+	        beqz $t5,coluna_0	
+	         
+		
+	jr $ra
+
+
+	jogada_horizontal:
+		li $v0, 42  # 42 é o código de chamada de sistema para gerar int
+		li $a1, 1 # $a1 limite
+		syscall     # gera o número e coloca em $a0
+		li $v0, 1   # 1 é o código de chamada de sistema para mostrar um número interno
+		syscall     # imprime o valor
+	jr $ra
+
+
+	jogada_vertical:
+		li $v0, 42  # 42 é o código de chamada de sistema para gerar int
+		li $a1, 8 # $a1 limite
+		syscall     # gera o número e coloca em $a0
+		li $v0, 1   # 1 é o código de chamada de sistema para mostrar um número interno
+	       	 syscall     # imprime o valor
+	jr $ra
+	
+	quebra_linha:
+		la $a0,  linha
+		li $v0, 4
+		syscall	
+	jr $ra
+	
+	
+	opcao_V:
+		la $a0,  txt_jogada_V
+		li $v0, 4
+		syscall	
+	jr $ra
+	
+	opcao_H:
+		la $a0,  txt_jogada_H
+		li $v0, 4
+		syscall	
+	jr $ra
+	
+	coluna_0:
+		beq $t6,0,quad_0x0  #$t6 == 0 (linha)
+		beq $t6,1,quad_0x1  #$t6 == 1 (linha)
+		beq $t6,2,quad_0x2  #$t6 == 2 (linha)
+		beq $t6,3,quad_0x3  #$t6 == 3 (linha)
+		beq $t6,4,quad_0x4  #$t6 == 4 (linha)
+		beq $t6,5,quad_0x5  #$t6 == 5 (linha)
+		beq $t6,6,quad_0x6  #$t6 == 6 (linha)
+		beq $t6,7,quad_0x7  #$t6 == 7 (linha)
+		
+	jr $ra
+	
+	quad_0x0:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 132($t2)	
+		sw $s2, 136($t2)
+		sw $s2, 260($t2)
+		sw $s2, 264($t2)
+		#se nao desenha destroyer		
+	jr $ra
+	
+	quad_0x1:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 516($t2)
+		sw $s2, 520($t2)
+		sw $s2, 644($t2)
+		sw $s2, 648($t2)
+		#se nao desenha destroyer	
+	jr $ra
+		
+	quad_0x2:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 900($t2)
+		sw $s2, 904($t2)
+		sw $s2, 1028($t2)
+		sw $s2, 1032($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x3:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 1284($t2)
+		sw $s2, 1288($t2)
+		sw $s2, 1412($t2)
+		sw $s2, 1416($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x4:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 1668($t2)
+		sw $s2, 1672($t2)
+		sw $s2, 1796($t2)
+		sw $s2, 1800($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x5:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 2052($t2)
+		sw $s2, 2056($t2)
+		sw $s2, 2180($t2)
+		sw $s2, 2184($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x6:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 2436($t2)
+		sw $s2, 2440($t2)
+		sw $s2, 2564($t2)
+		sw $s2, 2568($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x7:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		sw $s2, 2820($t2)
+		sw $s2, 2824($t2)
+		sw $s2, 2948($t2)
+		sw $s2, 2952($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_0x8:
+		#if a cordenada nao tiver destroyer pinta de vermelho
+		
+		#se nao desenha destroyer	
+	jr $ra
+	
+	
+
+
+
+
+
 
 
 
