@@ -436,9 +436,11 @@ sw $s1, 1908($t2)
 #Inicio linha 5
 sw $s1, 2052($t2)
 sw $s1, 2056($t2)
-#coluna 1 linha 5
+#linha 5coluna 1
 sw $s1, 2064($t2)
 sw $s1, 2068($t2)
+
+#linha 5 coluna 2
 sw $s1, 2076($t2)
 sw $s1, 2080($t2)
 sw $s1, 2088($t2)
@@ -460,6 +462,7 @@ sw $s1, 2180($t2)
 sw $s1, 2184($t2)
 sw $s1, 2192($t2)
 sw $s1, 2196($t2)
+
 sw $s1, 2204($t2)
 sw $s1, 2208($t2)
 sw $s1, 2216($t2)
@@ -482,6 +485,8 @@ sw $s1, 2440($t2)
 #coluna 1 linha 6
 sw $s1, 2448($t2)
 sw $s1, 2452($t2)
+
+#linha 6 coluna 2
 sw $s1, 2460($t2)
 sw $s1, 2464($t2)
 sw $s1, 2472($t2)
@@ -523,12 +528,13 @@ sw $s1, 2676($t2)
 #inicio linha 7
 sw $s1, 2820($t2)
 sw $s1, 2824($t2)
-#coluna 1 linha 7
+#linha 7 coluna 1
 sw $s1, 2832($t2)
 sw $s1, 2836($t2)
-
+#linha 7 coluna 2
 sw $s1, 2844($t2)
 sw $s1, 2848($t2)
+
 sw $s1, 2856($t2)
 sw $s1, 2860($t2)
 sw $s1, 2868($t2)
@@ -571,6 +577,7 @@ sw $s1, 3208($t2)
 #coluna 1 linha 8
 sw $s1, 3216($t2)
 sw $s1, 3220($t2)
+#linha 8 coluna 2
 sw $s1, 3228($t2)
 sw $s1, 3232($t2)
 sw $s1, 3240($t2)
@@ -897,7 +904,11 @@ jr $ra
 		beq $t6,1,quad_2x1
 		beq $t6,2,quad_2x2
 		beq $t6,3,quad_2x3
-		beq $t6,4,quad_2x4				
+		beq $t6,4,quad_2x4
+		beq $t6,5,quad_2x5
+		beq $t6,6,quad_2x6
+		beq $t6,7,quad_2x7
+		beq $t6,8,quad_2x8					
 	jr $ra
 	
 	
@@ -1105,6 +1116,42 @@ jr $ra
 		sw $s2, 1696($t2)
 		sw $s2, 1820($t2)
 		sw $s2, 1824($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x5:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 2076($t2)
+		sw $s2, 2080($t2)
+		sw $s2, 2204($t2)
+		sw $s2, 2208($t2)
+		#se nao desenha destroyer	
+	jr $ra
+		
+	quad_2x6:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 2460($t2)
+		sw $s2, 2464($t2)
+		sw $s2, 2588($t2)
+		sw $s2, 2592($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x7:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 2844($t2)
+		sw $s2, 2848($t2)
+		sw $s2, 2972($t2)
+		sw $s2, 2976($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x8:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 3228($t2)
+		sw $s2, 3232($t2)
+		sw $s2, 3356($t2)
+		sw $s2, 3360($t2)
 		#se nao desenha destroyer	
 	jr $ra
 	
