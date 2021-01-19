@@ -140,6 +140,7 @@
 	sw $s1, 144($t2)
 	sw $s1, 148($t2)
 	
+	#linha 0 coluna 2
 	sw $s1, 156($t2)
 	sw $s1, 160($t2)
 	
@@ -202,9 +203,8 @@
 	#linha 1 coluna 1
 	sw $s1, 528($t2)
 	sw $s1, 532($t2)
-	
-	
-	#Inicio linha 1
+		
+	#linha 1 coluna 2
 	sw $s1, 540($t2)
 	sw $s1, 544($t2)
 	
@@ -264,10 +264,11 @@
 	sw $s1, 900($t2)
 	sw $s1, 904($t2)
 	
-	#coluna 1 lina 2
+	#linha 2 coluna 1
 	sw $s1, 912($t2)
 	sw $s1, 916($t2)
 	
+	#linha 2 coluna 2
 	sw $s1, 924($t2)
 	sw $s1, 928($t2)
 	
@@ -302,7 +303,6 @@
 	sw $s1, 1052($t2)
 	sw $s1, 1056($t2)
 	
-
 	sw $s1, 1064($t2)
 	sw $s1, 1068($t2)
 	
@@ -327,10 +327,11 @@
 	#Inicio linha 3
 	sw $s1, 1284($t2)
 	sw $s1, 1288($t2)
-	#culuna 1 linha 3
+	#linha 3 coluna 1
 	sw $s1, 1296($t2)
 	sw $s1, 1300($t2)
 	
+	# linha 3 coluna 2
 	sw $s1, 1308($t2)
 	sw $s1, 1312($t2)
 	
@@ -390,9 +391,10 @@
 	#Inicio linha 4
 	sw $s1, 1668($t2)
 	sw $s1, 1672($t2)
-#coluna 1 linha 4
+#linha 4 coluna 1
 sw $s1, 1680($t2)
 sw $s1, 1684($t2)
+#linha 4 coluna 2
 sw $s1, 1692($t2)
 sw $s1, 1696($t2)
 sw $s1, 1704($t2)
@@ -825,14 +827,14 @@ jr $ra
 			add $t6,$zero,$a0
   
 	        beqz $t5,coluna_0
-	        beq $t5,1,coluna_1	
-	         	
+	        beq $t5,1,coluna_1
+	        beq $t5,2,coluna_2		         	
 	jr $ra
 
 
 	jogada_horizontal:
 		li $v0, 42  # 42 é o código de chamada de sistema para gerar int
-		li $a1, 2 # $a1 limite
+		li $a1, 3 # $a1 limite
 		syscall     # gera o número e coloca em $a0
 		li $v0, 1   # 1 é o código de chamada de sistema para mostrar um número interno
 		syscall     # imprime o valor
@@ -888,6 +890,14 @@ jr $ra
 		beq $t6,6,quad_1x6
 		beq $t6,7,quad_1x7
 		beq $t6,8,quad_1x8		
+	jr $ra
+	
+	coluna_2:
+		beq $t6,0,quad_2x0
+		beq $t6,1,quad_2x1
+		beq $t6,2,quad_2x2
+		beq $t6,3,quad_2x3
+		beq $t6,4,quad_2x4				
 	jr $ra
 	
 	
@@ -1052,6 +1062,59 @@ jr $ra
 		sw $s2, 3348($t2)
 		#se nao desenha destroyer	
 	jr $ra
+	
+	quad_2x0:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 156($t2)
+		sw $s2, 160($t2)
+		sw $s2, 284($t2)
+		sw $s2, 288($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x1:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 540($t2)
+		sw $s2, 544($t2)
+		sw $s2, 668($t2)
+		sw $s2, 672($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x2:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 924($t2)
+		sw $s2, 928($t2)
+		sw $s2, 1052($t2)
+		sw $s2, 1056($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	quad_2x3:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 1308($t2)
+		sw $s2, 1312($t2)
+		sw $s2, 1436($t2)
+		sw $s2, 1440($t2)
+		#se nao desenha destroyer	
+	jr $ra
+		
+	quad_2x4:
+		#if a cordenada nao tiver destroyer pinta de vermelho		
+		sw $s2, 1692($t2)
+		sw $s2, 1696($t2)
+		sw $s2, 1820($t2)
+		sw $s2, 1824($t2)
+		#se nao desenha destroyer	
+	jr $ra
+	
+	
+	
+	
+	
+	
+	
+
 	
 
 
