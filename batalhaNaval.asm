@@ -38,7 +38,7 @@
 		
 	cores:
 	     addi $s1, $zero, 0x0000b3 #Azul
-	     addi $s2, $zero, 0xFF8C00 #DarkOrange
+	     addi $s2, $zero, 0xff0000 #Red
 	    jr $ra
 	
 	define_fundo:
@@ -50,85 +50,68 @@
 	desenha_tabuleiro:
 	
 	#Cores de cordenadas verticais
-	addi $s0, $zero, 0xFF00F3 #Rosa
+	addi $s0, $zero, 0xFFFF00 #Amarela
+	sw $s0, 0($t2)
 	sw $s0, 4($t2)
 	sw $s0, 8($t2)		
-	
-	addi $s0, $zero, 0xFF0000 #Vermelha	
+	sw $s0, 12($t2)	
 	sw $s0, 16($t2)
 	sw $s0, 20($t2)	
-	
-	addi $s0, $zero, 0xFFFF00 #Amarela	
+	sw $s0, 24($t2)
 	sw $s0, 28($t2)
 	sw $s0, 32($t2)
-	
-	addi $s0, $zero, 0x03FF00 #Verde	
+	sw $s0, 36($t2)	
 	sw $s0, 40($t2)
 	sw $s0, 44($t2)
-	
-	addi $s0, $zero, 0x006400 #Azul	
+	sw $s0, 48($t2)
 	sw $s0, 52($t2)
 	sw $s0, 56($t2)
-	
-	addi $s0, $zero, 0xFF8E00 #Laranja claro
+	sw $s0, 60($t2)
 	sw $s0, 64($t2)
 	sw $s0, 68($t2)
-	
-	addi $s0, $zero, 0xFF5500 #Laranja escuro
+	sw $s0, 72($t2)
 	sw $s0, 76($t2)
 	sw $s0, 80($t2)
-	
-	addi $s0, $zero, 0x00D7FF #Azul claro
+	sw $s0, 84($t2)
 	sw $s0, 88($t2)
 	sw $s0, 92($t2)
-	
-	addi $s0, $zero, 0x9F00C5 #Púrpura
+	sw $s0, 96($t2)
 	sw $s0, 100($t2)
 	sw $s0, 104($t2)
-	
-	addi $s0, $zero, 0xFFFFFF #Branca
+	sw $s0, 108($t2)
 	sw $s0, 112($t2)
 	sw $s0, 116($t2)
-	
+	sw $s0, 120($t2)
+	sw $s0, 124($t2)	
 	#Cores de cordenadas horizontais
-	addi $s0, $zero, 0xFFFFFF #Branca
 	sw $s0, 128($t2)
 	sw $s0, 256($t2)
-	
-	addi $s0, $zero, 0x9F00C5 #Púrpura
+	sw $s0, 384($t2)	
 	sw $s0, 512($t2)
 	sw $s0, 640($t2)
-	
-	
-	addi $s0, $zero, 0x00D7FF #Azul claro
+	sw $s0, 768($t2)
 	sw $s0, 896($t2)
 	sw $s0, 1024($t2)
-	
-	addi $s0, $zero, 0xFF5500 #Laranja escuro
+	sw $s0, 1152($t2)
 	sw $s0, 1280($t2)
 	sw $s0, 1408($t2)
-	
-	addi $s0, $zero, 0xFF8E00 #Laranja claro
+	sw $s0, 1536($t2)
 	sw $s0, 1664($t2)
 	sw $s0, 1792($t2)
-	
-	addi $s0, $zero, 0xFF00F3 #Rosa
+	sw $s0, 1920($t2)
 	sw $s0, 2048($t2)
 	sw $s0, 2176($t2)	
-	
-	addi $s0, $zero, 0xFF0000 #Vermelha
+	sw $s0, 2304($t2)
 	sw $s0, 2432($t2)	
 	sw $s0, 2560($t2)
-		
-	addi $s0, $zero, 0xFFFF00 #Amarela	
+	sw $s0, 2688($t2)	
 	sw $s0, 2816($t2)
 	sw $s0, 2944($t2)
-	
-	addi $s0, $zero, 0x03FF00 #Verde
+	sw $s0, 3072($t2)	
         sw $s0, 3200($t2)
 	sw $s0, 3328($t2)
+	sw $s0, 3456($t2)
 	
-	addi $s0, $zero, 0xFFFF00 #Amarelo
 	
 		
 	#===========================================================================
