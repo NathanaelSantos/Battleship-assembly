@@ -23,29 +23,19 @@
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
-		
 		jal titulo_jogo
-		jal maquina_escolhe_jogada
-		
-		
-		#jogo1:			
-			#jal verifica_vitoria
-			#j jogada_player1
-		#jogo2:
-			#jal verifica_vitoria
-			#j jogada_player2
-	
-		
+		jal jogada_player1
+			
 	cores:
-	     addi $s1, $zero, 0x0000b3 #Azul
-	     addi $s2, $zero, 0xff0000 #Red
-	    jr $ra
+	     	addi $s1, $zero, 0x0040ff #Azul 
+	     	addi $s2, $zero, 0xff3333 #LARANJA
+	jr $ra
 	
 	define_fundo:
-	    addi $t1, $zero, 1024	#mapa possui 1024 quadrados
+	   	addi $t1, $zero, 1024	#mapa possui 1024 quadrados
 		add $t2, $zero, $t1
 		lui $t2, 0x1000		#posiÃ§Ã£o inicial dos dados para serem pintados
-		jr $ra
+	jr $ra
 	
 	desenha_tabuleiro:
 	
@@ -668,235 +658,142 @@ sw $s1, 3444($t2)
 addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3588($t2)
 sw $s0, 3592($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3596($t2)
 sw $s0, 3600($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3604($t2)
 sw $s0, 3608($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3612($t2)
 sw $s0, 3616($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3620($t2)
 sw $s0, 3624($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3628($t2)
 sw $s0, 3632($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3636($t2)
 sw $s0, 3640($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3644($t2)
 sw $s0, 3648($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3652($t2)
 sw $s0, 3656($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3660($t2)
 sw $s0, 3664($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3668($t2)
 sw $s0, 3672($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3676($t2)
 sw $s0, 3680($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3684($t2)
 sw $s0, 3688($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3692($t2)
 sw $s0, 3696($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3700($t2)
 sw $s0, 3704($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3708($t2)
 sw $s0, 3712($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3716($t2)
 sw $s0, 3720($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3724($t2)
 sw $s0, 3728($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3732($t2)
 sw $s0, 3736($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3740($t2)
 sw $s0, 3744($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3748($t2)
 sw $s0, 3752($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3756($t2)
 sw $s0, 3760($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3764($t2)
 sw $s0, 3768($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3772($t2)
 sw $s0, 3776($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3780($t2)
 sw $s0, 3784($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3788($t2)
 sw $s0, 3792($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3796($t2)
 sw $s0, 3800($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3804($t2)
 sw $s0, 3808($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3812($t2)
 sw $s0, 3816($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3820($t2)
 sw $s0, 3824($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3828($t2)
 sw $s0, 3832($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3836($t2)
 sw $s0, 3840($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3844($t2)
 sw $s0, 3848($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3852($t2)
 sw $s0, 3856($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3860($t2)
 sw $s0, 3864($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3868($t2)
 sw $s0, 3872($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3876($t2)
 sw $s0, 3880($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3884($t2)
 sw $s0, 3888($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3892($t2)
 sw $s0, 3896($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3900($t2)
 sw $s0, 3904($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3908($t2)
 sw $s0, 3912($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3916($t2)
 sw $s0, 3920($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3924($t2)
 sw $s0, 3928($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3932($t2)
 sw $s0, 3936($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3940($t2)
 sw $s0, 3944($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3948($t2)
 sw $s0, 3952($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3956($t2)
 sw $s0, 3960($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3964($t2)
 sw $s0, 3968($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3972($t2)
 sw $s0, 3976($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3980($t2)
 sw $s0, 3984($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3988($t2)
 sw $s0, 3992($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 3996($t2)
 sw $s0, 4000($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4004($t2)
 sw $s0, 4008($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4012($t2)
 sw $s0, 4016($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4020($t2)
 sw $s0, 4024($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4028($t2)
 sw $s0, 4032($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4036($t2)
 sw $s0, 4040($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4044($t2)
 sw $s0, 4048($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4052($t2)
 sw $s0, 4056($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4060($t2)
 sw $s0, 4064($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4068($t2)
 sw $s0, 4072($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4076($t2)
 sw $s0, 4080($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4084($t2)
 sw $s0, 4088($t2)
-addi $s0, $zero, 0xFFFF00 #Amarela
 sw $s0, 4092($t2)
 sw $s0, 4096($t2)
-
 jr $ra
 
-titulo_jogo:	
-	la $a0,  titulo
-	li $v0, 4
-	syscall	
-jr $ra	
-
-	maquina_escolhe_jogada:		
-		la $a0, maquina_jogando
+	titulo_jogo:	
+		la $a0,  titulo
 		li $v0, 4
-	        syscall	
-		li $v0, 32
-		li $a0, 4000
-		syscall
-		
-		jal opcao_H
-		jal jogada_horizontal
-			add $t5,$zero,$a0
-			jal quebra_linha
-		jal opcao_V
-		jal jogada_vertical
-			add $t6,$zero,$a0
-  
-	        beq $t5,0,coluna_0 
-	        beq $t5,1,coluna_1
-	        beq $t5,2,coluna_2
-	        beq $t5,3,coluna_3
-	        beq $t5,4,coluna_4
-	        beq $t5,5,coluna_5
-	        beq $t5,6,coluna_6
-	        beq $t5,7,coluna_7
-	        beq $t5,8,coluna_8
-	        beq $t5,9,coluna_9
-	   		         	
-	jr $ra
-	
+		syscall	
+	jr $ra	
+
 	jogada_player1:
-	
+		jal on_player_1
 		la $a0,  linha
 		li $v0, 4
 		syscall	
@@ -911,7 +808,7 @@ jr $ra
 		
 		li $v0, 5	#Lê a coluna 
 		syscall
-		move  $t7,$v0 
+		move  $t5,$v0 
 		
 		la $a0, jogada_linha_Y		
 		li $v0, 4
@@ -919,13 +816,47 @@ jr $ra
 		
 		li $v0, 5	#Lê linha posição 
 		syscall
-		move $t8,$v0
+		move $t6,$v0
 		
-		
-		jal maquina_escolhe_jogada
-		
+	        jal get_coluna
+	        jal maquina_escolhe_jogada
+	       
 	jr $ra
 
+	maquina_escolhe_jogada:	
+		jal on_player_2	
+		la $a0, maquina_jogando
+		li $v0, 4
+	        syscall	
+		li $v0, 32
+		li $a0, 4500
+		syscall
+		
+		jal opcao_H
+		jal jogada_horizontal
+			add $t5,$zero,$a0
+			jal quebra_linha
+		jal opcao_V
+		jal jogada_vertical
+			add $t6,$zero,$a0
+
+	        jal get_coluna
+	        jal jogada_player1
+	   	        	
+	jr $ra
+	
+	get_coluna:
+		beq $t5,0,coluna_0 
+	        beq $t5,1,coluna_1
+	        beq $t5,2,coluna_2
+	        beq $t5,3,coluna_3
+	        beq $t5,4,coluna_4
+	        beq $t5,5,coluna_5
+	        beq $t5,6,coluna_6
+	        beq $t5,7,coluna_7
+	        beq $t5,8,coluna_8
+	        beq $t5,9,coluna_9
+	jr $ra
 
 	jogada_horizontal:
 		li $v0, 42  # 42 é o código de chamada de sistema para gerar int
@@ -964,16 +895,15 @@ jr $ra
 	jr $ra
 	
 	coluna_0:
-		beq $t6,0,quad_0x0  #$t6 == 0 (linha)
-		beq $t6,1,quad_0x1  #$t6 == 1 (linha)
-		beq $t6,2,quad_0x2  #$t6 == 2 (linha)
-		beq $t6,3,quad_0x3  #$t6 == 3 (linha)
-		beq $t6,4,quad_0x4  #$t6 == 4 (linha)
-		beq $t6,5,quad_0x5  #$t6 == 5 (linha)
-		beq $t6,6,quad_0x6  #$t6 == 6 (linha)
-		beq $t6,7,quad_0x7  #$t6 == 7 (linha)
-		beq $t6,8,quad_0x8  #$t6 == 8 (linha)	
-			
+		beq $t6,0,quad_0x0  
+		beq $t6,1,quad_0x1  
+		beq $t6,2,quad_0x2  
+		beq $t6,3,quad_0x3  
+		beq $t6,4,quad_0x4  
+		beq $t6,5,quad_0x5  
+		beq $t6,6,quad_0x6  
+		beq $t6,7,quad_0x7  
+		beq $t6,8,quad_0x8  				
 	jr $ra
 	
 	coluna_1:
@@ -985,8 +915,7 @@ jr $ra
 		beq $t6,5,quad_1x5
 		beq $t6,6,quad_1x6
 		beq $t6,7,quad_1x7
-		beq $t6,8,quad_1x8	
-			
+		beq $t6,8,quad_1x8				
 	jr $ra
 	
 	coluna_2:
@@ -998,8 +927,7 @@ jr $ra
 		beq $t6,5,quad_2x5
 		beq $t6,6,quad_2x6
 		beq $t6,7,quad_2x7
-		beq $t6,8,quad_2x8
-							
+		beq $t6,8,quad_2x8							
 	jr $ra
 	
 	coluna_3:
@@ -1011,8 +939,7 @@ jr $ra
 		beq $t6,5,quad_3x5
 		beq $t6,6,quad_3x6
 		beq $t6,7,quad_3x7
-		beq $t6,8,quad_3x8
-							
+		beq $t6,8,quad_3x8							
 	jr $ra
 	
 	coluna_4:
@@ -1024,8 +951,7 @@ jr $ra
 		beq $t6,5,quad_4x5
 		beq $t6,6,quad_4x6
 		beq $t6,7,quad_4x7
-		beq $t6,8,quad_4x8
-							
+		beq $t6,8,quad_4x8						
 	jr $ra
 	
 	coluna_5:
@@ -1093,17 +1019,13 @@ jr $ra
 	
 	quad_0x0:
 		#Se for igual,pinta de vermelho, pois nao tem destroyer
-		beq $t5,0,pinta_quadro		
-		#se nao desenha destroyer		
-	jr $ra	
-	
-	pinta_quadro:
 		sw $s2, 132($t2)	
 		sw $s2, 136($t2)
 		sw $s2, 260($t2)
-		sw $s2, 264($t2)
-		jal jogada_player1
-	
+		sw $s2, 264($t2)	
+		#se nao desenha destroyer		
+	jr $ra	
+
 	# ==================================================================
 	# ============================ culuna 0 ============================
 	
@@ -1965,6 +1887,97 @@ jr $ra
 		sw $s2, 3444($t2)
 		#se nao desenha destroyer	
 	jr $ra
+	
+	on_player_1:
+		
+		#OFF PLAYER 2
+		addi $s0, $zero, 0xFFFF00 #OrangeRed
+		sw $s0, 3680($t2)
+		sw $s0, 3684($t2)
+		sw $s0, 3688($t2)	
+		sw $s0, 3696($t2)
+		sw $s0, 3700($t2)
+		sw $s0, 3704($t2)
+		sw $s0, 3808($t2)
+		sw $s0, 3812($t2)
+		sw $s0, 3816($t2)
+		sw $s0, 3832($t2)
+		sw $s0, 3936($t2)
+		sw $s0, 3952($t2)
+		sw $s0, 3956($t2)
+		sw $s0, 4064($t2)
+		sw $s0, 4080($t2)
+		sw $s0, 4084($t2)
+		sw $s0, 4088($t2)
+		
+		#ON PLAYER 1
+		addi $s0, $zero, 0xFF4500 #OrangeRed
+		sw $s0, 3592($t2)
+		sw $s0, 3596($t2)
+		sw $s0, 3600($t2)
+		sw $s0, 3608($t2)
+		sw $s0, 3612($t2)
+		sw $s0, 3720($t2)
+		sw $s0, 3724($t2)
+		sw $s0, 3728($t2)
+		sw $s0, 3740($t2)
+		sw $s0, 3848($t2)
+		sw $s0, 3868($t2)
+		sw $s0, 3976($t2)
+		sw $s0, 3992($t2)
+		sw $s0, 3996($t2)
+		sw $s0, 4000($t2)
+	jr $ra
+	
+	on_player_2:
+		
+		#OFF PLAYER 1
+		addi $s0, $zero, 0xFFFF00 #AMARELA
+		sw $s0, 3592($t2)
+		sw $s0, 3596($t2)
+		sw $s0, 3600($t2)
+		sw $s0, 3608($t2)
+		sw $s0, 3612($t2)
+		sw $s0, 3720($t2)
+		sw $s0, 3724($t2)
+		sw $s0, 3728($t2)
+		sw $s0, 3740($t2)
+		sw $s0, 3848($t2)
+		sw $s0, 3868($t2)
+		sw $s0, 3976($t2)
+		sw $s0, 3992($t2)
+		sw $s0, 3996($t2)
+		sw $s0, 4000($t2)
+		
+		#ON PLAYER 1
+		addi $s0, $zero, 0xDC143C 
+		sw $s0, 3680($t2)
+		sw $s0, 3684($t2)
+		sw $s0, 3688($t2)	
+		sw $s0, 3696($t2)
+		sw $s0, 3700($t2)
+		sw $s0, 3704($t2)
+		sw $s0, 3808($t2)
+		sw $s0, 3812($t2)
+		sw $s0, 3816($t2)
+		sw $s0, 3832($t2)
+		sw $s0, 3936($t2)
+		sw $s0, 3952($t2)
+		sw $s0, 3956($t2)
+		sw $s0, 4064($t2)
+		sw $s0, 4080($t2)
+		sw $s0, 4084($t2)
+		sw $s0, 4088($t2)
+
+	jr $ra
+	
+	
+	
+
+	
+
+
+
 	
 	
 	
