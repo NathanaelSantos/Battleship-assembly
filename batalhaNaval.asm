@@ -7,7 +7,10 @@
 #	Base address = 0x10000000 (global data)
 
 .data	
-
+	meuArray:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+  	
  	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n*****************************************\n*****************************************\n"
  	maquina_jogando: .asciiz "\nM�quina est� processando a jogada...\n"
  	linha: .asciiz "\n"
@@ -18,8 +21,51 @@
  	txt_menu: .asciiz "Digite a opcao: "
 
 .text
-	main:	
+
+
+
+
+	#gera destroyers na horizontal
+  	gera_numero:
+  		move $t0, $zero # indice do array		
 		
+		#Gera a sequencia
+  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
+		li $a1, 9 # $a1 limite
+		syscall     # gera o numero e coloca em $a0
+			       	 
+  		move $t1, $a0 # valor a ser colocado no array
+  			#se a coluna for maior que 6 gera numero novamente,pois na ha como ter um 4 casas depois da 6 coluna
+  			beq $t1,7,gera_numero
+  			beq $t1,8,gera_numero
+  			beq $t1,9,gera_numero
+  		li $t2, 16 # tamanho do array
+  		
+  		
+  
+  	
+  	loop:
+  		beq $t0,16, saiDoLoop
+  		sw $t1, meuArray($t0)
+  		addi $t0, $t0, 4
+  		addi $t1, $t1,1
+  		j loop
+  		
+  	saiDoLoop:
+  		move $t0, $zero
+  		imprime:
+  			beq $t0, $t2, saiDaImpressao
+  			li $v0,1
+  			lw $a0, meuArray ($t0)
+  			syscall
+  			
+  			addi $t0, $t0, 4
+  			j imprime
+  	saiDaImpressao:
+  	
+  	
+  	
+	main:	
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
@@ -55,8 +101,7 @@
 		jal jogada_player1
 	
 	jr $ra
-	
-		
+			
 	jr $ra
 
 	jogada_player1:
@@ -86,8 +131,10 @@
 		move $t6,$v0
 		
 	        jal get_coluna
+	        
+	        #Se escolhida a opcao 1 
 	        beq $s7,1,maquina_escolhe_jogada
-	        jal jogada_player2
+	        jal jogada_player2 #SE NAO 
 	               
 	jr $ra
 	
@@ -133,11 +180,11 @@
 		
 		jal opcao_H
 		jal jogada_horizontal
-			add $t5,$zero,$a0
+			move $t5,$a0
 			jal quebra_linha
 		jal opcao_V
 		jal jogada_vertical
-			add $t6,$zero,$a0
+			move $t6,$a0
 
 	        jal get_coluna
 	        jal jogada_player1
@@ -193,8 +240,9 @@
 		syscall	
 	jr $ra
 	
+
 	coluna_0:
-		beq $t6,0,quad_0x0  
+		beq $t6,0,quad_0x0
 		beq $t6,1,quad_0x1  
 		beq $t6,2,quad_0x2  
 		beq $t6,3,quad_0x3  
@@ -317,12 +365,11 @@
 	
 	
 	quad_0x0:
-		#Se for igual,pinta de vermelho, pois nao tem destroyer
+			     
 		sw $s2, 132($t2)	
 		sw $s2, 136($t2)
 		sw $s2, 260($t2)
-		sw $s2, 264($t2)	
-		#se nao desenha destroyer		
+		sw $s2, 264($t2)
 	jr $ra	
 
 	# ==================================================================
@@ -2018,6 +2065,9 @@ sw $s0, 4088($t2)
 sw $s0, 4092($t2)
 sw $s0, 4096($t2)
 jr $ra
+
+
+
 	
 	
 
