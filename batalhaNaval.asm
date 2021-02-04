@@ -11,58 +11,215 @@
 #	$t8 pontos do player 2
 
 .data	
-	meuArray:
+	Destroyer_1:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+
+	Destroyer_2:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+
+	Destroyer_3:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+  	
+  	Destroyer_4:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+	
+	Destroyer_5:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+	
+	Destroyer_6:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+	
+	Destroyer_7:
   	.alig 2
   	.space 16 #aloca 4 espacos no array
   	
   	
  	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n*****************************************\n*****************************************\n"
- 	maquina_jogando: .asciiz "\nM�quina est� processando a jogada...\n"
+ 	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
  	linha: .asciiz "\n"
  	txt_jogada_H: .asciiz "Coluna: "
  	txt_jogada_V: .asciiz "Linha: "
- 	txt_player1: .asciiz "Player 1, em qual posi��o deseja jogar? "
- 	txt_player2: .asciiz "Player 2, em qual posi��o deseja jogar? "
+ 	txt_player1: .asciiz "Player 1, em qual posicao deseja jogar? "
+ 	txt_player2: .asciiz "Player 2, em qual posicao deseja jogar? "
  	txt_menu: .asciiz "Digite a opcao: "
  	 
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
 
 .text
-	#gera destroyers na horizontal
-  	gera_numero:
-  	
-  		move $t0, $zero # indice do array	
-		#Gera a sequencia
-  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
-		li $a1, 7 # $a1 limite
-		syscall     # gera o numero e coloca em $a0
-			       	 
-  		move $t1, $a0 # valor a ser colocado no array
-  
-  		li $t2, 16 # tamanho do array
-  	
+
+	#gera destroyers 1
+  	jal coordenada_inicial
   	loop:
   		beq $t0,16, saiDoLoop
-  		sw $t1, meuArray($t0)
+  		sw $a0, Destroyer_1($t0)
   		addi $t0, $t0, 4
-  		addi $t1, $t1,1
+  		addi $a0, $a0,1
   		j loop		
   	saiDoLoop:
   	
   	move $t0, $zero
-  	lw $a0, meuArray ($t0)
+  	lw $a0, Destroyer_1 ($t0)
   	move $k1,$a0
   	
   	imprime:
-  		beq $t0, $t2, saiDaImpressao
+  		beq $t0, 16, saiDaImpressao
   		li $v0,1
-  		lw $a0, meuArray ($t0)
+  		lw $a0, Destroyer_1 ($t0)
   		syscall
   			
   		addi $t0, $t0, 4
   	j imprime
-  	saiDaImpressao:
+  	saiDaImpressao:jal quebra_linha
+	
+	#gera destroyers 2
+  	jal coordenada_inicial
+  	loop_2:
+  		beq $t3,16, saiDoLoop_2
+  		sw $a0, Destroyer_2($t3)
+  		addi $t3, $t3, 4
+  		addi $a0, $a0,1
+  		j loop_2		
+  	saiDoLoop_2:
+  	
+  	move $t3, $zero
+  	lw $a0, Destroyer_2 ($t3)
+  	move $k1,$a0
+  	
+  	imprime_2:
+  		beq $t3, 16, saiDaImpressao_2
+  		li $v0,1
+  		lw $a0, Destroyer_2 ($t3)
+  		syscall
+  			
+  		addi $t3, $t3, 4
+  	j imprime_2
+  	saiDaImpressao_2:jal quebra_linha
+
+	#gera destroyers 3
+  	jal coordenada_inicial
+  	loop_3:
+  		beq $t4,16, saiDoLoop_3
+  		sw $a0, Destroyer_3($t4)
+  		addi $t4, $t4, 4
+  		addi $a0, $a0,1
+  		j loop_3		
+  	saiDoLoop_3:
+  	
+  	move $t4, $zero
+  	lw $a0, Destroyer_3 ($t4)
+  	move $k1,$a0
+  	
+  	imprime_3:
+  		beq $t4, 16, saiDaImpressao_3
+  		li $v0,1
+  		lw $a0, Destroyer_3 ($t4)
+  		syscall
+  			
+  		addi $t4, $t4, 4
+  	j imprime_3
+  	saiDaImpressao_3:jal quebra_linha
+
+	#gera destroyers 4
+    jal coordenada_inicial
+  	loop_4:
+  		beq $s3,16, saiDoLoop_4
+  		sw $a0, Destroyer_4($s3)
+  		addi $s3, $s3, 4
+  		addi $a0, $a0,1
+  		j loop_4		
+  	saiDoLoop_4:
+  	
+  	move $s3, $zero
+  	lw $a0, Destroyer_4 ($s3)
+  	move $k1,$a0
+  	
+  	imprime_4:
+  		beq $s3, 16, saiDaImpressao_4
+  		li $v0,1
+  		lw $a0, Destroyer_4 ($s3)
+  		syscall
+  			
+  		addi $s3, $s3, 4
+  	j imprime_4
+  	saiDaImpressao_4:jal quebra_linha
+
+	#gera destroyers 5
+  	jal coordenada_inicial
+  	loop_5:
+  		beq $s4,16, saiDoLoop_5
+  		sw $a0, Destroyer_5($s4)
+  		addi $s4, $s4, 4
+  		addi $a0, $a0,1
+  		j loop_5		
+  	saiDoLoop_5:
+  	
+  	move $s4, $zero
+  	lw $a0, Destroyer_5 ($s4)
+  	move $k1,$a0
+  	
+  	imprime_5:
+  		beq $s4, 16, saiDaImpressao_5
+  		li $v0,1
+  		lw $a0, Destroyer_5 ($s4)
+  		syscall
+  			
+  		addi $s4, $s4, 4
+  	j imprime_5
+  	saiDaImpressao_5:jal quebra_linha
+
+	#gera destroyers 6
+  	jal coordenada_inicial
+  	loop_6:
+  		beq $s5,16, saiDoLoop_6
+  		sw $a0, Destroyer_6($s5)
+  		addi $s5, $s5, 4
+  		addi $a0, $a0,1
+  		j loop_6		
+  	saiDoLoop_6: 	
+  		move $s5, $zero
+  		lw $a0, Destroyer_6 ($s5)
+  		move $k1,$a0
+  	
+  	imprime_6:
+  		beq $s5, 16, saiDaImpressao_6
+  		li $v0,1
+  		lw $a0, Destroyer_6 ($s5)
+  		syscall
+  			
+  		addi $s5, $s5, 4
+  	j imprime_6
+  	saiDaImpressao_6:jal quebra_linha
+
+	#gera destroyers 7
+  	jal coordenada_inicial	
+  	loop_7:
+  		beq $s6,16, saiDoLoop_7
+  		sw $a0, Destroyer_7($s6)
+  		addi $s6, $s6, 4
+  		addi $a0, $a0,1
+  		j loop_7		
+  	saiDoLoop_7: 	
+  		move $s6, $zero
+  		lw $a0, Destroyer_7 ($s6)
+  		move $k1,$a0
+  	
+  	imprime_7:
+  		beq $s6, 16, saiDaImpressao_7
+  		li $v0,1
+  		lw $a0, Destroyer_7 ($s6)
+  		syscall
+  			
+  		addi $s6, $s6, 4
+  	j imprime_7
+  	saiDaImpressao_7:
+
 
 	main:	
 		jal cores
@@ -103,6 +260,12 @@
 		jr $ra
 			
 	jr $ra
+
+	coordenada_inicial:
+  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
+		li $a1, 7 # $a1 limite
+		syscall     # gera o numero e coloca em $a0
+	jr $ra
 	
 	placar:
 		la $a0,txt_placar
@@ -116,8 +279,7 @@
 		syscall
 		add $a0, $zero, $t8
 		li $v0, 1
-		syscall
-		
+		syscall	
 	jr $ra
 
 	jogada_player1:
@@ -164,15 +326,13 @@
 		print:
   			beq $t0, 16, exit
   			li $v0,1
-  			lw $a0, meuArray ($t0)	
+  			lw $a0, Destroyer_1 ($t0)	
   				beq $t5,$a0,posicao	
-  			addi $t0, $t0, 4
+  				addi $t0, $t0, 4
   		j print	
-  	exit:
-  	jr $ra
+  	exit:jr $ra
   
-	posicao:
-		move $k1,$a0
+	posicao:move $k1,$a0
 	jr $ra
 	
 	
@@ -186,10 +346,10 @@
 		la $a0,  linha
 		li $v0, 4
 		syscall	
-			jal quebra_linha
+		jal quebra_linha
 		la $a0, txt_player2
 		syscall
-			jal quebra_linha
+		jal quebra_linha
 		
 		la $a0, txt_jogada_H
 		li $v0, 4
@@ -223,7 +383,7 @@
 		jal on_player_2	
 		la $a0, maquina_jogando
 		li $v0, 4
-	        syscall	
+	    syscall	
 		li $v0, 32
 		li $a0, 3000
 		syscall
@@ -262,10 +422,7 @@
 
   			addi $t0, $t0, 4
   		j imprime_
-
-  		saiDaImpressao_:	
- 
-	jr $ra
+  	saiDaImpressao_:jr $ra
 	
 	func_v:		
   		beq $t5,0,coluna_0 
