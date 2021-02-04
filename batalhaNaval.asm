@@ -31,7 +31,11 @@
 .text
 	#gera destroyers na horizontal
   	gera_numero:
+<<<<<<< HEAD
   	
+=======
+  		
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
   		move $t0, $zero # indice do array	
 		#Gera a sequencia
   		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
@@ -121,7 +125,11 @@
 	jr $ra
 
 	jogada_player1:
+<<<<<<< HEAD
 		
+=======
+	
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
 		jal on_player_1
 		la $a0,  linha
 		li $v0, 4
@@ -153,7 +161,10 @@
 		
 		beq, $k0,1,player1_acertou		
        
+<<<<<<< HEAD
        		jal placar
+=======
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
 	        #Se escolhida a opcao 1 
 	        beq $s7,1,maquina_escolhe_jogada
 	        jal jogada_player2 #SE NAO 		                       
@@ -208,7 +219,11 @@
 		move $t6,$v0
 		
 		jal conta
+<<<<<<< HEAD
 			jal placar
+=======
+		
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
 	        jal get_coluna
 				beq, $k0,1,player2_acertou
 	        	jal jogada_player1	       
@@ -580,6 +595,7 @@
 	# ==================================================================
 	# ============================ culuna 1 ============================
 	quad_1x0:	
+<<<<<<< HEAD
 		sw $s2, 144($t2)
 		sw $s2, 148($t2)
 		sw $s2, 272($t2)
@@ -588,10 +604,23 @@
 	acertou_1x0:
 		addi $k0, $zero,1
 		addi $s2, $zero, 0x17FD04  #Amarela	     
+=======
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
 		sw $s2, 144($t2)
 		sw $s2, 148($t2)
 		sw $s2, 272($t2)
 		sw $s2, 276($t2)
+<<<<<<< HEAD
+=======
+	jr $ra
+	acertou_1x0:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 144($t2)
+		sw $s2, 148($t2)
+		sw $s2, 272($t2)
+		sw $s2, 276($t2)
+>>>>>>> cbfff428afc7154198722504313fd8c23ad574e1
 		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
