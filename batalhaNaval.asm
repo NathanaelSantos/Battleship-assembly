@@ -11,58 +11,63 @@
 #	$t8 pontos do player 2
 
 .data	
-	meuArray:
+	Destroyer_1:
   	.alig 2
   	.space 16 #aloca 4 espacos no array
-  	
+
+	Destroyer_2:
+  	.alig 2
+  	.space 16 #aloca 4 espacos no array
+
   	
  	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n*****************************************\n*****************************************\n"
- 	maquina_jogando: .asciiz "\nM�quina est� processando a jogada...\n"
+ 	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
  	linha: .asciiz "\n"
  	txt_jogada_H: .asciiz "Coluna: "
  	txt_jogada_V: .asciiz "Linha: "
- 	txt_player1: .asciiz "Player 1, em qual posi��o deseja jogar? "
- 	txt_player2: .asciiz "Player 2, em qual posi��o deseja jogar? "
+ 	txt_player1: .asciiz "Player 1, em qual posicao deseja jogar? "
+ 	txt_player2: .asciiz "Player 2, em qual posicao deseja jogar? "
  	txt_menu: .asciiz "Digite a opcao: "
  	 
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
 
 .text
-	#gera destroyers na horizontal
-  	gera_numero:
-  	
-  		move $t0, $zero # indice do array	
-		#Gera a sequencia
-  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
-		li $a1, 7 # $a1 limite
-		syscall     # gera o numero e coloca em $a0
-			       	 
-  		move $t1, $a0 # valor a ser colocado no array
-  
-  		li $t2, 16 # tamanho do array
-  	
+
+	#gera destroyers 1
+  	jal coordenada_inicial
   	loop:
   		beq $t0,16, saiDoLoop
-  		sw $t1, meuArray($t0)
+  		sw $a0, Destroyer_1($t0)
   		addi $t0, $t0, 4
-  		addi $t1, $t1,1
+  		addi $a0, $a0,1
   		j loop		
   	saiDoLoop:
   	
   	move $t0, $zero
-  	lw $a0, meuArray ($t0)
+  	lw $a0, Destroyer_1 ($t0)
   	move $k1,$a0
   	
   	imprime:
-  		beq $t0, $t2, saiDaImpressao
+  		beq $t0, 16, saiDaImpressao
   		li $v0,1
-  		lw $a0, meuArray ($t0)
+  		lw $a0, Destroyer_1 ($t0)
   		syscall
   			
   		addi $t0, $t0, 4
   	j imprime
-  	saiDaImpressao:
+  	saiDaImpressao:jal quebra_linha
+	
+	
+	# ========== Gera coordenadas das linhas ==========
+
+	#gera coordenada linha destroyers 1
+  	jal coordenada_inicial
+    move $s6,$a0
+	
+	jal coordenada_inicial
+    move $s5,$a0
+
 
 	main:	
 		jal cores
@@ -103,6 +108,12 @@
 		jr $ra
 			
 	jr $ra
+
+	coordenada_inicial:
+  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
+		li $a1, 7 # $a1 limite
+		syscall     # gera o numero e coloca em $a0
+	jr $ra
 	
 	placar:
 		la $a0,txt_placar
@@ -116,8 +127,7 @@
 		syscall
 		add $a0, $zero, $t8
 		li $v0, 1
-		syscall
-		
+		syscall	
 	jr $ra
 
 	jogada_player1:
@@ -147,8 +157,9 @@
 		li $v0, 5	#L� linha posi��o 
 		syscall
 		move $t6,$v0
-		
+
 		jal conta
+
 		jal get_coluna
 		
 		beq, $k0,1,player1_acertou		
@@ -164,17 +175,15 @@
 		print:
   			beq $t0, 16, exit
   			li $v0,1
-  			lw $a0, meuArray ($t0)	
+  			lw $a0, Destroyer_1 ($t0)	
   				beq $t5,$a0,posicao	
-  			addi $t0, $t0, 4
+  				addi $t0, $t0, 4
   		j print	
-  	exit:
-  	jr $ra
+  	exit:jr $ra
   
-	posicao:
-		move $k1,$a0
+	posicao:move $k1,$a0
 	jr $ra
-	
+
 	
 	player1_acertou:
 		addi $v1,$v1,1
@@ -186,10 +195,10 @@
 		la $a0,  linha
 		li $v0, 4
 		syscall	
-			jal quebra_linha
+		jal quebra_linha
 		la $a0, txt_player2
 		syscall
-			jal quebra_linha
+		jal quebra_linha
 		
 		la $a0, txt_jogada_H
 		li $v0, 4
@@ -223,7 +232,7 @@
 		jal on_player_2	
 		la $a0, maquina_jogando
 		li $v0, 4
-	        syscall	
+	    syscall	
 		li $v0, 32
 		li $a0, 3000
 		syscall
@@ -235,94 +244,16 @@
 		jal opcao_V
 		jal jogada_vertical
 			move $t6,$a0
+
+			jal conta
+
+
 			jal placar
 	        jal get_coluna
 				beq, $k0,1,player2_acertou
 	        jal jogada_player1	   	        	
 	jr $ra
-	
-	get_coluna:
-	
-  		move $t0, $zero
-  		addi $t9,$zero,16
- 
-  		imprime_:
-  			beq $t0, $t9, saiDaImpressao_
-  			
-  				beq $k1,0,func_v
-  				beq $k1,1,func_v
-  				beq $k1,2,func_v
-  				beq $k1,3,func_v
-  				beq $k1,4,func_v
-  				beq $k1,5,func_v
-  				beq $k1,6,func_v
-  				beq $k1,7,func_v
-  				beq $k1,8,func_v
-  				beq $k1,9,func_v
 
-  			addi $t0, $t0, 4
-  		j imprime_
-
-  		saiDaImpressao_:	
- 
-	jr $ra
-	
-	func_v:		
-  		beq $t5,0,coluna_0 
-	    beq $t5,1,coluna_1
-	    beq $t5,2,coluna_2
-	    beq $t5,3,coluna_3
-	    beq $t5,4,coluna_4
-	    beq $t5,5,coluna_5
-	    beq $t5,6,coluna_6
-	    beq $t5,7,coluna_7
-	    beq $t5,8,coluna_8
-	    beq $t5,9,coluna_9
-	jr $ra
-	
-	quad_0x0color:
-		beq $k1,0,acertou_0x0
-		bne $k1,0,quad_0x0
-	jr $ra
-	quad_1x0color:
-		beq $k1,1,acertou_1x0
-		bne $k1,1,quad_1x0
-	jr $ra
-	quad_2x0color:
-		beq $k1,2,acertou_2x0
-		bne $k1,2,quad_2x0
-	jr $ra
-	quad_3x0color:
-		beq $k1,3,acertou_3x0
-		bne $k1,3,quad_3x0
-	jr $ra
-	
-	quad_4x0color:
-		beq $k1,4,acertou_4x0
-		bne $k1,4,quad_3x0
-	jr $ra
-	
-	quad_5x0color:
-		beq $k1,5,acertou_5x0
-		bne $k1,5,quad_5x0
-	jr $ra
-	
-	quad_6x0color:
-		beq $k1,6,acertou_6x0
-		bne $k1,6,quad_6x0
-	jr $ra
-	quad_7x0color:
-		beq $k1,7,acertou_7x0
-		bne $k1,7,quad_7x0
-	jr $ra
-	quad_8x0color:
-		beq $k1,8,acertou_8x0
-		bne $k1,8,quad_8x0
-	jr $ra
-	quad_9x0color:
-		beq $k1,9,acertou_9x0
-		bne $k1,9,quad_9x0
-	jr $ra
 	
 	jogada_horizontal:
 		li $v0, 42  # 42 � o c�digo de chamada de sistema para gerar int
@@ -360,131 +291,981 @@
 		syscall	
 	jr $ra
 	
+	get_coluna:	
+  		move $t0, $zero
+  		imprime_:
+  			beq $t0, 16, saiDaImpressao_		
+  				beq $k1,0,func_v
+  				beq $k1,1,func_v
+  				beq $k1,2,func_v
+  				beq $k1,3,func_v
+  				beq $k1,4,func_v
+  				beq $k1,5,func_v
+  				beq $k1,6,func_v
+  				beq $k1,7,func_v
+  				beq $k1,8,func_v
+  				beq $k1,9,func_v
+  			addi $t0, $t0, 4
+  		j imprime_
+  	saiDaImpressao_:jr $ra
 	
-	coluna_0:			
-		beq $t6,0,quad_0x0color		
-		beq $t6,1,quad_0x1
-		beq $t6,2,quad_0x2  
-		beq $t6,3,quad_0x3  
-		beq $t6,4,quad_0x4  
-		beq $t6,5,quad_0x5  
-		beq $t6,6,quad_0x6  
-		beq $t6,7,quad_0x7  
-		beq $t6,8,quad_0x8  				
+	func_v:		
+  		beq $t5,0,coluna_0 
+	    beq $t5,1,coluna_1
+	    beq $t5,2,coluna_2
+	    beq $t5,3,coluna_3
+	    beq $t5,4,coluna_4
+	    beq $t5,5,coluna_5
+	    beq $t5,6,coluna_6
+	    beq $t5,7,coluna_7
+	    beq $t5,8,coluna_8
+	    beq $t5,9,coluna_9
+	jr $ra
+
+
+
+#===================================== GRAPHICAL USER INTERFACE - GUI =================================
+#======================================================================================================
+	
+	# ========= COLOR LINHA 0 =======
+	quad_0x0color:
+		beq $k1,0,acertou_0x0
+		bne $k1,0,quad_0x0
+		
+	jr $ra
+	quad_1x0color:
+		beq $k1,1,acertou_1x0
+		bne $k1,1,quad_1x0
+		
+	jr $ra
+	quad_2x0color:
+		beq $k1,2,acertou_2x0
+		bne $k1,2,quad_2x0
+		
+	jr $ra
+	quad_3x0color:
+		beq $k1,3,acertou_3x0
+		bne $k1,3,quad_3x0
+		
 	jr $ra
 	
+	quad_4x0color:
+		beq $k1,4,acertou_4x0
+		bne $k1,4,quad_4x0
+		
+	jr $ra
+	
+	quad_5x0color:
+		beq $k1,5,acertou_5x0
+		bne $k1,5,quad_5x0
+	jr $ra
+	
+	quad_6x0color:
+		beq $k1,6,acertou_6x0
+		bne $k1,6,quad_6x0
+	jr $ra
+	quad_7x0color:
+		beq $k1,7,acertou_7x0
+		bne $k1,7,quad_7x0
+		
+	jr $ra
+	quad_8x0color:
+		beq $k1,8,acertou_8x0
+		bne $k1,8,quad_8x0
+		
+	jr $ra
+	quad_9x0color:
+		beq $k1,9,acertou_9x0
+		bne $k1,9,quad_9x0
+		
+	jr $ra
+	
+	#=========== COLOR LINHA 1 =============	
+	quad_0x1color:
+		beq $k1,0,acertou_0x1
+		bne $k1,0,quad_0x1
+	jr $ra
+	quad_1x1color:
+		beq $k1,1 acertou_1x1
+		bne $k1,1,quad_1x1
+	jr $ra
+	quad_2x1color:
+		beq $k1,2,acertou_2x1
+		bne $k1,2,quad_2x1
+	jr $ra
+	quad_3x1color:
+		beq $k1,3,acertou_3x1
+		bne $k1,3,quad_3x1
+	jr $ra
+	
+	quad_4x1color:
+		beq $k1,4,acertou_4x1
+		bne $k1,4,quad_4x1
+	jr $ra
+	
+	quad_5x1color:
+		beq $k1,5,acertou_5x1
+		bne $k1,5,quad_5x1
+	jr $ra
+	
+	quad_6x1color:
+		beq $k1,6,acertou_6x1
+		bne $k1,6,quad_6x1
+	jr $ra
+	quad_7x1color:
+		beq $k1,7,acertou_7x1
+		bne $k1,7,quad_7x1
+	jr $ra
+	quad_8x1color:
+		beq $k1,8,acertou_8x1
+		bne $k1,8,quad_8x1
+	jr $ra
+	quad_9x1color:
+		beq $k1,9,acertou_9x1
+		bne $k1,9,quad_9x1
+	jr $ra
+
+
+	#=========== COLOR LINHA 2 =============	
+	quad_0x2color:
+		beq $k1,0,acertou_0x2
+		bne $k1,0,quad_0x2
+	jr $ra
+	quad_1x2color:
+		beq $k1,1 acertou_1x2
+		bne $k1,1,quad_1x2
+	jr $ra
+	quad_2x2color:
+		beq $k1,2,acertou_2x2
+		bne $k1,2,quad_2x2
+	jr $ra
+	quad_3x2color:
+		beq $k1,3,acertou_3x2
+		bne $k1,3,quad_3x2
+	jr $ra
+	
+	quad_4x2color:
+		beq $k1,4,acertou_4x2
+		bne $k1,4,quad_4x2
+	jr $ra
+	
+	quad_5x2color:
+		beq $k1,5,acertou_5x2
+		bne $k1,5,quad_5x2
+	jr $ra
+	
+	quad_6x2color:
+		beq $k1,6,acertou_6x2
+		bne $k1,6,quad_6x2
+	jr $ra
+	quad_7x2color:
+		beq $k1,7,acertou_7x2
+		bne $k1,7,quad_7x2
+	jr $ra
+	quad_8x2color:
+		beq $k1,8,acertou_8x2
+		bne $k1,8,quad_8x2
+	jr $ra
+	quad_9x2color:
+		beq $k1,9,acertou_9x2
+		bne $k1,9,quad_9x2
+	jr $ra
+
+
+	#=========== COLOR LINHA 3 =============	
+	quad_0x3color:
+		beq $k1,0,acertou_0x3
+		bne $k1,0,quad_0x3
+	jr $ra
+	quad_1x3color:
+		beq $k1,1 acertou_1x3
+		bne $k1,1,quad_1x3
+	jr $ra
+	quad_2x3color:
+		beq $k1,2,acertou_2x3
+		bne $k1,2,quad_2x3
+	jr $ra
+	quad_3x3color:
+		beq $k1,3,acertou_3x3
+		bne $k1,3,quad_3x3
+	jr $ra
+	
+	quad_4x3color:
+		beq $k1,4,acertou_4x3
+		bne $k1,4,quad_4x3
+	jr $ra
+	
+	quad_5x3color:
+		beq $k1,5,acertou_5x3
+		bne $k1,5,quad_5x3
+	jr $ra
+	
+	quad_6x3color:
+		beq $k1,6,acertou_6x3
+		bne $k1,6,quad_6x3
+	jr $ra
+	quad_7x3color:
+		beq $k1,7,acertou_7x3
+		bne $k1,7,quad_7x3
+	jr $ra
+	quad_8x3color:
+		beq $k1,8,acertou_8x3
+		bne $k1,8,quad_8x3
+	jr $ra
+	quad_9x3color:
+		beq $k1,9,acertou_9x3
+		bne $k1,9,quad_9x3
+	jr $ra
+
+	#=========== COLOR LINHA 4 =============	
+	quad_0x4color:
+		beq $k1,0,acertou_0x4
+		bne $k1,0,quad_0x4
+	jr $ra
+	quad_1x4color:
+		beq $k1,1 acertou_1x4
+		bne $k1,1,quad_1x4
+	jr $ra
+	quad_2x4color:
+		beq $k1,2,acertou_2x4
+		bne $k1,2,quad_2x4
+	jr $ra
+	quad_3x4color:
+		beq $k1,4,acertou_3x4
+		bne $k1,4,quad_3x4
+	jr $ra
+	
+	quad_4x4color:
+		beq $k1,4,acertou_4x4
+		bne $k1,4,quad_4x4
+	jr $ra
+	
+	quad_5x4color:
+		beq $k1,5,acertou_5x4
+		bne $k1,5,quad_5x4
+	jr $ra
+	
+	quad_6x4color:
+		beq $k1,6,acertou_6x4
+		bne $k1,6,quad_6x4
+	jr $ra
+	quad_7x4color:
+		beq $k1,7,acertou_7x4
+		bne $k1,7,quad_7x4
+	jr $ra
+	quad_8x4color:
+		beq $k1,8,acertou_8x4
+		bne $k1,8,quad_8x4
+	jr $ra
+	quad_9x4color:
+		beq $k1,9,acertou_9x4
+		bne $k1,9,quad_9x4
+	jr $ra
+
+	#=========== COLOR LINHA 5 =============	
+	quad_0x5color:
+		beq $k1,0,acertou_0x5
+		bne $k1,0,quad_0x5
+	jr $ra
+	quad_1x5color:
+		beq $k1,1 acertou_1x5
+		bne $k1,1,quad_1x5
+	jr $ra
+	quad_2x5color:
+		beq $k1,2,acertou_2x5
+		bne $k1,2,quad_2x5
+	jr $ra
+	quad_3x5color:
+		beq $k1,3,acertou_3x5
+		bne $k1,3,quad_3x5
+	jr $ra
+	
+	quad_4x5color:
+		beq $k1,4,acertou_4x5
+		bne $k1,4,quad_4x5
+	jr $ra
+	
+	quad_5x5color:
+		beq $k1,5,acertou_5x5
+		bne $k1,5,quad_5x5
+	jr $ra
+	
+	quad_6x5color:
+		beq $k1,6,acertou_6x5
+		bne $k1,6,quad_6x5
+	jr $ra
+	quad_7x5color:
+		beq $k1,7,acertou_7x5
+		bne $k1,7,quad_7x5
+	jr $ra
+	quad_8x5color:
+		beq $k1,8,acertou_8x5
+		bne $k1,8,quad_8x5
+	jr $ra
+	quad_9x5color:
+		beq $k1,9,acertou_9x5
+		bne $k1,9,quad_9x5
+	jr $ra
+	    
+    #=========== COLOR LINHA 6 =============	
+	quad_0x6color:
+		beq $k1,0,acertou_0x6
+		bne $k1,0,quad_0x6
+	jr $ra
+	quad_1x6color:
+		beq $k1,1 acertou_1x6
+		bne $k1,1,quad_1x6
+	jr $ra
+	quad_2x6color:
+		beq $k1,2,acertou_2x6
+		bne $k1,2,quad_2x6
+	jr $ra
+	quad_3x6color:
+		beq $k1,3,acertou_3x6
+		bne $k1,3,quad_3x6
+	jr $ra
+	
+	quad_4x6color:
+		beq $k1,4,acertou_4x6
+		bne $k1,4,quad_4x6
+	jr $ra
+	
+	quad_5x6color:
+		beq $k1,5,acertou_5x6
+		bne $k1,5,quad_5x6
+	jr $ra
+	
+	quad_6x6color:
+		beq $k1,6,acertou_6x6
+		bne $k1,6,quad_6x6
+	jr $ra
+	quad_7x6color:
+		beq $k1,7,acertou_7x6
+		bne $k1,7,quad_7x6
+	jr $ra
+	quad_8x6color:
+		beq $k1,8,acertou_8x6
+		bne $k1,8,quad_8x6
+	jr $ra
+	quad_9x6color:
+		beq $k1,9,acertou_9x6
+		bne $k1,9,quad_9x6
+	jr $ra
+
+    #=========== COLOR LINHA 7 =============	
+	quad_0x7color:
+		beq $k1,0,acertou_0x7
+		bne $k1,0,quad_0x7
+	jr $ra
+	quad_1x7color:
+		beq $k1,1 acertou_1x7
+		bne $k1,1,quad_1x7
+	jr $ra
+	quad_2x7color:
+		beq $k1,2,acertou_2x7
+		bne $k1,2,quad_2x7
+	jr $ra
+	quad_3x7color:
+		beq $k1,3,acertou_3x7
+		bne $k1,3,quad_3x7
+	jr $ra
+	
+	quad_4x7color:
+		beq $k1,4,acertou_4x7
+		bne $k1,4,quad_4x7
+	jr $ra
+	
+	quad_5x7color:
+		beq $k1,5,acertou_5x7
+		bne $k1,5,quad_5x7
+	jr $ra
+	
+	quad_6x7color:
+		beq $k1,6,acertou_6x7
+		bne $k1,6,quad_6x7
+	jr $ra
+	quad_7x7color:
+		beq $k1,7,acertou_7x7
+		bne $k1,7,quad_7x7
+	jr $ra
+	quad_8x7color:
+		beq $k1,8,acertou_8x7
+		bne $k1,8,quad_8x7
+	jr $ra
+	quad_9x7color:
+		beq $k1,9,acertou_9x7
+		bne $k1,9,quad_9x7
+	jr $ra
+
+    #=========== COLOR LINHA 8 =============	
+	quad_0x8color:
+		beq $k1,0,acertou_0x8
+		bne $k1,0,quad_0x8
+	jr $ra
+	quad_1x8color:
+		beq $k1,1 acertou_1x8
+		bne $k1,1,quad_1x8
+	jr $ra
+	quad_2x8color:
+		beq $k1,2,acertou_2x8
+		bne $k1,2,quad_2x8
+	jr $ra
+	quad_3x8color:
+		beq $k1,3,acertou_3x8
+		bne $k1,3,quad_3x8
+	jr $ra
+	
+	quad_4x8color:
+		beq $k1,4,acertou_4x8
+		bne $k1,4,quad_4x8
+	jr $ra
+	
+	quad_5x8color:
+		beq $k1,5,acertou_5x8
+		bne $k1,5,quad_5x8
+	jr $ra
+	
+	quad_6x8color:
+		beq $k1,6,acertou_6x8
+		bne $k1,6,quad_6x8
+	jr $ra
+	quad_7x8color:
+		beq $k1,7,acertou_7x8
+		bne $k1,7,quad_7x8
+	jr $ra
+	quad_8x8color:
+		beq $k1,8,acertou_8x8
+		bne $k1,8,quad_8x8
+	jr $ra
+	quad_9x8color:
+		beq $k1,9,acertou_9x8
+		bne $k1,9,quad_9x8
+	jr $ra
+   
+   
+   
+   
+
+#================================================================================================
+#================================================================================================
+
+
+	#linha 0 
+	#===========================================
+	row_0x0:
+		beq $s6,0,quad_0x0color
+		bne $s6,0,quad_0x0
+	jr $ra
+	row_1x0:
+		beq $s6,0,quad_1x0color 
+		bne $s6,0,quad_1x0
+	jr $ra
+	row_2x0:
+		beq $s6,0,quad_2x0color
+		bne $s6,0,quad_2x0
+	jr $ra
+	row_3x0:
+		beq $s6,0,quad_3x0color 
+		bne $s6,0,quad_3x0
+	jr $ra
+	row_4x0:
+		beq $s6,0,quad_4x0color	
+		bne $s6,0,quad_4x0
+	jr $ra
+	row_5x0:
+		beq $s6,0,quad_5x0color 
+		bne $s6,0,quad_5x0
+	jr $ra
+	row_6x0:
+		beq $s6,0,quad_6x0color	
+		bne $s6,0,quad_6x0
+	jr $ra
+	row_7x0:
+		beq $s6,0,quad_7x0color 
+		bne $s6,0,quad_7x0
+	jr $ra
+	row_8x0:
+		beq $s6,0,quad_8x0color
+		bne $s6,0,quad_8x0		
+	jr $ra
+	row_9x0:
+		beq $s6,0,quad_9x0color 
+		bne $s6,0,quad_9x0
+	jr $ra
+
+	#linha 1
+	#===========================================
+	row_0x1:
+		beq $s6,1,quad_0x1color
+		bne $s6,1,quad_0x1
+	jr $ra
+	row_1x1:
+		beq $s6,1,quad_1x1color 
+		bne $s6,1,quad_1x1
+	jr $ra
+	row_2x1:
+		beq $s6,1,quad_2x1color
+		bne $s6,1,quad_2x1
+	jr $ra
+	row_3x1:
+		beq $s6,1,quad_3x1color 
+		bne $s6,1,quad_3x1
+	jr $ra
+	row_4x1:
+		beq $s6,1,quad_4x1color	
+		bne $s6,1,quad_4x1
+	jr $ra
+	row_5x1:
+		beq $s6,1,quad_5x1color 
+		bne $s6,1,quad_5x1
+	jr $ra
+	row_6x1:
+		beq $s6,1,quad_6x1color	
+		bne $s6,1,quad_6x1
+	jr $ra
+	row_7x1:
+		beq $s6,1,quad_7x1color 
+		bne $s6,1,quad_7x1
+	jr $ra
+	row_8x1:
+		beq $s6,1,quad_8x1color
+		bne $s6,1,quad_8x1		
+	jr $ra
+	row_9x1:
+		beq $s6,1,quad_9x1color 
+		bne $s6,1,quad_9x1
+	jr $ra
+
+	#linha 2
+	#===========================================
+	row_0x2:
+		beq $s6,2,quad_0x2color
+		bne $s6,2,quad_0x2
+	jr $ra
+	row_1x2:
+		beq $s6,2,quad_1x2color 
+		bne $s6,2,quad_1x2
+	jr $ra
+	row_2x2:
+		beq $s6,2,quad_2x2color
+		bne $s6,2,quad_2x2
+	jr $ra
+	row_3x2:
+		beq $s6,2,quad_3x2color 
+		bne $s6,2,quad_3x2
+	jr $ra
+	row_4x2:
+		beq $s6,2,quad_4x2color	
+		bne $s6,2,quad_4x2
+	jr $ra
+	row_5x2:
+		beq $s6,2,quad_5x2color 
+		bne $s6,2,quad_5x2
+	jr $ra
+	row_6x2:
+		beq $s6,2,quad_6x2color	
+		bne $s6,2,quad_6x2
+	jr $ra
+	row_7x2:
+		beq $s6,2,quad_7x2color 
+		bne $s6,2,quad_7x2
+	jr $ra
+	row_8x2:
+		beq $s6,2,quad_8x2color
+		bne $s6,2,quad_8x2		
+	jr $ra
+	row_9x2:
+		beq $s6,2,quad_9x2color 
+		bne $s6,2,quad_9x2
+	jr $ra
+	
+	#linha 3
+	#===========================================
+	row_0x3:
+		beq $s6,3,quad_0x3color
+		bne $s6,3,quad_0x3
+	jr $ra
+	row_1x3:
+		beq $s6,3,quad_1x3color 
+		bne $s6,3,quad_1x3
+	jr $ra
+	row_2x3:
+		beq $s6,3,quad_2x3color
+		bne $s6,3,quad_2x3
+	jr $ra
+	row_3x3:
+		beq $s6,3,quad_3x3color 
+		bne $s6,3,quad_3x3
+	jr $ra
+	row_4x3:
+		beq $s6,3,quad_4x3color	
+		bne $s6,3,quad_4x3
+	jr $ra
+	row_5x3:
+		beq $s6,3,quad_5x3color 
+		bne $s6,3,quad_5x3
+	jr $ra
+	row_6x3:
+		beq $s6,3,quad_6x3color	
+		bne $s6,3,quad_6x3
+	jr $ra
+	row_7x3:
+		beq $s6,3,quad_7x3color 
+		bne $s6,3,quad_7x3
+	jr $ra
+	row_8x3:
+		beq $s6,3,quad_8x3color
+		bne $s6,3,quad_8x3		
+	jr $ra
+	row_9x3:
+		beq $s6,3,quad_9x3color 
+		bne $s6,3,quad_9x3
+	jr $ra
+
+	#linha 4
+	#===========================================
+	row_0x4:
+		beq $s6,4,quad_0x4color
+		bne $s6,4,quad_0x4
+	jr $ra
+	row_1x4:
+		beq $s6,4,quad_1x4color 
+		bne $s6,4,quad_1x4
+	jr $ra
+	row_2x4:
+		beq $s6,4,quad_2x4color
+		bne $s6,4,quad_2x4
+	jr $ra
+	row_3x4:
+		beq $s6,4,quad_3x4color 
+		bne $s6,4,quad_3x4
+	jr $ra
+	row_4x4:
+		beq $s6,4,quad_4x4color	
+		bne $s6,4,quad_4x4
+	jr $ra
+	row_5x4:
+		beq $s6,4,quad_5x4color 
+		bne $s6,4,quad_5x4
+	jr $ra
+	row_6x4:
+		beq $s6,4,quad_6x4color	
+		bne $s6,4,quad_6x4
+	jr $ra
+	row_7x4:
+		beq $s6,4,quad_7x4color 
+		bne $s6,4,quad_7x4
+	jr $ra
+	row_8x4:
+		beq $s6,4,quad_8x4color
+		bne $s6,4,quad_8x4		
+	jr $ra
+	row_9x4:
+		beq $s6,4,quad_9x4color 
+		bne $s6,4,quad_9x4
+	jr $ra
+
+	#linha 5
+	#===========================================
+	row_0x5:
+		beq $s6,5,quad_0x5color
+		bne $s6,5,quad_0x5
+	jr $ra
+	row_1x5:
+		beq $s6,5,quad_1x5color 
+		bne $s6,5,quad_1x5
+	jr $ra
+	row_2x5:
+		beq $s6,5,quad_2x5color
+		bne $s6,5,quad_2x5
+	jr $ra
+	row_3x5:
+		beq $s6,5,quad_3x5color 
+		bne $s6,5,quad_3x5
+	jr $ra
+	row_4x5:
+		beq $s6,5,quad_4x5color	
+		bne $s6,5,quad_4x5
+	jr $ra
+	row_5x5:
+		beq $s6,5,quad_5x5color 
+		bne $s6,5,quad_5x5
+	jr $ra
+	row_6x5:
+		beq $s6,5,quad_6x5color	
+		bne $s6,5,quad_6x5
+	jr $ra
+	row_7x5:
+		beq $s6,5,quad_7x5color 
+		bne $s6,5,quad_7x5
+	jr $ra
+	row_8x5:
+		beq $s6,5,quad_8x5color
+		bne $s6,5,quad_8x5		
+	jr $ra
+	row_9x5:
+		beq $s6,5,quad_9x5color 
+		bne $s6,5,quad_9x5
+	jr $ra
+
+	#linha 6
+	#===========================================
+	row_0x6:
+		beq $s6,6,quad_0x6color
+		bne $s6,6,quad_0x6
+	jr $ra
+	row_1x6:
+		beq $s6,6,quad_1x6color 
+		bne $s6,6,quad_1x6
+	jr $ra
+	row_2x6:
+		beq $s6,6,quad_2x6color
+		bne $s6,6,quad_2x6
+	jr $ra
+	row_3x6:
+		beq $s6,6,quad_3x6color 
+		bne $s6,6,quad_3x6
+	jr $ra
+	row_4x6:
+		beq $s6,6,quad_4x6color	
+		bne $s6,6,quad_4x6
+	jr $ra
+	row_5x6:
+		beq $s6,6,quad_5x6color 
+		bne $s6,6,quad_5x6
+	jr $ra
+	row_6x6:
+		beq $s6,6,quad_6x6color	
+		bne $s6,6,quad_6x6
+	jr $ra
+	row_7x6:
+		beq $s6,6,quad_7x6color 
+		bne $s6,6,quad_7x6
+	jr $ra
+	row_8x6:
+		beq $s6,6,quad_8x6color
+		bne $s6,6,quad_8x6		
+	jr $ra
+	row_9x6:
+		beq $s6,6,quad_9x6color 
+		bne $s6,6,quad_9x6
+	jr $ra
+
+    #linha 7
+	#===========================================
+	row_0x7:
+		beq $s6,7,quad_0x7color
+		bne $s6,7,quad_0x7
+	jr $ra
+	row_1x7:
+		beq $s6,7,quad_1x7color 
+		bne $s6,7,quad_1x7
+	jr $ra
+	row_2x7:
+		beq $s6,7,quad_2x7color
+		bne $s6,7,quad_2x7
+	jr $ra
+	row_3x7:
+		beq $s6,7,quad_3x7color 
+		bne $s6,7,quad_3x7
+	jr $ra
+	row_4x7:
+		beq $s6,7,quad_4x7color	
+		bne $s6,7,quad_4x7
+	jr $ra
+	row_5x7:
+		beq $s6,7,quad_5x7color 
+		bne $s6,7,quad_5x7
+	jr $ra
+	row_6x7:
+		beq $s6,7,quad_6x7color	
+		bne $s6,7,quad_6x7
+	jr $ra
+	row_7x7:
+		beq $s6,7,quad_7x7color 
+		bne $s6,7,quad_7x7
+	jr $ra
+	row_8x7:
+		beq $s6,7,quad_8x7color
+		bne $s6,7,quad_8x7		
+	jr $ra
+	row_9x7:
+		beq $s6,7,quad_9x7color 
+		bne $s6,7,quad_9x7
+	jr $ra
+
+	#linha 8
+	#===========================================
+	row_0x8:
+		beq $s6,8,quad_0x8color
+		bne $s6,8,quad_0x8
+	jr $ra
+	row_1x8:
+		beq $s6,8,quad_1x8color 
+		bne $s6,8,quad_1x8
+	jr $ra
+	row_2x8:
+		beq $s6,8,quad_2x8color
+		bne $s6,8,quad_2x8
+	jr $ra
+	row_3x8:
+		beq $s6,8,quad_3x8color 
+		bne $s6,8,quad_3x8
+	jr $ra
+	row_4x8:
+		beq $s6,8,quad_4x8color	
+		bne $s6,8,quad_4x8
+	jr $ra
+	row_5x8:
+		beq $s6,8,quad_5x8color 
+		bne $s6,8,quad_5x8
+	jr $ra
+	row_6x8:
+		beq $s6,8,quad_6x8color	
+		bne $s6,8,quad_6x8
+	jr $ra
+	row_7x8:
+		beq $s6,8,quad_7x8color 
+		bne $s6,8,quad_7x8
+	jr $ra
+	row_8x8:
+		beq $s6,8,quad_8x8color
+		bne $s6,8,quad_8x8		
+	jr $ra
+	row_9x8:
+		beq $s6,8,quad_9x8color 
+		bne $s6,8,quad_9x8
+	jr $ra   
+
+   
+   
+   
+   
+   
+	coluna_0:			
+		beq $t6,0,row_0x0
+		beq $t6,1,row_0x1
+		beq $t6,2,row_0x2  
+		beq $t6,3,row_0x3 
+		beq $t6,4,row_0x4 
+		beq $t6,5,row_0x5  
+		beq $t6,6,row_0x6 
+		beq $t6,7,row_0x7 
+		beq $t6,8,row_0x8  				
+	jr $ra
 	
 	coluna_1:
-		beq $t6,0,quad_1x0color   
-		beq $t6,1,quad_1x1
-		beq $t6,2,quad_1x2
-		beq $t6,3,quad_1x3
-		beq $t6,4,quad_1x4
-		beq $t6,5,quad_1x5
-		beq $t6,6,quad_1x6
-		beq $t6,7,quad_1x7
-		beq $t6,8,quad_1x8				
+		beq $t6,0,row_1x0  
+		beq $t6,1,row_1x1
+		beq $t6,2,row_1x2
+		beq $t6,3,row_1x3
+		beq $t6,4,row_1x4
+		beq $t6,5,row_1x5 
+		beq $t6,6,row_1x6
+		beq $t6,7,row_1x7
+		beq $t6,8,row_1x8				
 	jr $ra
 	
 	coluna_2:
-		beq $t6,0,quad_2x0color
-		beq $t6,1,quad_2x1
-		beq $t6,2,quad_2x2
-		beq $t6,3,quad_2x3
-		beq $t6,4,quad_2x4
-		beq $t6,5,quad_2x5
-		beq $t6,6,quad_2x6
-		beq $t6,7,quad_2x7
-		beq $t6,8,quad_2x8							
+		beq $t6,0,row_2x0
+		beq $t6,1,row_2x1
+		beq $t6,2,row_2x2
+		beq $t6,3,row_2x3
+		beq $t6,4,row_2x4
+		beq $t6,5,row_2x5 
+		beq $t6,6,row_2x6
+		beq $t6,7,row_2x7
+		beq $t6,8,row_2x8							
 	jr $ra
 	
 	coluna_3:
-		beq $t6,0,quad_3x0color
-		beq $t6,1,quad_3x1
-		beq $t6,2,quad_3x2
-		beq $t6,3,quad_3x3
-		beq $t6,4,quad_3x4
-		beq $t6,5,quad_3x5
-		beq $t6,6,quad_3x6
-		beq $t6,7,quad_3x7
-		beq $t6,8,quad_3x8							
+		beq $t6,0,row_3x0
+		beq $t6,1,row_3x1
+		beq $t6,2,row_3x2
+		beq $t6,3,row_3x3
+		beq $t6,4,row_3x4
+		beq $t6,5,row_3x5 
+		beq $t6,6,row_3x6
+		beq $t6,7,row_3x7
+		beq $t6,8,row_3x8							
 	jr $ra
 	
 	coluna_4:
-		beq $t6,0,quad_4x0color
-		beq $t6,1,quad_4x1
-		beq $t6,2,quad_4x2
-		beq $t6,3,quad_4x3
-		beq $t6,4,quad_4x4
-		beq $t6,5,quad_4x5
-		beq $t6,6,quad_4x6
-		beq $t6,7,quad_4x7
-		beq $t6,8,quad_4x8						
+		beq $t6,0,row_4x0
+		beq $t6,1,row_4x1
+		beq $t6,2,row_4x2
+		beq $t6,3,row_4x3
+		beq $t6,4,row_4x4
+		beq $t6,5,row_4x5 
+		beq $t6,6,row_4x6
+		beq $t6,7,row_4x7
+		beq $t6,8,row_4x8						
 	jr $ra
 	
 	coluna_5:
-		beq $t6,0,quad_5x0color
-		beq $t6,1,quad_5x1
-		beq $t6,2,quad_5x2
-		beq $t6,3,quad_5x3
-		beq $t6,4,quad_5x4
-		beq $t6,5,quad_5x5
-		beq $t6,6,quad_5x6
-		beq $t6,7,quad_5x7
-		beq $t6,8,quad_5x8					
+		beq $t6,0,row_5x0
+		beq $t6,1,row_5x1
+		beq $t6,2,row_5x2
+		beq $t6,3,row_5x3
+		beq $t6,4,row_5x4
+		beq $t6,5,row_5x5 
+		beq $t6,6,row_5x6
+		beq $t6,7,row_5x7
+		beq $t6,8,row_5x8					
 	jr $ra
 	
 	coluna_6:
-		beq $t6,0,quad_6x0color
-		beq $t6,1,quad_6x1
-		beq $t6,2,quad_6x2
-		beq $t6,3,quad_6x3
-		beq $t6,4,quad_6x4
-		beq $t6,5,quad_6x5
-		beq $t6,6,quad_6x6
-		beq $t6,7,quad_6x7
-		beq $t6,8,quad_6x8					
+		beq $t6,0,row_6x0
+		beq $t6,1,row_6x1
+		beq $t6,2,row_6x2
+		beq $t6,3,row_6x3
+		beq $t6,4,row_6x4
+		beq $t6,5,row_6x5 
+		beq $t6,6,row_6x6
+		beq $t6,7,row_6x7
+		beq $t6,8,row_6x8					
 	jr $ra
 	
 	coluna_7:
-		beq $t6,0,quad_7x0color
-		beq $t6,1,quad_7x1
-		beq $t6,2,quad_7x2
-		beq $t6,3,quad_7x3
-		beq $t6,4,quad_7x4
-		beq $t6,5,quad_7x5
-		beq $t6,6,quad_7x6
-		beq $t6,7,quad_7x7
-		beq $t6,8,quad_7x8					
+		beq $t6,0,row_7x0
+		beq $t6,1,row_7x1
+		beq $t6,2,row_7x2
+		beq $t6,3,row_7x3
+		beq $t6,4,row_7x4
+		beq $t6,5,row_7x5 
+		beq $t6,6,row_7x6
+		beq $t6,7,row_7x7
+		beq $t6,8,row_7x8				
 	jr $ra
-	
-	
+		
 	coluna_8:
-		beq $t6,0,quad_8x0color
-		beq $t6,1,quad_8x1
-		beq $t6,2,quad_8x2
-		beq $t6,3,quad_8x3
-		beq $t6,4,quad_8x4
-		beq $t6,5,quad_8x5
-		beq $t6,6,quad_8x6
-		beq $t6,7,quad_8x7
-		beq $t6,8,quad_8x8					
+		beq $t6,0,row_8x0
+		beq $t6,1,row_8x1
+		beq $t6,2,row_8x2
+		beq $t6,3,row_8x3
+		beq $t6,4,row_8x4
+		beq $t6,5,row_8x5 
+		beq $t6,6,row_8x6
+		beq $t6,7,row_8x7
+		beq $t6,8,row_8x8					
 	jr $ra
-	
-	
+		
 	coluna_9:
-		beq $t6,0,quad_9x0color
-		beq $t6,1,quad_9x1
-		beq $t6,2,quad_9x2
-		beq $t6,3,quad_9x3
-		beq $t6,4,quad_9x4
-		beq $t6,5,quad_9x5
-		beq $t6,6,quad_9x6
-		beq $t6,7,quad_9x7
-		beq $t6,8,quad_9x8					
+		beq $t6,0,row_9x0
+		beq $t6,1,row_9x1
+		beq $t6,2,row_9x2
+		beq $t6,3,row_9x3
+		beq $t6,4,row_9x4
+		beq $t6,5,row_9x5 
+		beq $t6,6,row_9x6 
+		beq $t6,7,row_9x7 
+		beq $t6,8,row_9x8 					
 	jr $ra
 	
-	
+
+	# ==================================================================
+	# ============================ culuna 0 ============================
+		
 	quad_0x0:				     
 		sw $s2, 132($t2)	
 		sw $s2, 136($t2)
@@ -500,9 +1281,6 @@
 		sw $s2, 264($t2)
 		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra	
-
-	# ==================================================================
-	# ============================ culuna 0 ============================
 	
 	quad_0x1:	
 		move $k0, $zero	
@@ -511,25 +1289,49 @@
 		sw $s2, 644($t2)
 		sw $s2, 648($t2)		
 	jr $ra
+	acertou_0x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 516($t2)
+		sw $s2, 520($t2)
+		sw $s2, 644($t2)
+		sw $s2, 648($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 		
 	quad_0x2:
 		move $k0, $zero
 		sw $s2, 900($t2)
 		sw $s2, 904($t2)
 		sw $s2, 1028($t2)
-		sw $s2, 1032($t2)
-			
+		sw $s2, 1032($t2)		
 	jr $ra
-	
+	acertou_0x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 900($t2)
+		sw $s2, 904($t2)
+		sw $s2, 1028($t2)
+		sw $s2, 1032($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_0x3:
 		move $k0, $zero
 		sw $s2, 1284($t2)
 		sw $s2, 1288($t2)
 		sw $s2, 1412($t2)
-		sw $s2, 1416($t2)
-			
+		sw $s2, 1416($t2)		
 	jr $ra
+	acertou_0x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1284($t2)
+		sw $s2, 1288($t2)
+		sw $s2, 1412($t2)
+		sw $s2, 1416($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 
 	
 	quad_0x4:
@@ -537,8 +1339,16 @@
 		sw $s2, 1668($t2)
 		sw $s2, 1672($t2)
 		sw $s2, 1796($t2)
+		sw $s2, 1800($t2)		
+	jr $ra
+	acertou_0x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1668($t2)
+		sw $s2, 1672($t2)
+		sw $s2, 1796($t2)
 		sw $s2, 1800($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_0x5:
@@ -546,8 +1356,16 @@
 		sw $s2, 2052($t2)
 		sw $s2, 2056($t2)
 		sw $s2, 2180($t2)
+		sw $s2, 2184($t2)			
+	jr $ra
+	acertou_0x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2052($t2)
+		sw $s2, 2056($t2)
+		sw $s2, 2180($t2)
 		sw $s2, 2184($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_0x6:
@@ -555,8 +1373,16 @@
 		sw $s2, 2436($t2)
 		sw $s2, 2440($t2)
 		sw $s2, 2564($t2)
+		sw $s2, 2568($t2)		
+	jr $ra
+	acertou_0x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2436($t2)
+		sw $s2, 2440($t2)
+		sw $s2, 2564($t2)
 		sw $s2, 2568($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_0x7:
@@ -564,8 +1390,16 @@
 		sw $s2, 2820($t2)
 		sw $s2, 2824($t2)
 		sw $s2, 2948($t2)
-		sw $s2, 2952($t2)
-			
+		sw $s2, 2952($t2)			
+	jr $ra
+	acertou_0x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2820($t2)
+		sw $s2, 2824($t2)
+		sw $s2, 2948($t2)
+		sw $s2, 2952($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_0x8:
@@ -573,10 +1407,21 @@
 		sw $s2, 3204($t2)
 		sw $s2, 3208($t2)
 		sw $s2, 3332($t2)
-		sw $s2, 3336($t2)
-			
+		sw $s2, 3336($t2)			
+	jr $ra
+	acertou_0x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3204($t2)
+		sw $s2, 3208($t2)
+		sw $s2, 3332($t2)
+		sw $s2, 3336($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
+
+
+
 	# ==================================================================
 	# ============================ culuna 1 ============================
 	quad_1x0:	
@@ -602,6 +1447,15 @@
 		sw $s2, 656($t2)
 		sw $s2, 660($t2)	
 	jr $ra
+	acertou_1x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 528($t2)
+		sw $s2, 532($t2)
+		sw $s2, 656($t2)
+		sw $s2, 660($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_1x2:
 		move $k0, $zero		
@@ -609,6 +1463,15 @@
 		sw $s2, 916($t2)
 		sw $s2, 1040($t2)
 		sw $s2, 1044($t2)	
+	jr $ra
+	acertou_1x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 912($t2)
+		sw $s2, 916($t2)
+		sw $s2, 1040($t2)
+		sw $s2, 1044($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_1x3:
@@ -618,6 +1481,15 @@
 		sw $s2, 1424($t2)
 		sw $s2, 1428($t2)	
 	jr $ra
+	acertou_1x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1296($t2)
+		sw $s2, 1300($t2)
+		sw $s2, 1424($t2)
+		sw $s2, 1428($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_1x4:
 		move $k0, $zero		
@@ -625,6 +1497,15 @@
 		sw $s2, 1684($t2)
 		sw $s2, 1808($t2)
 		sw $s2, 1812($t2)	
+	jr $ra
+	acertou_1x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1680($t2)
+		sw $s2, 1684($t2)
+		sw $s2, 1808($t2)
+		sw $s2, 1812($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_1x5:
@@ -634,6 +1515,15 @@
 		sw $s2, 2192($t2)
 		sw $s2, 2196($t2)	
 	jr $ra
+	acertou_1x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2064($t2)
+		sw $s2, 2068($t2)
+		sw $s2, 2192($t2)
+		sw $s2, 2196($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_1x6:
 		move $k0, $zero		
@@ -641,6 +1531,15 @@
 		sw $s2, 2452($t2)
 		sw $s2, 2576($t2)
 		sw $s2, 2580($t2)	
+	jr $ra
+	acertou_1x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2448($t2)
+		sw $s2, 2452($t2)
+		sw $s2, 2576($t2)
+		sw $s2, 2580($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_1x7:
@@ -650,6 +1549,15 @@
 		sw $s2, 2960($t2)
 		sw $s2, 2964($t2)	
 	jr $ra
+	acertou_1x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2832($t2)
+		sw $s2, 2836($t2)
+		sw $s2, 2960($t2)
+		sw $s2, 2964($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_1x8:
 		move $k0, $zero		
@@ -658,12 +1566,23 @@
 		sw $s2, 3344($t2)
 		sw $s2, 3348($t2)	
 	jr $ra
+	acertou_1x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3216($t2)
+		sw $s2, 3220($t2)
+		sw $s2, 3344($t2)
+		sw $s2, 3348($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
+
+
+
 	# ==================================================================
 	# ============================ culuna 2 ============================
 	
-	quad_2x0:
-	   
+	quad_2x0: 
 		move $k0, $zero		
 		sw $s2, 156($t2)
 		sw $s2, 160($t2)
@@ -687,6 +1606,15 @@
 		sw $s2, 668($t2)
 		sw $s2, 672($t2)	
 	jr $ra
+	acertou_2x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 540($t2)
+		sw $s2, 544($t2)
+		sw $s2, 668($t2)
+		sw $s2, 672($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_2x2:
 		move $k0, $zero		
@@ -695,6 +1623,15 @@
 		sw $s2, 1052($t2)
 		sw $s2, 1056($t2)	
 	jr $ra
+	acertou_2x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 924($t2)
+		sw $s2, 928($t2)
+		sw $s2, 1052($t2)
+		sw $s2, 1056($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_2x3:
 		move $k0, $zero		
@@ -703,6 +1640,15 @@
 		sw $s2, 1436($t2)
 		sw $s2, 1440($t2)	
 	jr $ra
+	acertou_2x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1308($t2)
+		sw $s2, 1312($t2)
+		sw $s2, 1436($t2)
+		sw $s2, 1440($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 		
 	quad_2x4:
 		move $k0, $zero		
@@ -710,6 +1656,15 @@
 		sw $s2, 1696($t2)
 		sw $s2, 1820($t2)
 		sw $s2, 1824($t2)	
+	jr $ra
+	acertou_2x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1692($t2)
+		sw $s2, 1696($t2)
+		sw $s2, 1820($t2)
+		sw $s2, 1824($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_2x5:
@@ -719,6 +1674,15 @@
 		sw $s2, 2204($t2)
 		sw $s2, 2208($t2)	
 	jr $ra
+	acertou_2x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2076($t2)
+		sw $s2, 2080($t2)
+		sw $s2, 2204($t2)
+		sw $s2, 2208($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_2x6:
 		move $k0, $zero		
@@ -726,6 +1690,15 @@
 		sw $s2, 2464($t2)
 		sw $s2, 2588($t2)
 		sw $s2, 2592($t2)	
+	jr $ra
+	acertou_2x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2460($t2)
+		sw $s2, 2464($t2)
+		sw $s2, 2588($t2)
+		sw $s2, 2592($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_2x7:
@@ -735,6 +1708,15 @@
 		sw $s2, 2972($t2)
 		sw $s2, 2976($t2)	
 	jr $ra
+	acertou_2x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2844($t2)
+		sw $s2, 2848($t2)
+		sw $s2, 2972($t2)
+		sw $s2, 2976($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_2x8:
 		move $k0, $zero		
@@ -743,7 +1725,18 @@
 		sw $s2, 3356($t2)
 		sw $s2, 3360($t2)	
 	jr $ra
+	acertou_2x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3228($t2)
+		sw $s2, 3232($t2)
+		sw $s2, 3356($t2)
+		sw $s2, 3360($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
+
+
 	# ==================================================================
 	# ============================ culuna 3 ============================
 	
@@ -771,6 +1764,15 @@
 		sw $s2, 680($t2)
 		sw $s2, 684($t2)	
 	jr $ra
+	acertou_3x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 552($t2)
+		sw $s2, 556($t2)
+		sw $s2, 680($t2)
+		sw $s2, 684($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 	
 	quad_3x2:
 		move $k0, $zero		
@@ -778,6 +1780,15 @@
 		sw $s2, 940($t2)
 		sw $s2, 1064($t2)
 		sw $s2, 1068($t2)		
+	jr $ra
+	acertou_3x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 936($t2)
+		sw $s2, 940($t2)
+		sw $s2, 1064($t2)
+		sw $s2, 1068($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_3x3:
@@ -787,6 +1798,15 @@
 		sw $s2, 1448($t2)
 		sw $s2, 1452($t2)	
 	jr $ra
+	acertou_3x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1320($t2)
+		sw $s2, 1324($t2)
+		sw $s2, 1448($t2)
+		sw $s2, 1452($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra	
 		
 	quad_3x4:
 		move $k0, $zero		
@@ -794,6 +1814,15 @@
 		sw $s2, 1708($t2)
 		sw $s2, 1832($t2)
 		sw $s2, 1836($t2)	
+	jr $ra
+	acertou_3x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1704($t2)
+		sw $s2, 1708($t2)
+		sw $s2, 1832($t2)
+		sw $s2, 1836($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_3x5:
@@ -803,6 +1832,15 @@
 		sw $s2, 2216($t2)
 		sw $s2, 2220($t2)	
 	jr $ra
+	acertou_3x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2088($t2)
+		sw $s2, 2092($t2)
+		sw $s2, 2216($t2)
+		sw $s2, 2220($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_3x6:
 		move $k0, $zero		
@@ -810,6 +1848,15 @@
 		sw $s2, 2476($t2)
 		sw $s2, 2600($t2)
 		sw $s2, 2604($t2)	
+	jr $ra
+	acertou_3x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2472($t2)
+		sw $s2, 2476($t2)
+		sw $s2, 2600($t2)
+		sw $s2, 2604($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_3x7:
@@ -819,6 +1866,15 @@
 		sw $s2, 2984($t2)
 		sw $s2, 2988($t2)	
 	jr $ra
+	acertou_3x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2856($t2)
+		sw $s2, 2860($t2)
+		sw $s2, 2984($t2)
+		sw $s2, 2988($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_3x8:
 		move $k0, $zero		
@@ -826,6 +1882,15 @@
 		sw $s2, 3244($t2)
 		sw $s2, 3368($t2)
 		sw $s2, 3372($t2)	
+	jr $ra
+	acertou_3x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3240($t2)
+		sw $s2, 3244($t2)
+		sw $s2, 3368($t2)
+		sw $s2, 3372($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	# ==================================================================
@@ -856,6 +1921,15 @@
 		sw $s2, 692($t2)
 		sw $s2, 696($t2)	
 	jr $ra
+	acertou_4x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 564($t2)
+		sw $s2, 568($t2)
+		sw $s2, 692($t2)
+		sw $s2, 696($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_4x2:
 		move $k0, $zero		
@@ -863,6 +1937,15 @@
 		sw $s2, 952($t2)
 		sw $s2, 1076($t2)
 		sw $s2, 1080($t2)	
+	jr $ra
+	acertou_4x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 948($t2)
+		sw $s2, 952($t2)
+		sw $s2, 1076($t2)
+		sw $s2, 1080($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_4x3:
@@ -872,6 +1955,15 @@
 		sw $s2, 1460($t2)
 		sw $s2, 1464($t2)	
 	jr $ra
+	acertou_4x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1332($t2)
+		sw $s2, 1336($t2)
+		sw $s2, 1460($t2)
+		sw $s2, 1464($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_4x4:
 		move $k0, $zero		
@@ -879,6 +1971,15 @@
 		sw $s2, 1720($t2)
 		sw $s2, 1844($t2)
 		sw $s2, 1848($t2)	
+	jr $ra
+	acertou_4x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1716($t2)
+		sw $s2, 1720($t2)
+		sw $s2, 1844($t2)
+		sw $s2, 1848($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_4x5:
@@ -888,6 +1989,15 @@
 		sw $s2, 2228($t2)
 		sw $s2, 2232($t2)	
 	jr $ra
+	acertou_4x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2100($t2)
+		sw $s2, 2104($t2)
+		sw $s2, 2228($t2)
+		sw $s2, 2232($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_4x6:
 		move $k0, $zero		
@@ -895,6 +2005,15 @@
 		sw $s2, 2488($t2)
 		sw $s2, 2612($t2)
 		sw $s2, 2616($t2)	
+	jr $ra
+	acertou_4x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2484($t2)
+		sw $s2, 2488($t2)
+		sw $s2, 2612($t2)
+		sw $s2, 2616($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_4x7:
@@ -904,6 +2023,15 @@
 		sw $s2, 2996($t2)
 		sw $s2, 3000($t2)	
 	jr $ra
+	acertou_4x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2868($t2)
+		sw $s2, 2872($t2)
+		sw $s2, 2996($t2)
+		sw $s2, 3000($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_4x8:
 		move $k0, $zero		
@@ -912,8 +2040,18 @@
 		sw $s2, 3380($t2)
 		sw $s2, 3384($t2)	
 	jr $ra
+	acertou_4x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3252($t2)
+		sw $s2, 3256($t2)
+		sw $s2, 3380($t2)
+		sw $s2, 3384($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	
+
 	# ==================================================================
 	# ============================ culuna 5 ============================
 	
@@ -941,6 +2079,15 @@
 		sw $s2, 704($t2)
 		sw $s2, 708($t2)	
 	jr $ra
+	acertou_5x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 576($t2)
+		sw $s2, 580($t2)
+		sw $s2, 704($t2)
+		sw $s2, 708($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_5x2:
 		move $k0, $zero		
@@ -948,6 +2095,15 @@
 		sw $s2, 964($t2)
 		sw $s2, 1088($t2)
 		sw $s2, 1092($t2)	
+	jr $ra
+	acertou_5x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 960($t2)
+		sw $s2, 964($t2)
+		sw $s2, 1088($t2)
+		sw $s2, 1092($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_5x3:
@@ -957,6 +2113,15 @@
 		sw $s2, 1472($t2)
 		sw $s2, 1476($t2)	
 	jr $ra
+	acertou_5x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1344($t2)
+		sw $s2, 1348($t2)
+		sw $s2, 1472($t2)
+		sw $s2, 1476($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_5x4:
 		move $k0, $zero		
@@ -964,6 +2129,15 @@
 		sw $s2, 1732($t2)
 		sw $s2, 1856($t2)
 		sw $s2, 1860($t2)	
+	jr $ra
+	acertou_5x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1728($t2)
+		sw $s2, 1732($t2)
+		sw $s2, 1856($t2)
+		sw $s2, 1860($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_5x5:
@@ -973,6 +2147,15 @@
 		sw $s2, 2240($t2)
 		sw $s2, 2244($t2)	
 	jr $ra
+	acertou_5x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2112($t2)
+		sw $s2, 2116($t2)
+		sw $s2, 2240($t2)
+		sw $s2, 2244($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_5x6:
 		move $k0, $zero		
@@ -980,6 +2163,15 @@
 		sw $s2, 2500($t2)
 		sw $s2, 2624($t2)
 		sw $s2, 2628($t2)	
+	jr $ra
+	acertou_5x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2496($t2)
+		sw $s2, 2500($t2)
+		sw $s2, 2624($t2)
+		sw $s2, 2628($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_5x7:
@@ -989,6 +2181,15 @@
 		sw $s2, 3008($t2)
 		sw $s2, 3012($t2)	
 	jr $ra
+	acertou_5x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2880($t2)
+		sw $s2, 2884($t2)
+		sw $s2, 3008($t2)
+		sw $s2, 3012($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_5x8:
 		move $k0, $zero		
@@ -997,6 +2198,16 @@
 		sw $s2, 3392($t2)
 		sw $s2, 3396($t2)	
 	jr $ra
+	acertou_5x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3264($t2)
+		sw $s2, 3268($t2)
+		sw $s2, 3392($t2)
+		sw $s2, 3396($t2)		
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
+
 
 
 	# ==================================================================
@@ -1024,8 +2235,16 @@
 		sw $s2, 588($t2)
 		sw $s2, 592($t2)
 		sw $s2, 716($t2)
+		sw $s2, 720($t2)		
+	jr $ra
+	acertou_6x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 588($t2)
+		sw $s2, 592($t2)
+		sw $s2, 716($t2)
 		sw $s2, 720($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_6x2:
@@ -1033,8 +2252,16 @@
 		sw $s2, 972($t2)
 		sw $s2, 976($t2)
 		sw $s2, 1100($t2)
+		sw $s2, 1104($t2)		
+	jr $ra
+	acertou_6x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 972($t2)
+		sw $s2, 976($t2)
+		sw $s2, 1100($t2)
 		sw $s2, 1104($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_6x3:
@@ -1043,7 +2270,15 @@
 		sw $s2, 1360($t2)
 		sw $s2, 1484($t2)
 		sw $s2, 1488($t2)
-			
+	jr $ra
+	acertou_6x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1356($t2)
+		sw $s2, 1360($t2)
+		sw $s2, 1484($t2)
+		sw $s2, 1488($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 		
 	quad_6x4:
@@ -1051,8 +2286,16 @@
 		sw $s2, 1740($t2)
 		sw $s2, 1744($t2)
 		sw $s2, 1868($t2)
-		sw $s2, 1872($t2)
-			
+		sw $s2, 1872($t2)		
+	jr $ra
+	acertou_6x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1740($t2)
+		sw $s2, 1744($t2)
+		sw $s2, 1868($t2)
+		sw $s2, 1872($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_6x5:
@@ -1060,8 +2303,16 @@
 		sw $s2, 2124($t2)
 		sw $s2, 2128($t2)
 		sw $s2, 2252($t2)
-		sw $s2, 2256($t2)
-			
+		sw $s2, 2256($t2)			
+	jr $ra
+	acertou_6x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2124($t2)
+		sw $s2, 2128($t2)
+		sw $s2, 2252($t2)
+		sw $s2, 2256($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 		
 	quad_6x6:
@@ -1071,6 +2322,15 @@
 		sw $s2, 2636($t2)
 		sw $s2, 2640($t2)	
 	jr $ra
+	acertou_6x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2508($t2)
+		sw $s2, 2512($t2)
+		sw $s2, 2636($t2)
+		sw $s2, 2640($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_6x7:
 		move $k0, $zero		
@@ -1079,6 +2339,15 @@
 		sw $s2, 3020($t2)
 		sw $s2, 3024($t2)	
 	jr $ra
+	acertou_6x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2892($t2)
+		sw $s2, 2896($t2)
+		sw $s2, 3020($t2)
+		sw $s2, 3024($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_6x8:
 		move $k0, $zero		
@@ -1086,6 +2355,15 @@
 		sw $s2, 3280($t2)
 		sw $s2, 3404($t2)
 		sw $s2, 3408($t2)	
+	jr $ra
+	acertou_6x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3276($t2)
+		sw $s2, 3280($t2)
+		sw $s2, 3404($t2)
+		sw $s2, 3408($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 
 
@@ -1117,6 +2395,15 @@
 		sw $s2, 728($t2)	
 		sw $s2, 732($t2)	
 	jr $ra
+	acertou_7x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 600($t2)
+		sw $s2, 604($t2)
+		sw $s2, 728($t2)	
+		sw $s2, 732($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_7x2:
 		move $k0, $zero		
@@ -1124,6 +2411,15 @@
 		sw $s2, 988($t2)
 		sw $s2, 1112($t2)
 		sw $s2, 1116($t2)	
+	jr $ra
+	acertou_7x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 984($t2)
+		sw $s2, 988($t2)
+		sw $s2, 1112($t2)
+		sw $s2, 1116($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_7x3:
@@ -1133,6 +2429,15 @@
 		sw $s2, 1496($t2)
 		sw $s2, 1500($t2)	
 	jr $ra
+	acertou_7x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1368($t2)
+		sw $s2, 1372($t2)
+		sw $s2, 1496($t2)
+		sw $s2, 1500($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_7x4:
 		move $k0, $zero		
@@ -1140,6 +2445,15 @@
 		sw $s2, 1756($t2)
 		sw $s2, 1880($t2)
 		sw $s2, 1884($t2)	
+	jr $ra
+	acertou_7x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1752($t2)
+		sw $s2, 1756($t2)
+		sw $s2, 1880($t2)
+		sw $s2, 1884($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_7x5:
@@ -1149,6 +2463,15 @@
 		sw $s2, 2264($t2)
 		sw $s2, 2268($t2)	
 	jr $ra
+	acertou_7x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2136($t2)
+		sw $s2, 2140($t2)
+		sw $s2, 2264($t2)
+		sw $s2, 2268($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_7x6:
 		move $k0, $zero		
@@ -1156,6 +2479,15 @@
 		sw $s2, 2524($t2)
 		sw $s2, 2648($t2)
 		sw $s2, 2652($t2)	
+	jr $ra
+	acertou_7x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2520($t2)
+		sw $s2, 2524($t2)
+		sw $s2, 2648($t2)
+		sw $s2, 2652($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_7x7:
@@ -1165,6 +2497,15 @@
 		sw $s2, 3032($t2)
 		sw $s2, 3036($t2)	
 	jr $ra
+	acertou_7x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2904($t2)
+		sw $s2, 2908($t2)
+		sw $s2, 3032($t2)
+		sw $s2, 3036($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_7x8:
 		move $k0, $zero		
@@ -1172,6 +2513,15 @@
 		sw $s2, 3292($t2)
 		sw $s2, 3416($t2)
 		sw $s2, 3420($t2)	
+	jr $ra
+	acertou_7x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3288($t2)
+		sw $s2, 3292($t2)
+		sw $s2, 3416($t2)
+		sw $s2, 3420($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	
@@ -1203,6 +2553,15 @@
 		sw $s2, 740($t2)		
 		sw $s2, 744($t2)	
 	jr $ra
+	acertou_8x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 612($t2)
+		sw $s2, 616($t2)
+		sw $s2, 740($t2)		
+		sw $s2, 744($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 	
 	quad_8x2:
 		move $k0, $zero		
@@ -1210,6 +2569,15 @@
 		sw $s2, 1000($t2)
 		sw $s2, 1124($t2)
 		sw $s2, 1128($t2)	
+	jr $ra
+	acertou_8x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 996($t2)
+		sw $s2, 1000($t2)
+		sw $s2, 1124($t2)
+		sw $s2, 1128($t2)
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_8x3:
@@ -1219,6 +2587,15 @@
 		sw $s2, 1508($t2)
 		sw $s2, 1512($t2)	
 	jr $ra
+	acertou_8x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1380($t2)
+		sw $s2, 1384($t2)
+		sw $s2, 1508($t2)
+		sw $s2, 1512($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_8x4:
 		move $k0, $zero		
@@ -1226,6 +2603,15 @@
 		sw $s2, 1768($t2)
 		sw $s2, 1892($t2)
 		sw $s2, 1896($t2)	
+	jr $ra
+	acertou_8x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1764($t2)
+		sw $s2, 1768($t2)
+		sw $s2, 1892($t2)
+		sw $s2, 1896($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_8x5:
@@ -1235,14 +2621,31 @@
 		sw $s2, 2276($t2)
 		sw $s2, 2280($t2)	
 	jr $ra
+	acertou_8x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2148($t2)
+		sw $s2, 2152($t2)
+		sw $s2, 2276($t2)
+		sw $s2, 2280($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
+	jr $ra
 		
 	quad_8x6:
 		move $k0, $zero		
 		sw $s2, 2532($t2)
 		sw $s2, 2536($t2)
 		sw $s2, 2660($t2)
-		sw $s2, 2664($t2)
-			
+		sw $s2, 2664($t2)		
+	jr $ra
+	acertou_8x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2532($t2)
+		sw $s2, 2536($t2)
+		sw $s2, 2660($t2)
+		sw $s2, 2664($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_8x7:
@@ -1250,8 +2653,16 @@
 		sw $s2, 2916($t2)
 		sw $s2, 2920($t2)
 		sw $s2, 3044($t2)
+		sw $s2, 3048($t2)		
+	jr $ra
+	acertou_8x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2916($t2)
+		sw $s2, 2920($t2)
+		sw $s2, 3044($t2)
 		sw $s2, 3048($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_8x8:
@@ -1259,8 +2670,16 @@
 		sw $s2, 3300($t2)
 		sw $s2, 3304($t2)
 		sw $s2, 3428($t2)
+		sw $s2, 3432($t2)			
+	jr $ra
+	acertou_8x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3300($t2)
+		sw $s2, 3304($t2)
+		sw $s2, 3428($t2)
 		sw $s2, 3432($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	
@@ -1272,8 +2691,7 @@
 		sw $s2, 240($t2)
 		sw $s2, 244($t2)
 		sw $s2, 368($t2)
-		sw $s2, 372($t2)
-			
+		sw $s2, 372($t2)			
 	jr $ra
 	acertou_9x0:
 		addi $k0, $zero,1
@@ -1290,8 +2708,16 @@
 		sw $s2, 624($t2)
 		sw $s2, 628($t2)
 		sw $s2, 752($t2)
+		sw $s2, 756($t2)			
+	jr $ra
+	acertou_9x1:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 624($t2)
+		sw $s2, 628($t2)
+		sw $s2, 752($t2)
 		sw $s2, 756($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_9x2:
@@ -1299,8 +2725,16 @@
 		sw $s2, 1008($t2)
 		sw $s2, 1012($t2)
 		sw $s2, 1136($t2)
+		sw $s2, 1140($t2)		
+	jr $ra
+	acertou_9x2:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1008($t2)
+		sw $s2, 1012($t2)
+		sw $s2, 1136($t2)
 		sw $s2, 1140($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_9x3:
@@ -1308,8 +2742,16 @@
 		sw $s2, 1392($t2)
 		sw $s2, 1396($t2)
 		sw $s2, 1520($t2)
-		sw $s2, 1524($t2)
-			
+		sw $s2, 1524($t2)			
+	jr $ra
+	acertou_9x3:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1392($t2)
+		sw $s2, 1396($t2)
+		sw $s2, 1520($t2)
+		sw $s2, 1524($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 		
 	quad_9x4:
@@ -1317,8 +2759,16 @@
 		sw $s2, 1776($t2)
 		sw $s2, 1780($t2)
 		sw $s2, 1904($t2)
-		sw $s2, 1908($t2)
-			
+		sw $s2, 1908($t2)			
+	jr $ra
+	acertou_9x4:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 1776($t2)
+		sw $s2, 1780($t2)
+		sw $s2, 1904($t2)
+		sw $s2, 1908($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_9x5:
@@ -1326,8 +2776,16 @@
 		sw $s2, 2160($t2)
 		sw $s2, 2164($t2)
 		sw $s2, 2288($t2)
-		sw $s2, 2292($t2)
-			
+		sw $s2, 2292($t2)			
+	jr $ra
+	acertou_9x5:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2160($t2)
+		sw $s2, 2164($t2)
+		sw $s2, 2288($t2)
+		sw $s2, 2292($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 		
 	quad_9x6:
@@ -1335,8 +2793,16 @@
 		sw $s2, 2544($t2)
 		sw $s2, 2548($t2)
 		sw $s2, 2672($t2)
+		sw $s2, 2676($t2)			
+	jr $ra
+	acertou_9x6:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2544($t2)
+		sw $s2, 2548($t2)
+		sw $s2, 2672($t2)
 		sw $s2, 2676($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_9x7:
@@ -1344,8 +2810,16 @@
 		sw $s2, 2928($t2)
 		sw $s2, 2932($t2)
 		sw $s2, 3056($t2)
+		sw $s2, 3060($t2)			
+	jr $ra
+	acertou_9x7:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 2928($t2)
+		sw $s2, 2932($t2)
+		sw $s2, 3056($t2)
 		sw $s2, 3060($t2)
-			
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	quad_9x8:
@@ -1354,6 +2828,15 @@
 		sw $s2, 3316($t2)
 		sw $s2, 3440($t2)
 		sw $s2, 3444($t2)	
+	jr $ra
+	acertou_9x8:
+		addi $k0, $zero,1
+		addi $s2, $zero, 0x17FD04  #Amarela	     
+		sw $s2, 3312($t2)
+		sw $s2, 3316($t2)
+		sw $s2, 3440($t2)
+		sw $s2, 3444($t2)	
+		addi $s2, $zero, 0xff3333 #LARANJA	
 	jr $ra
 	
 	on_player_1:
@@ -1436,7 +2919,6 @@
 		sw $s0, 4080($t2)
 		sw $s0, 4084($t2)
 		sw $s0, 4088($t2)
-
 	jr $ra
 	
 	desenha_tabuleiro:
