@@ -1,5 +1,3 @@
-
-
 #Abra o Bitmap Display do Mars para a visualiza��o do jogo
 #Configure da seguinte forma:
 #	Unit Width/Height in pixels = 16
@@ -31,6 +29,9 @@
  	 
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
+
+	alerta_big_valor_coluna: .asciiz "\nATENCAO: Valor digitado pra coluna deve ser menor ou igual a 9!"
+	alerta_big_valor_linha: .asciiz "\nATENCAO: Valor digitado pra linha deve ser menor ou igual a 8!\n"
 
 .text
 
@@ -70,6 +71,7 @@
 
 
 	main:	
+
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
@@ -147,16 +149,21 @@
 		
 		li $v0, 5	#L� a coluna 
 		syscall
-		move  $t5,$v0 
+		move $t5,$v0 
+			sge $a3,$t5,10
+			beq $a3,1,text_alerta_big_valor_coluna	
 	
+	
+		alerta_valor_linha:
 		la $a0, txt_jogada_V		
 		li $v0, 4
 		syscall	
-		
-		
+				
 		li $v0, 5	#L� linha posi��o 
 		syscall
 		move $t6,$v0
+			sge $a3,$t6,9
+			beq $a3,1,text_alerta_big_valor_linha
 
 		jal conta
 
@@ -170,6 +177,20 @@
 	        jal jogada_player2 #SE NAO 		                       
 	jr $ra
 	
+	
+	text_alerta_big_valor_coluna:
+		la $a0,  alerta_big_valor_coluna
+		li $v0, 4
+		syscall	
+	j jogada_player1
+
+	text_alerta_big_valor_linha:
+		la $a0,  alerta_big_valor_linha
+		li $v0, 4
+		syscall	
+	j alerta_valor_linha
+		
+
 	conta:
 		move $t0, $zero
 		print:
@@ -324,8 +345,10 @@
 
 
 
-#===================================== GRAPHICAL USER INTERFACE - GUI =================================
-#======================================================================================================
+
+
+#*********************************************************************************************************
+#************************************* GRAPHICAL USER INTERFACE - GUI ************************************
 	
 	# ========= COLOR LINHA 0 =======
 	quad_0x0color:
@@ -743,12 +766,6 @@
 	jr $ra
    
    
-   
-   
-
-#================================================================================================
-#================================================================================================
-
 
 	#linha 0 
 	#===========================================
@@ -2921,8 +2938,9 @@
 		sw $s0, 4088($t2)
 	jr $ra
 	
-	desenha_tabuleiro:
 	
+
+	desenha_tabuleiro:	
 	#Cores das bordas
 	addi $s0, $zero, 0xFFFF00 #Amarela
 	sw $s0, 0($t2)
