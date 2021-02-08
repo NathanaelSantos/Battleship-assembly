@@ -18,7 +18,7 @@
   	.space 16 #aloca 4 espacos no array
 
   	
- 	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n*****************************************\n*****************************************\n"
+ 	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n**      3       EXIT                   **\n*****************************************\n*****************************************\n"
  	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
  	linha: .asciiz "\n"
  	txt_jogada_H: .asciiz "Coluna: "
@@ -26,9 +26,15 @@
  	txt_player1: .asciiz "Player 1, em qual posicao deseja jogar? "
  	txt_player2: .asciiz "Player 2, em qual posicao deseja jogar? "
  	txt_menu: .asciiz "Digite a opcao: "
+ 	msg_valor_menu: "\nATENCAO: Valor do menu deve ser menor ou igual a 3!\n"
  	 
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
+
+	player1: .asciiz "\nVencedor player 1\n"
+	player2: .asciiz "\nVencedor player 2\n"
+
+	msg_empate: .asciiz "\n********* Empate! *********\n"
 
 	alerta_big_valor_coluna: .asciiz "\nATENCAO: Valor digitado pra coluna deve ser menor ou igual a 9!"
 	alerta_big_valor_linha: .asciiz "\nATENCAO: Valor digitado pra linha deve ser menor ou igual a 8!\n"
@@ -100,10 +106,14 @@
 			li $v0, 4
 			syscall	
 		
-			li $v0, 5	#L� linha posi��o 
+			li $v0, 5	#Opcao ditigitada
 			syscall
-			move $s7,$v0
-
+			
+			beq $v0,3,exit_game
+			
+			sge $a0, $v0, 4
+			beq $a0, 1, msg_menu
+			
 			jal placar
 			jal jogada_player1
 	
@@ -152,10 +162,8 @@
 		move $t5,$v0 
 			sge $a3,$t5,10
 			beq $a3,1,text_alerta_big_valor_coluna	
-	
-	
-		alerta_valor_linha:
-		la $a0, txt_jogada_V		
+		
+		alerta_valor_linha: la $a0, txt_jogada_V		
 		li $v0, 4
 		syscall	
 				
@@ -212,6 +220,7 @@
 	jr $ra
 	
 	jogada_player2:
+		
 		jal on_player_2
 		la $a0,  linha
 		li $v0, 4
@@ -236,7 +245,7 @@
 		li $v0, 5	#L� linha posi��o 
 		syscall
 		move $t6,$v0
-		
+
 		jal conta
 			jal placar
 	        jal get_coluna
@@ -246,8 +255,50 @@
 
 	player2_acertou:
 		addi $t8,$t8,1
-		jal jogada_player2
-	jr $ra
+		jal  jogada_player2
+	jr  $ra
+	
+	msg_menu:
+		la $a0, msg_valor_menu
+		li $v0, 4
+		syscall		
+		j menu_game
+
+	verifica_vencedor:
+		#Verifica empate
+		beq  $v1, $t8, batalha_naval_empate
+	
+		#Verifica vencedor 
+		slt $a0, $v1, $t8
+		beq $a0, 1, vencedor_player1
+		j vencedor_player2
+	
+	batalha_naval_empate:
+		la $a0, msg_empate		
+		li $v0, 4
+		syscall
+		
+		li $v0, 10		#Encerra o jogo
+		syscall		
+
+	vencedor_player1:
+		la $a0, player1		
+		li $v0, 4
+		syscall
+
+		li $v0, 10		
+		syscall	
+	vencedor_player2:
+		la $a0, player2		
+		li $v0, 4
+		syscall
+
+		li $v0, 10		
+		syscall	
+		
+	exit_game:
+		li $v0, 10		
+		syscall
 
 	maquina_escolhe_jogada:	
 		jal on_player_2	
