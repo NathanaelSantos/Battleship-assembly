@@ -31,8 +31,8 @@
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
 
-	player1: .asciiz "\nVencedor player 1\n"
-	player2: .asciiz "\nVencedor player 2\n"
+	player1: .asciiz "\n\nVencedor player 1\n"
+	player2: .asciiz "\n\nVencedor player 2\n"
 
 	msg_empate: .asciiz "\n********* Empate! *********\n"
 
@@ -77,7 +77,7 @@
 
 
 	main:	
-
+		
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
@@ -96,20 +96,22 @@
 		jr $ra
 
 		titulo_jogo:	
-			la $a0,  titulo
+			la $a0, titulo
 			li $v0, 4
 			syscall	
 		jr $ra	
 	
 		menu_game:
-			la $a0,  txt_menu
+			la $a0, txt_menu
 			li $v0, 4
 			syscall	
 		
 			li $v0, 5	#Opcao ditigitada
 			syscall
+
+			move $s7, $v0
 			
-			beq $v0,3,exit_game
+			beq $v0, 3, exit_game
 			
 			sge $a0, $v0, 4
 			beq $a0, 1, msg_menu
@@ -128,8 +130,8 @@
 	jr $ra
 	
 	placar:
-		la $a0,txt_placar
-		li $v0,4
+		la $a0, txt_placar
+		li $v0, 4
 		syscall
 		add $a0, $zero, $v1
 		li $v0, 1
@@ -144,8 +146,13 @@
 
 	jogada_player1:
 		
+		add $a0, $v1, $t8
+		beq $a0, 4, verifica_vencedor
+		
+		
+		
 		jal on_player_1
-		la $a0,  linha
+		la $a0, linha
 		li $v0, 4
 		syscall	
 			jal quebra_linha
@@ -161,7 +168,7 @@
 		syscall
 		move $t5,$v0 
 			sge $a3,$t5,10
-			beq $a3,1,text_alerta_big_valor_coluna	
+			beq $a3, 1, text_alerta_big_valor_coluna	
 		
 		alerta_valor_linha: la $a0, txt_jogada_V		
 		li $v0, 4
@@ -170,7 +177,7 @@
 		li $v0, 5	#L� linha posi��o 
 		syscall
 		move $t6,$v0
-			sge $a3,$t6,9
+			sge $a3,$t6, 9
 			beq $a3,1,text_alerta_big_valor_linha
 
 		jal conta
@@ -220,6 +227,10 @@
 	jr $ra
 	
 	jogada_player2:
+	
+		add $a0, $v1, $t8
+		beq $a0, 4, verifica_vencedor
+	
 		
 		jal on_player_2
 		la $a0,  linha
@@ -269,38 +280,42 @@
 		beq  $v1, $t8, batalha_naval_empate
 	
 		#Verifica vencedor 
-		slt $a0, $v1, $t8
+		sgt $a0, $v1, $t8
 		beq $a0, 1, vencedor_player1
 		j vencedor_player2
 	
-	batalha_naval_empate:
-		la $a0, msg_empate		
-		li $v0, 4
-		syscall
+		batalha_naval_empate:
+			la $a0, msg_empate		
+			li $v0, 4
+			syscall
 		
-		li $v0, 10		#Encerra o jogo
-		syscall		
+			li $v0, 10		#Encerra o jogo
+			syscall		
 
-	vencedor_player1:
-		la $a0, player1		
-		li $v0, 4
-		syscall
+		vencedor_player1:
+			la $a0, player1		
+			li $v0, 4
+			syscall
 
-		li $v0, 10		
-		syscall	
-	vencedor_player2:
-		la $a0, player2		
-		li $v0, 4
-		syscall
+			li $v0, 10		
+			syscall	
+		vencedor_player2:
+			la $a0, player2		
+			li $v0, 4
+			syscall
 
-		li $v0, 10		
-		syscall	
+			li $v0, 10		
+			syscall	
 		
 	exit_game:
 		li $v0, 10		
 		syscall
 
 	maquina_escolhe_jogada:	
+
+		add $a0, $v1, $t8
+		beq $a0, 4, verifica_vencedor
+
 		jal on_player_2	
 		la $a0, maquina_jogando
 		li $v0, 4
