@@ -1,5 +1,3 @@
-
-
 #Abra o Bitmap Display do Mars para a visualiza��o do jogo
 #Configure da seguinte forma:
 #	Unit Width/Height in pixels = 16
@@ -17,10 +15,9 @@
 
 	Destroyer_2:
   	.alig 2
-  	.space 16 #aloca 4 espacos no array
-
+  	.space 16 #aloca 4 espacos no arra
   	
- 	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n*****************************************\n*****************************************\n"
+ 	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n**      3       EXIT                   **\n*****************************************\n*****************************************\n"
  	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
  	linha: .asciiz "\n"
  	txt_jogada_H: .asciiz "Coluna: "
@@ -28,12 +25,21 @@
  	txt_player1: .asciiz "Player 1, em qual posicao deseja jogar? "
  	txt_player2: .asciiz "Player 2, em qual posicao deseja jogar? "
  	txt_menu: .asciiz "Digite a opcao: "
+ 	msg_valor_menu: "\nATENCAO: Valor do menu deve ser menor ou igual a 3!\n"
  	 
  	txt_placar: .asciiz "\n*************     PLACAR    *************\n*****************************************\n**      PLAYER 1        PLAYER 2       **\n**         "            
  	espaco: .asciiz "               "
 
-.text
+	player1: .asciiz "\n\nVencedor player 1\n"
+	player2: .asciiz "\n\nVencedor player 2\n"
 
+	msg_empate: .asciiz "\n********* Empate! *********\n"
+
+	alerta_big_valor_coluna: .asciiz "\nATENCAO: Valor digitado pra coluna deve ser menor ou igual a 9!"
+	alerta_big_valor_linha: .asciiz "\nATENCAO: Valor digitado pra linha deve ser menor ou igual a 8!\n"
+
+.text
+	
 	#gera destroyers 1
   	jal coordenada_inicial
   	loop:
@@ -43,7 +49,7 @@
   		addi $a0, $a0,1
   		j loop		
   	saiDoLoop:
-  	
+
   	move $t0, $zero
   	lw $a0, Destroyer_1 ($t0)
   	move $k1,$a0
@@ -57,6 +63,30 @@
   		addi $t0, $t0, 4
   	j imprime
   	saiDaImpressao:jal quebra_linha
+
+	#gera destroyers 2
+  	jal coordenada_inicial
+  	loop2:
+  		beq $t9,16, saiDoLoop2
+  		sw $a0, Destroyer_2($t9)
+  		addi $t9, $t9, 4
+  		addi $a0, $a0,1
+  		j loop2		
+  	saiDoLoop2:
+  	
+  	move $t9, $zero
+  	lw $a0, Destroyer_2 ($t9)
+  	move $s3,$a0
+  
+  	imprime2:
+  		beq $t9, 16, saiDaImpressao2
+  		li $v0,1
+  		lw $a0, Destroyer_2 ($t9)
+  		syscall
+  			
+  		addi $t9, $t9, 4
+  	j imprime2
+  	saiDaImpressao2:jal quebra_linha
 	
 	
 	# ========== Gera coordenadas das linhas ==========
@@ -64,12 +94,23 @@
 	#gera coordenada linha destroyers 1
   	jal coordenada_inicial
     move $s6,$a0
-	
+	#gera coordenada linha destroyers 2
 	jal coordenada_inicial
     move $s5,$a0
 
+	beq $s6,$s5,while
 
+	while: 
+		jal coordenada_inicial
+    	move $s5,$a0
+		
+    	bne $s6,$s5, exit_while  
+    j while
+	exit_while:
+	
+	
 	main:	
+
 		jal cores
 		jal define_fundo
 		jal desenha_tabuleiro
@@ -88,20 +129,26 @@
 		jr $ra
 
 		titulo_jogo:	
-			la $a0,  titulo
+			la $a0, titulo
 			li $v0, 4
 			syscall	
 		jr $ra	
 	
 		menu_game:
-			la $a0,  txt_menu
+			la $a0, txt_menu
 			li $v0, 4
 			syscall	
 		
-			li $v0, 5	#L� linha posi��o 
+			li $v0, 5	#Opcao ditigitada
 			syscall
-			move $s7,$v0
 
+			move $s7, $v0
+			
+			beq $v0, 3, exit_game
+			
+			sge $a0, $v0, 4
+			beq $a0, 1, msg_menu
+			
 			jal placar
 			jal jogada_player1
 	
@@ -116,8 +163,8 @@
 	jr $ra
 	
 	placar:
-		la $a0,txt_placar
-		li $v0,4
+		la $a0, txt_placar
+		li $v0, 4
 		syscall
 		add $a0, $zero, $v1
 		li $v0, 1
@@ -131,9 +178,9 @@
 	jr $ra
 
 	jogada_player1:
-		
+	
 		jal on_player_1
-		la $a0,  linha
+		la $a0, linha
 		li $v0, 4
 		syscall	
 			jal quebra_linha
@@ -145,31 +192,51 @@
 		li $v0, 4
 		syscall	
 		
-		li $v0, 5	#L� a coluna 
+		li $v0, 5	#Le coluna 
 		syscall
-		move  $t5,$v0 
-	
-		la $a0, txt_jogada_V		
+		move $t5,$v0 
+			sge $a3,$t5,10
+			beq $a3, 1, text_alerta_big_valor_coluna	
+		
+		alerta_valor_linha: la $a0, txt_jogada_V		
 		li $v0, 4
 		syscall	
-		
-		
-		li $v0, 5	#L� linha posi��o 
+				
+		li $v0, 5	#Le linha  
 		syscall
 		move $t6,$v0
+			sge $a3,$t6, 9
+			beq $a3,1,text_alerta_big_valor_linha
 
 		jal conta
+		jal conta2
 
 		jal get_coluna
-		
+	
+    
 		beq, $k0,1,player1_acertou		
-       
-       		jal placar
+		
+	
 	        #Se escolhida a opcao 1 
 	        beq $s7,1,maquina_escolhe_jogada
-	        jal jogada_player2 #SE NAO 		                       
+	        jal jogada_player2 #SE NAO 
+	        		                       
 	jr $ra
 	
+	
+	text_alerta_big_valor_coluna:
+		la $a0,  alerta_big_valor_coluna
+		li $v0, 4
+		syscall	
+	j jogada_player1
+
+	text_alerta_big_valor_linha:
+		la $a0,  alerta_big_valor_linha
+		li $v0, 4
+		syscall	
+	j alerta_valor_linha
+		
+
 	conta:
 		move $t0, $zero
 		print:
@@ -180,17 +247,37 @@
   				addi $t0, $t0, 4
   		j print	
   	exit:jr $ra
+
+	conta2:
+		move $t9, $zero
+		print2:
+  			beq $t9, 16, exit2
+  			li $v0,1
+  			lw $a0, Destroyer_2 ($t9)	
+  				beq $t5,$a0,posicao2	
+  				addi $t9, $t9, 4
+  		j print2	
+  	exit2:jr $ra
   
 	posicao:move $k1,$a0
+	jr $ra
+
+	posicao2:move $s3,$a0
 	jr $ra
 
 	
 	player1_acertou:
 		addi $v1,$v1,1
+		
+		jal placar
+		add $a0, $v1, $t8
+		beq $a0, 8, verifica_vencedor
+		
 		jal jogada_player1
 	jr $ra
 	
 	jogada_player2:
+	
 		jal on_player_2
 		la $a0,  linha
 		li $v0, 4
@@ -215,20 +302,74 @@
 		li $v0, 5	#L� linha posi��o 
 		syscall
 		move $t6,$v0
-		
+
 		jal conta
-			jal placar
+		jal conta2
+
 	        jal get_coluna
-				beq, $k0,1,player2_acertou
+				beq, $k0,1,player2_acertou			
 	        	jal jogada_player1	       
+	    
 	jr $ra
 
 	player2_acertou:
 		addi $t8,$t8,1
-		jal jogada_player2
-	jr $ra
+		
+		jal placar
+		add $a0, $v1, $t8
+		beq $a0, 8, verifica_vencedor
+		
+		jal  jogada_player2
+	jr  $ra
+	
+	msg_menu:
+		la $a0, msg_valor_menu
+		li $v0, 4
+		syscall		
+		j menu_game
+		
+
+	verifica_vencedor:
+		#Verifica empate
+		beq  $v1, $t8, batalha_naval_empate
+	
+		#Verifica vencedor 
+		sgt $a0, $v1, $t8
+		beq $a0, 1, vencedor_player1
+		j vencedor_player2
+	
+		batalha_naval_empate:
+			
+			la $a0, msg_empate		
+			li $v0, 4
+			syscall
+		
+			li $v0, 10		#Encerra o jogo
+			syscall		
+
+		vencedor_player1:
+			la $a0, player1		
+			li $v0, 4
+			syscall
+
+			li $v0, 10		
+			syscall	
+		vencedor_player2:
+			la $a0, player2		
+			li $v0, 4
+			syscall
+
+			li $v0, 10		
+			syscall	
+			
+		
+	exit_game:
+		li $v0, 10		
+		syscall
+		
 
 	maquina_escolhe_jogada:	
+
 		jal on_player_2	
 		la $a0, maquina_jogando
 		li $v0, 4
@@ -246,7 +387,7 @@
 			move $t6,$a0
 
 			jal conta
-
+			jal conta2
 
 			jal placar
 	        jal get_coluna
@@ -257,7 +398,7 @@
 	
 	jogada_horizontal:
 		li $v0, 42  # 42 � o c�digo de chamada de sistema para gerar int
-		li $a1, 10 # $a1 limite
+		li $a1, 10 # $a1 limite superior (0 <= [int] <[limite superior])
 		syscall     # gera o n�mero e coloca em $a0
 		li $v0, 1   # 1 � o c�digo de chamada de sistema para mostrar um n�mero interno
 		syscall     # imprime o valor	
@@ -269,7 +410,7 @@
 		li $a1, 9 # $a1 limite
 		syscall     # gera o n�mero e coloca em $a0
 		li $v0, 1   # 1 � o c�digo de chamada de sistema para mostrar um n�mero interno
-	       	 syscall     # imprime o valor
+	    syscall     # imprime o valor
 	jr $ra
 	
 	quebra_linha:
@@ -277,7 +418,6 @@
 		li $v0, 4
 		syscall	
 	jr $ra
-	
 	
 	opcao_V:
 		la $a0,  txt_jogada_V
@@ -291,25 +431,7 @@
 		syscall	
 	jr $ra
 	
-	get_coluna:	
-  		move $t0, $zero
-  		imprime_:
-  			beq $t0, 16, saiDaImpressao_		
-  				beq $k1,0,func_v
-  				beq $k1,1,func_v
-  				beq $k1,2,func_v
-  				beq $k1,3,func_v
-  				beq $k1,4,func_v
-  				beq $k1,5,func_v
-  				beq $k1,6,func_v
-  				beq $k1,7,func_v
-  				beq $k1,8,func_v
-  				beq $k1,9,func_v
-  			addi $t0, $t0, 4
-  		j imprime_
-  	saiDaImpressao_:jr $ra
-	
-	func_v:		
+	get_coluna:		
   		beq $t5,0,coluna_0 
 	    beq $t5,1,coluna_1
 	    beq $t5,2,coluna_2
@@ -320,828 +442,2737 @@
 	    beq $t5,7,coluna_7
 	    beq $t5,8,coluna_8
 	    beq $t5,9,coluna_9
-	jr $ra
+  	jr $ra
+
+
+#*********************************************************************************************************
+#************************************* GRAPHICAL USER INTERFACE - GUI ************************************
+
+
+# linha0
+quad_0x0color:
+   beq $t6,$s5,quad_0x0color_p2
+   beq $t6,$s6,quad_0x0color_p1
+jr $ra
+quad_0x0color_p2:
+   beq $s3,0,acertou_0x0
+   bne $s3,0,quad_0x0
+jr $ra
+quad_0x0color_p1:
+   beq $k1,0,acertou_0x0
+   bne $k1,0,quad_0x0
+jr $ra
+
+
+quad_1x0color:
+   beq $t6,$s5,quad_1x0color_p2
+   beq $t6,$s6,quad_1x0color_p1
+jr $ra
+quad_1x0color_p2:
+   beq $s3,1,acertou_1x0
+   bne $s3,1,quad_1x0
+jr $ra
+quad_1x0color_p1:
+   beq $k1,1,acertou_1x0
+   bne $k1,1,quad_1x0
+jr $ra
+
+
+quad_2x0color:
+   beq $t6,$s5,quad_2x0color_p2
+   beq $t6,$s6,quad_2x0color_p1
+jr $ra
+quad_2x0color_p2:
+   beq $s3,2,acertou_2x0
+   bne $s3,2,quad_2x0
+jr $ra
+quad_2x0color_p1:
+   beq $k1,2,acertou_2x0
+   bne $k1,2,quad_2x0
+jr $ra
+
+
+quad_3x0color:
+   beq $t6,$s5,quad_3x0color_p2
+   beq $t6,$s6,quad_3x0color_p1
+jr $ra
+quad_3x0color_p2:
+   beq $s3,3,acertou_3x0
+   bne $s3,3,quad_3x0
+jr $ra
+quad_3x0color_p1:
+   beq $k1,3,acertou_3x0
+   bne $k1,3,quad_3x0
+jr $ra
+
+
+quad_4x0color:
+   beq $t6,$s5,quad_4x0color_p2
+   beq $t6,$s6,quad_4x0color_p1
+jr $ra
+quad_4x0color_p2:
+   beq $s3,4,acertou_4x0
+   bne $s3,4,quad_4x0
+jr $ra
+quad_4x0color_p1:
+   beq $k1,4,acertou_4x0
+   bne $k1,4,quad_4x0
+jr $ra
+
+
+quad_5x0color:
+   beq $t6,$s5,quad_5x0color_p2
+   beq $t6,$s6,quad_5x0color_p1
+jr $ra
+quad_5x0color_p2:
+   beq $s3,5,acertou_5x0
+   bne $s3,5,quad_5x0
+jr $ra
+quad_5x0color_p1:
+   beq $k1,5,acertou_5x0
+   bne $k1,5,quad_5x0
+jr $ra
+
+
+quad_6x0color:
+   beq $t6,$s5,quad_6x0color_p2
+   beq $t6,$s6,quad_6x0color_p1
+jr $ra
+quad_6x0color_p2:
+   beq $s3,6,acertou_6x0
+   bne $s3,6,quad_6x0
+jr $ra
+quad_6x0color_p1:
+   beq $k1,6,acertou_6x0
+   bne $k1,6,quad_6x0
+jr $ra
+
+
+quad_7x0color:
+   beq $t6,$s5,quad_7x0color_p2
+   beq $t6,$s6,quad_7x0color_p1
+jr $ra
+quad_7x0color_p2:
+   beq $s3,7,acertou_7x0
+   bne $s3,7,quad_7x0
+jr $ra
+quad_7x0color_p1:
+   beq $k1,7,acertou_7x0
+   bne $k1,7,quad_7x0
+jr $ra
+
+
+quad_8x0color:
+   beq $t6,$s5,quad_8x0color_p2
+   beq $t6,$s6,quad_8x0color_p1
+jr $ra
+quad_8x0color_p2:
+   beq $s3,8,acertou_8x0
+   bne $s3,8,quad_8x0
+jr $ra
+quad_8x0color_p1:
+   beq $k1,8,acertou_8x0
+   bne $k1,8,quad_8x0
+jr $ra
+
+
+quad_9x0color:
+   beq $t6,$s5,quad_9x0color_p2
+   beq $t6,$s6,quad_9x0color_p1
+jr $ra
+quad_9x0color_p2:
+   beq $s3,9,acertou_9x0
+   bne $s3,9,quad_9x0
+jr $ra
+quad_9x0color_p1:
+   beq $k1,9,acertou_9x0
+   bne $k1,9,quad_9x0
+jr $ra
+
+
+# linha1
+quad_0x1color:
+   beq $t6,$s5,quad_0x1color_p2
+   beq $t6,$s6,quad_0x1color_p1
+jr $ra
+quad_0x1color_p2:
+   beq $s3,0,acertou_0x1
+   bne $s3,0,quad_0x1
+jr $ra
+quad_0x1color_p1:
+   beq $k1,0,acertou_0x1
+   bne $k1,0,quad_0x1
+jr $ra
+
+
+quad_1x1color:
+   beq $t6,$s5,quad_1x1color_p2
+   beq $t6,$s6,quad_1x1color_p1
+jr $ra
+quad_1x1color_p2:
+   beq $s3,1,acertou_1x1
+   bne $s3,1,quad_1x1
+jr $ra
+quad_1x1color_p1:
+   beq $k1,1,acertou_1x1
+   bne $k1,1,quad_1x1
+jr $ra
+
+
+quad_2x1color:
+   beq $t6,$s5,quad_2x1color_p2
+   beq $t6,$s6,quad_2x1color_p1
+jr $ra
+quad_2x1color_p2:
+   beq $s3,2,acertou_2x1
+   bne $s3,2,quad_2x1
+jr $ra
+quad_2x1color_p1:
+   beq $k1,2,acertou_2x1
+   bne $k1,2,quad_2x1
+jr $ra
+
+
+quad_3x1color:
+   beq $t6,$s5,quad_3x1color_p2
+   beq $t6,$s6,quad_3x1color_p1
+jr $ra
+quad_3x1color_p2:
+   beq $s3,3,acertou_3x1
+   bne $s3,3,quad_3x1
+jr $ra
+quad_3x1color_p1:
+   beq $k1,3,acertou_3x1
+   bne $k1,3,quad_3x1
+jr $ra
+
+
+quad_4x1color:
+   beq $t6,$s5,quad_4x1color_p2
+   beq $t6,$s6,quad_4x1color_p1
+jr $ra
+quad_4x1color_p2:
+   beq $s3,4,acertou_4x1
+   bne $s3,4,quad_4x1
+jr $ra
+quad_4x1color_p1:
+   beq $k1,4,acertou_4x1
+   bne $k1,4,quad_4x1
+jr $ra
+
+
+quad_5x1color:
+   beq $t6,$s5,quad_5x1color_p2
+   beq $t6,$s6,quad_5x1color_p1
+jr $ra
+quad_5x1color_p2:
+   beq $s3,5,acertou_5x1
+   bne $s3,5,quad_5x1
+jr $ra
+quad_5x1color_p1:
+   beq $k1,5,acertou_5x1
+   bne $k1,5,quad_5x1
+jr $ra
+
+
+quad_6x1color:
+   beq $t6,$s5,quad_6x1color_p2
+   beq $t6,$s6,quad_6x1color_p1
+jr $ra
+quad_6x1color_p2:
+   beq $s3,6,acertou_6x1
+   bne $s3,6,quad_6x1
+jr $ra
+quad_6x1color_p1:
+   beq $k1,6,acertou_6x1
+   bne $k1,6,quad_6x1
+jr $ra
+
+
+quad_7x1color:
+   beq $t6,$s5,quad_7x1color_p2
+   beq $t6,$s6,quad_7x1color_p1
+jr $ra
+quad_7x1color_p2:
+   beq $s3,7,acertou_7x1
+   bne $s3,7,quad_7x1
+jr $ra
+quad_7x1color_p1:
+   beq $k1,7,acertou_7x1
+   bne $k1,7,quad_7x1
+jr $ra
+
+
+quad_8x1color:
+   beq $t6,$s5,quad_8x1color_p2
+   beq $t6,$s6,quad_8x1color_p1
+jr $ra
+quad_8x1color_p2:
+   beq $s3,8,acertou_8x1
+   bne $s3,8,quad_8x1
+jr $ra
+quad_8x1color_p1:
+   beq $k1,8,acertou_8x1
+   bne $k1,8,quad_8x1
+jr $ra
+
+
+quad_9x1color:
+   beq $t6,$s5,quad_9x1color_p2
+   beq $t6,$s6,quad_9x1color_p1
+jr $ra
+quad_9x1color_p2:
+   beq $s3,9,acertou_9x1
+   bne $s3,9,quad_9x1
+jr $ra
+quad_9x1color_p1:
+   beq $k1,9,acertou_9x1
+   bne $k1,9,quad_9x1
+jr $ra
+
+
+# linha2
+quad_0x2color:
+   beq $t6,$s5,quad_0x2color_p2
+   beq $t6,$s6,quad_0x2color_p1
+jr $ra
+quad_0x2color_p2:
+   beq $s3,0,acertou_0x2
+   bne $s3,0,quad_0x2
+jr $ra
+quad_0x2color_p1:
+   beq $k1,0,acertou_0x2
+   bne $k1,0,quad_0x2
+jr $ra
+
+
+quad_1x2color:
+   beq $t6,$s5,quad_1x2color_p2
+   beq $t6,$s6,quad_1x2color_p1
+jr $ra
+quad_1x2color_p2:
+   beq $s3,1,acertou_1x2
+   bne $s3,1,quad_1x2
+jr $ra
+quad_1x2color_p1:
+   beq $k1,1,acertou_1x2
+   bne $k1,1,quad_1x2
+jr $ra
+
+
+quad_2x2color:
+   beq $t6,$s5,quad_2x2color_p2
+   beq $t6,$s6,quad_2x2color_p1
+jr $ra
+quad_2x2color_p2:
+   beq $s3,2,acertou_2x2
+   bne $s3,2,quad_2x2
+jr $ra
+quad_2x2color_p1:
+   beq $k1,2,acertou_2x2
+   bne $k1,2,quad_2x2
+jr $ra
+
+
+quad_3x2color:
+   beq $t6,$s5,quad_3x2color_p2
+   beq $t6,$s6,quad_3x2color_p1
+jr $ra
+quad_3x2color_p2:
+   beq $s3,3,acertou_3x2
+   bne $s3,3,quad_3x2
+jr $ra
+quad_3x2color_p1:
+   beq $k1,3,acertou_3x2
+   bne $k1,3,quad_3x2
+jr $ra
+
+
+quad_4x2color:
+   beq $t6,$s5,quad_4x2color_p2
+   beq $t6,$s6,quad_4x2color_p1
+jr $ra
+quad_4x2color_p2:
+   beq $s3,4,acertou_4x2
+   bne $s3,4,quad_4x2
+jr $ra
+quad_4x2color_p1:
+   beq $k1,4,acertou_4x2
+   bne $k1,4,quad_4x2
+jr $ra
+
+
+quad_5x2color:
+   beq $t6,$s5,quad_5x2color_p2
+   beq $t6,$s6,quad_5x2color_p1
+jr $ra
+quad_5x2color_p2:
+   beq $s3,5,acertou_5x2
+   bne $s3,5,quad_5x2
+jr $ra
+quad_5x2color_p1:
+   beq $k1,5,acertou_5x2
+   bne $k1,5,quad_5x2
+jr $ra
+
+
+quad_6x2color:
+   beq $t6,$s5,quad_6x2color_p2
+   beq $t6,$s6,quad_6x2color_p1
+jr $ra
+quad_6x2color_p2:
+   beq $s3,6,acertou_6x2
+   bne $s3,6,quad_6x2
+jr $ra
+quad_6x2color_p1:
+   beq $k1,6,acertou_6x2
+   bne $k1,6,quad_6x2
+jr $ra
+
+
+quad_7x2color:
+   beq $t6,$s5,quad_7x2color_p2
+   beq $t6,$s6,quad_7x2color_p1
+jr $ra
+quad_7x2color_p2:
+   beq $s3,7,acertou_7x2
+   bne $s3,7,quad_7x2
+jr $ra
+quad_7x2color_p1:
+   beq $k1,7,acertou_7x2
+   bne $k1,7,quad_7x2
+jr $ra
+
+
+quad_8x2color:
+   beq $t6,$s5,quad_8x2color_p2
+   beq $t6,$s6,quad_8x2color_p1
+jr $ra
+quad_8x2color_p2:
+   beq $s3,8,acertou_8x2
+   bne $s3,8,quad_8x2
+jr $ra
+quad_8x2color_p1:
+   beq $k1,8,acertou_8x2
+   bne $k1,8,quad_8x2
+jr $ra
+
+
+quad_9x2color:
+   beq $t6,$s5,quad_9x2color_p2
+   beq $t6,$s6,quad_9x2color_p1
+jr $ra
+quad_9x2color_p2:
+   beq $s3,9,acertou_9x2
+   bne $s3,9,quad_9x2
+jr $ra
+quad_9x2color_p1:
+   beq $k1,9,acertou_9x2
+   bne $k1,9,quad_9x2
+jr $ra
+
+
+# linha3
+quad_0x3color:
+   beq $t6,$s5,quad_0x3color_p2
+   beq $t6,$s6,quad_0x3color_p1
+jr $ra
+quad_0x3color_p2:
+   beq $s3,0,acertou_0x3
+   bne $s3,0,quad_0x3
+jr $ra
+quad_0x3color_p1:
+   beq $k1,0,acertou_0x3
+   bne $k1,0,quad_0x3
+jr $ra
+
+
+quad_1x3color:
+   beq $t6,$s5,quad_1x3color_p2
+   beq $t6,$s6,quad_1x3color_p1
+jr $ra
+quad_1x3color_p2:
+   beq $s3,1,acertou_1x3
+   bne $s3,1,quad_1x3
+jr $ra
+quad_1x3color_p1:
+   beq $k1,1,acertou_1x3
+   bne $k1,1,quad_1x3
+jr $ra
+
+
+quad_2x3color:
+   beq $t6,$s5,quad_2x3color_p2
+   beq $t6,$s6,quad_2x3color_p1
+jr $ra
+quad_2x3color_p2:
+   beq $s3,2,acertou_2x3
+   bne $s3,2,quad_2x3
+jr $ra
+quad_2x3color_p1:
+   beq $k1,2,acertou_2x3
+   bne $k1,2,quad_2x3
+jr $ra
+
+
+quad_3x3color:
+   beq $t6,$s5,quad_3x3color_p2
+   beq $t6,$s6,quad_3x3color_p1
+jr $ra
+quad_3x3color_p2:
+   beq $s3,3,acertou_3x3
+   bne $s3,3,quad_3x3
+jr $ra
+quad_3x3color_p1:
+   beq $k1,3,acertou_3x3
+   bne $k1,3,quad_3x3
+jr $ra
+
+
+quad_4x3color:
+   beq $t6,$s5,quad_4x3color_p2
+   beq $t6,$s6,quad_4x3color_p1
+jr $ra
+quad_4x3color_p2:
+   beq $s3,4,acertou_4x3
+   bne $s3,4,quad_4x3
+jr $ra
+quad_4x3color_p1:
+   beq $k1,4,acertou_4x3
+   bne $k1,4,quad_4x3
+jr $ra
+
+
+quad_5x3color:
+   beq $t6,$s5,quad_5x3color_p2
+   beq $t6,$s6,quad_5x3color_p1
+jr $ra
+quad_5x3color_p2:
+   beq $s3,5,acertou_5x3
+   bne $s3,5,quad_5x3
+jr $ra
+quad_5x3color_p1:
+   beq $k1,5,acertou_5x3
+   bne $k1,5,quad_5x3
+jr $ra
+
+
+quad_6x3color:
+   beq $t6,$s5,quad_6x3color_p2
+   beq $t6,$s6,quad_6x3color_p1
+jr $ra
+quad_6x3color_p2:
+   beq $s3,6,acertou_6x3
+   bne $s3,6,quad_6x3
+jr $ra
+quad_6x3color_p1:
+   beq $k1,6,acertou_6x3
+   bne $k1,6,quad_6x3
+jr $ra
+
+
+quad_7x3color:
+   beq $t6,$s5,quad_7x3color_p2
+   beq $t6,$s6,quad_7x3color_p1
+jr $ra
+quad_7x3color_p2:
+   beq $s3,7,acertou_7x3
+   bne $s3,7,quad_7x3
+jr $ra
+quad_7x3color_p1:
+   beq $k1,7,acertou_7x3
+   bne $k1,7,quad_7x3
+jr $ra
+
+
+quad_8x3color:
+   beq $t6,$s5,quad_8x3color_p2
+   beq $t6,$s6,quad_8x3color_p1
+jr $ra
+quad_8x3color_p2:
+   beq $s3,8,acertou_8x3
+   bne $s3,8,quad_8x3
+jr $ra
+quad_8x3color_p1:
+   beq $k1,8,acertou_8x3
+   bne $k1,8,quad_8x3
+jr $ra
+
+
+quad_9x3color:
+   beq $t6,$s5,quad_9x3color_p2
+   beq $t6,$s6,quad_9x3color_p1
+jr $ra
+quad_9x3color_p2:
+   beq $s3,9,acertou_9x3
+   bne $s3,9,quad_9x3
+jr $ra
+quad_9x3color_p1:
+   beq $k1,9,acertou_9x3
+   bne $k1,9,quad_9x3
+jr $ra
+
+
+# linha4
+quad_0x4color:
+   beq $t6,$s5,quad_0x4color_p2
+   beq $t6,$s6,quad_0x4color_p1
+jr $ra
+quad_0x4color_p2:
+   beq $s3,0,acertou_0x4
+   bne $s3,0,quad_0x4
+jr $ra
+quad_0x4color_p1:
+   beq $k1,0,acertou_0x4
+   bne $k1,0,quad_0x4
+jr $ra
+
+
+quad_1x4color:
+   beq $t6,$s5,quad_1x4color_p2
+   beq $t6,$s6,quad_1x4color_p1
+jr $ra
+quad_1x4color_p2:
+   beq $s3,1,acertou_1x4
+   bne $s3,1,quad_1x4
+jr $ra
+quad_1x4color_p1:
+   beq $k1,1,acertou_1x4
+   bne $k1,1,quad_1x4
+jr $ra
+
+
+quad_2x4color:
+   beq $t6,$s5,quad_2x4color_p2
+   beq $t6,$s6,quad_2x4color_p1
+jr $ra
+quad_2x4color_p2:
+   beq $s3,2,acertou_2x4
+   bne $s3,2,quad_2x4
+jr $ra
+quad_2x4color_p1:
+   beq $k1,2,acertou_2x4
+   bne $k1,2,quad_2x4
+jr $ra
+
+
+quad_3x4color:
+   beq $t6,$s5,quad_3x4color_p2
+   beq $t6,$s6,quad_3x4color_p1
+jr $ra
+quad_3x4color_p2:
+   beq $s3,3,acertou_3x4
+   bne $s3,3,quad_3x4
+jr $ra
+quad_3x4color_p1:
+   beq $k1,3,acertou_3x4
+   bne $k1,3,quad_3x4
+jr $ra
+
+
+quad_4x4color:
+   beq $t6,$s5,quad_4x4color_p2
+   beq $t6,$s6,quad_4x4color_p1
+jr $ra
+quad_4x4color_p2:
+   beq $s3,4,acertou_4x4
+   bne $s3,4,quad_4x4
+jr $ra
+quad_4x4color_p1:
+   beq $k1,4,acertou_4x4
+   bne $k1,4,quad_4x4
+jr $ra
+
+
+quad_5x4color:
+   beq $t6,$s5,quad_5x4color_p2
+   beq $t6,$s6,quad_5x4color_p1
+jr $ra
+quad_5x4color_p2:
+   beq $s3,5,acertou_5x4
+   bne $s3,5,quad_5x4
+jr $ra
+quad_5x4color_p1:
+   beq $k1,5,acertou_5x4
+   bne $k1,5,quad_5x4
+jr $ra
+
+
+quad_6x4color:
+   beq $t6,$s5,quad_6x4color_p2
+   beq $t6,$s6,quad_6x4color_p1
+jr $ra
+quad_6x4color_p2:
+   beq $s3,6,acertou_6x4
+   bne $s3,6,quad_6x4
+jr $ra
+quad_6x4color_p1:
+   beq $k1,6,acertou_6x4
+   bne $k1,6,quad_6x4
+jr $ra
+
+
+quad_7x4color:
+   beq $t6,$s5,quad_7x4color_p2
+   beq $t6,$s6,quad_7x4color_p1
+jr $ra
+quad_7x4color_p2:
+   beq $s3,7,acertou_7x4
+   bne $s3,7,quad_7x4
+jr $ra
+quad_7x4color_p1:
+   beq $k1,7,acertou_7x4
+   bne $k1,7,quad_7x4
+jr $ra
+
+
+quad_8x4color:
+   beq $t6,$s5,quad_8x4color_p2
+   beq $t6,$s6,quad_8x4color_p1
+jr $ra
+quad_8x4color_p2:
+   beq $s3,8,acertou_8x4
+   bne $s3,8,quad_8x4
+jr $ra
+quad_8x4color_p1:
+   beq $k1,8,acertou_8x4
+   bne $k1,8,quad_8x4
+jr $ra
+
+
+quad_9x4color:
+   beq $t6,$s5,quad_9x4color_p2
+   beq $t6,$s6,quad_9x4color_p1
+jr $ra
+quad_9x4color_p2:
+   beq $s3,9,acertou_9x4
+   bne $s3,9,quad_9x4
+jr $ra
+quad_9x4color_p1:
+   beq $k1,9,acertou_9x4
+   bne $k1,9,quad_9x4
+jr $ra
+
+
+# linha5
+quad_0x5color:
+   beq $t6,$s5,quad_0x5color_p2
+   beq $t6,$s6,quad_0x5color_p1
+jr $ra
+quad_0x5color_p2:
+   beq $s3,0,acertou_0x5
+   bne $s3,0,quad_0x5
+jr $ra
+quad_0x5color_p1:
+   beq $k1,0,acertou_0x5
+   bne $k1,0,quad_0x5
+jr $ra
+
+
+quad_1x5color:
+   beq $t6,$s5,quad_1x5color_p2
+   beq $t6,$s6,quad_1x5color_p1
+jr $ra
+quad_1x5color_p2:
+   beq $s3,1,acertou_1x5
+   bne $s3,1,quad_1x5
+jr $ra
+quad_1x5color_p1:
+   beq $k1,1,acertou_1x5
+   bne $k1,1,quad_1x5
+jr $ra
+
+
+quad_2x5color:
+   beq $t6,$s5,quad_2x5color_p2
+   beq $t6,$s6,quad_2x5color_p1
+jr $ra
+quad_2x5color_p2:
+   beq $s3,2,acertou_2x5
+   bne $s3,2,quad_2x5
+jr $ra
+quad_2x5color_p1:
+   beq $k1,2,acertou_2x5
+   bne $k1,2,quad_2x5
+jr $ra
+
+
+quad_3x5color:
+   beq $t6,$s5,quad_3x5color_p2
+   beq $t6,$s6,quad_3x5color_p1
+jr $ra
+quad_3x5color_p2:
+   beq $s3,3,acertou_3x5
+   bne $s3,3,quad_3x5
+jr $ra
+quad_3x5color_p1:
+   beq $k1,3,acertou_3x5
+   bne $k1,3,quad_3x5
+jr $ra
+
+
+quad_4x5color:
+   beq $t6,$s5,quad_4x5color_p2
+   beq $t6,$s6,quad_4x5color_p1
+jr $ra
+quad_4x5color_p2:
+   beq $s3,4,acertou_4x5
+   bne $s3,4,quad_4x5
+jr $ra
+quad_4x5color_p1:
+   beq $k1,4,acertou_4x5
+   bne $k1,4,quad_4x5
+jr $ra
+
+
+quad_5x5color:
+   beq $t6,$s5,quad_5x5color_p2
+   beq $t6,$s6,quad_5x5color_p1
+jr $ra
+quad_5x5color_p2:
+   beq $s3,5,acertou_5x5
+   bne $s3,5,quad_5x5
+jr $ra
+quad_5x5color_p1:
+   beq $k1,5,acertou_5x5
+   bne $k1,5,quad_5x5
+jr $ra
+
+
+quad_6x5color:
+   beq $t6,$s5,quad_6x5color_p2
+   beq $t6,$s6,quad_6x5color_p1
+jr $ra
+quad_6x5color_p2:
+   beq $s3,6,acertou_6x5
+   bne $s3,6,quad_6x5
+jr $ra
+quad_6x5color_p1:
+   beq $k1,6,acertou_6x5
+   bne $k1,6,quad_6x5
+jr $ra
+
+
+quad_7x5color:
+   beq $t6,$s5,quad_7x5color_p2
+   beq $t6,$s6,quad_7x5color_p1
+jr $ra
+quad_7x5color_p2:
+   beq $s3,7,acertou_7x5
+   bne $s3,7,quad_7x5
+jr $ra
+quad_7x5color_p1:
+   beq $k1,7,acertou_7x5
+   bne $k1,7,quad_7x5
+jr $ra
+
+
+quad_8x5color:
+   beq $t6,$s5,quad_8x5color_p2
+   beq $t6,$s6,quad_8x5color_p1
+jr $ra
+quad_8x5color_p2:
+   beq $s3,8,acertou_8x5
+   bne $s3,8,quad_8x5
+jr $ra
+quad_8x5color_p1:
+   beq $k1,8,acertou_8x5
+   bne $k1,8,quad_8x5
+jr $ra
+
+
+quad_9x5color:
+   beq $t6,$s5,quad_9x5color_p2
+   beq $t6,$s6,quad_9x5color_p1
+jr $ra
+quad_9x5color_p2:
+   beq $s3,9,acertou_9x5
+   bne $s3,9,quad_9x5
+jr $ra
+quad_9x5color_p1:
+   beq $k1,9,acertou_9x5
+   bne $k1,9,quad_9x5
+jr $ra
+
+
+# linha6
+quad_0x6color:
+   beq $t6,$s5,quad_0x6color_p2
+   beq $t6,$s6,quad_0x6color_p1
+jr $ra
+quad_0x6color_p2:
+   beq $s3,0,acertou_0x6
+   bne $s3,0,quad_0x6
+jr $ra
+quad_0x6color_p1:
+   beq $k1,0,acertou_0x6
+   bne $k1,0,quad_0x6
+jr $ra
+
+
+quad_1x6color:
+   beq $t6,$s5,quad_1x6color_p2
+   beq $t6,$s6,quad_1x6color_p1
+jr $ra
+quad_1x6color_p2:
+   beq $s3,1,acertou_1x6
+   bne $s3,1,quad_1x6
+jr $ra
+quad_1x6color_p1:
+   beq $k1,1,acertou_1x6
+   bne $k1,1,quad_1x6
+jr $ra
+
+
+quad_2x6color:
+   beq $t6,$s5,quad_2x6color_p2
+   beq $t6,$s6,quad_2x6color_p1
+jr $ra
+quad_2x6color_p2:
+   beq $s3,2,acertou_2x6
+   bne $s3,2,quad_2x6
+jr $ra
+quad_2x6color_p1:
+   beq $k1,2,acertou_2x6
+   bne $k1,2,quad_2x6
+jr $ra
+
+
+quad_3x6color:
+   beq $t6,$s5,quad_3x6color_p2
+   beq $t6,$s6,quad_3x6color_p1
+jr $ra
+quad_3x6color_p2:
+   beq $s3,3,acertou_3x6
+   bne $s3,3,quad_3x6
+jr $ra
+quad_3x6color_p1:
+   beq $k1,3,acertou_3x6
+   bne $k1,3,quad_3x6
+jr $ra
+
+
+quad_4x6color:
+   beq $t6,$s5,quad_4x6color_p2
+   beq $t6,$s6,quad_4x6color_p1
+jr $ra
+quad_4x6color_p2:
+   beq $s3,4,acertou_4x6
+   bne $s3,4,quad_4x6
+jr $ra
+quad_4x6color_p1:
+   beq $k1,4,acertou_4x6
+   bne $k1,4,quad_4x6
+jr $ra
+
+
+quad_5x6color:
+   beq $t6,$s5,quad_5x6color_p2
+   beq $t6,$s6,quad_5x6color_p1
+jr $ra
+quad_5x6color_p2:
+   beq $s3,5,acertou_5x6
+   bne $s3,5,quad_5x6
+jr $ra
+quad_5x6color_p1:
+   beq $k1,5,acertou_5x6
+   bne $k1,5,quad_5x6
+jr $ra
+
+
+quad_6x6color:
+   beq $t6,$s5,quad_6x6color_p2
+   beq $t6,$s6,quad_6x6color_p1
+jr $ra
+quad_6x6color_p2:
+   beq $s3,6,acertou_6x6
+   bne $s3,6,quad_6x6
+jr $ra
+quad_6x6color_p1:
+   beq $k1,6,acertou_6x6
+   bne $k1,6,quad_6x6
+jr $ra
+
+
+quad_7x6color:
+   beq $t6,$s5,quad_7x6color_p2
+   beq $t6,$s6,quad_7x6color_p1
+jr $ra
+quad_7x6color_p2:
+   beq $s3,7,acertou_7x6
+   bne $s3,7,quad_7x6
+jr $ra
+quad_7x6color_p1:
+   beq $k1,7,acertou_7x6
+   bne $k1,7,quad_7x6
+jr $ra
+
+
+quad_8x6color:
+   beq $t6,$s5,quad_8x6color_p2
+   beq $t6,$s6,quad_8x6color_p1
+jr $ra
+quad_8x6color_p2:
+   beq $s3,8,acertou_8x6
+   bne $s3,8,quad_8x6
+jr $ra
+quad_8x6color_p1:
+   beq $k1,8,acertou_8x6
+   bne $k1,8,quad_8x6
+jr $ra
+
+
+quad_9x6color:
+   beq $t6,$s5,quad_9x6color_p2
+   beq $t6,$s6,quad_9x6color_p1
+jr $ra
+quad_9x6color_p2:
+   beq $s3,9,acertou_9x6
+   bne $s3,9,quad_9x6
+jr $ra
+quad_9x6color_p1:
+   beq $k1,9,acertou_9x6
+   bne $k1,9,quad_9x6
+jr $ra
+
+
+# linha7
+quad_0x7color:
+   beq $t6,$s5,quad_0x7color_p2
+   beq $t6,$s6,quad_0x7color_p1
+jr $ra
+quad_0x7color_p2:
+   beq $s3,0,acertou_0x7
+   bne $s3,0,quad_0x7
+jr $ra
+quad_0x7color_p1:
+   beq $k1,0,acertou_0x7
+   bne $k1,0,quad_0x7
+jr $ra
+
+
+quad_1x7color:
+   beq $t6,$s5,quad_1x7color_p2
+   beq $t6,$s6,quad_1x7color_p1
+jr $ra
+quad_1x7color_p2:
+   beq $s3,1,acertou_1x7
+   bne $s3,1,quad_1x7
+jr $ra
+quad_1x7color_p1:
+   beq $k1,1,acertou_1x7
+   bne $k1,1,quad_1x7
+jr $ra
+
+
+quad_2x7color:
+   beq $t6,$s5,quad_2x7color_p2
+   beq $t6,$s6,quad_2x7color_p1
+jr $ra
+quad_2x7color_p2:
+   beq $s3,2,acertou_2x7
+   bne $s3,2,quad_2x7
+jr $ra
+quad_2x7color_p1:
+   beq $k1,2,acertou_2x7
+   bne $k1,2,quad_2x7
+jr $ra
+
+
+quad_3x7color:
+   beq $t6,$s5,quad_3x7color_p2
+   beq $t6,$s6,quad_3x7color_p1
+jr $ra
+quad_3x7color_p2:
+   beq $s3,3,acertou_3x7
+   bne $s3,3,quad_3x7
+jr $ra
+quad_3x7color_p1:
+   beq $k1,3,acertou_3x7
+   bne $k1,3,quad_3x7
+jr $ra
+
+
+quad_4x7color:
+   beq $t6,$s5,quad_4x7color_p2
+   beq $t6,$s6,quad_4x7color_p1
+jr $ra
+quad_4x7color_p2:
+   beq $s3,4,acertou_4x7
+   bne $s3,4,quad_4x7
+jr $ra
+quad_4x7color_p1:
+   beq $k1,4,acertou_4x7
+   bne $k1,4,quad_4x7
+jr $ra
+
+
+quad_5x7color:
+   beq $t6,$s5,quad_5x7color_p2
+   beq $t6,$s6,quad_5x7color_p1
+jr $ra
+quad_5x7color_p2:
+   beq $s3,5,acertou_5x7
+   bne $s3,5,quad_5x7
+jr $ra
+quad_5x7color_p1:
+   beq $k1,5,acertou_5x7
+   bne $k1,5,quad_5x7
+jr $ra
+
+
+quad_6x7color:
+   beq $t6,$s5,quad_6x7color_p2
+   beq $t6,$s6,quad_6x7color_p1
+jr $ra
+quad_6x7color_p2:
+   beq $s3,6,acertou_6x7
+   bne $s3,6,quad_6x7
+jr $ra
+quad_6x7color_p1:
+   beq $k1,6,acertou_6x7
+   bne $k1,6,quad_6x7
+jr $ra
+
+
+quad_7x7color:
+   beq $t6,$s5,quad_7x7color_p2
+   beq $t6,$s6,quad_7x7color_p1
+jr $ra
+quad_7x7color_p2:
+   beq $s3,7,acertou_7x7
+   bne $s3,7,quad_7x7
+jr $ra
+quad_7x7color_p1:
+   beq $k1,7,acertou_7x7
+   bne $k1,7,quad_7x7
+jr $ra
+
+
+quad_8x7color:
+   beq $t6,$s5,quad_8x7color_p2
+   beq $t6,$s6,quad_8x7color_p1
+jr $ra
+quad_8x7color_p2:
+   beq $s3,8,acertou_8x7
+   bne $s3,8,quad_8x7
+jr $ra
+quad_8x7color_p1:
+   beq $k1,8,acertou_8x7
+   bne $k1,8,quad_8x7
+jr $ra
+
+
+quad_9x7color:
+   beq $t6,$s5,quad_9x7color_p2
+   beq $t6,$s6,quad_9x7color_p1
+jr $ra
+quad_9x7color_p2:
+   beq $s3,9,acertou_9x7
+   bne $s3,9,quad_9x7
+jr $ra
+quad_9x7color_p1:
+   beq $k1,9,acertou_9x7
+   bne $k1,9,quad_9x7
+jr $ra
+
+
+# linha8
+quad_0x8color:
+   beq $t6,$s5,quad_0x8color_p2
+   beq $t6,$s6,quad_0x8color_p1
+jr $ra
+quad_0x8color_p2:
+   beq $s3,0,acertou_0x8
+   bne $s3,0,quad_0x8
+jr $ra
+quad_0x8color_p1:
+   beq $k1,0,acertou_0x8
+   bne $k1,0,quad_0x8
+jr $ra
+
+
+quad_1x8color:
+   beq $t6,$s5,quad_1x8color_p2
+   beq $t6,$s6,quad_1x8color_p1
+jr $ra
+quad_1x8color_p2:
+   beq $s3,1,acertou_1x8
+   bne $s3,1,quad_1x8
+jr $ra
+quad_1x8color_p1:
+   beq $k1,1,acertou_1x8
+   bne $k1,1,quad_1x8
+jr $ra
+
+
+quad_2x8color:
+   beq $t6,$s5,quad_2x8color_p2
+   beq $t6,$s6,quad_2x8color_p1
+jr $ra
+quad_2x8color_p2:
+   beq $s3,2,acertou_2x8
+   bne $s3,2,quad_2x8
+jr $ra
+quad_2x8color_p1:
+   beq $k1,2,acertou_2x8
+   bne $k1,2,quad_2x8
+jr $ra
+
+
+quad_3x8color:
+   beq $t6,$s5,quad_3x8color_p2
+   beq $t6,$s6,quad_3x8color_p1
+jr $ra
+quad_3x8color_p2:
+   beq $s3,3,acertou_3x8
+   bne $s3,3,quad_3x8
+jr $ra
+quad_3x8color_p1:
+   beq $k1,3,acertou_3x8
+   bne $k1,3,quad_3x8
+jr $ra
+
+
+quad_4x8color:
+   beq $t6,$s5,quad_4x8color_p2
+   beq $t6,$s6,quad_4x8color_p1
+jr $ra
+quad_4x8color_p2:
+   beq $s3,4,acertou_4x8
+   bne $s3,4,quad_4x8
+jr $ra
+quad_4x8color_p1:
+   beq $k1,4,acertou_4x8
+   bne $k1,4,quad_4x8
+jr $ra
+
+
+quad_5x8color:
+   beq $t6,$s5,quad_5x8color_p2
+   beq $t6,$s6,quad_5x8color_p1
+jr $ra
+quad_5x8color_p2:
+   beq $s3,5,acertou_5x8
+   bne $s3,5,quad_5x8
+jr $ra
+quad_5x8color_p1:
+   beq $k1,5,acertou_5x8
+   bne $k1,5,quad_5x8
+jr $ra
+
+
+quad_6x8color:
+   beq $t6,$s5,quad_6x8color_p2
+   beq $t6,$s6,quad_6x8color_p1
+jr $ra
+quad_6x8color_p2:
+   beq $s3,6,acertou_6x8
+   bne $s3,6,quad_6x8
+jr $ra
+quad_6x8color_p1:
+   beq $k1,6,acertou_6x8
+   bne $k1,6,quad_6x8
+jr $ra
+
+
+quad_7x8color:
+   beq $t6,$s5,quad_7x8color_p2
+   beq $t6,$s6,quad_7x8color_p1
+jr $ra
+quad_7x8color_p2:
+   beq $s3,7,acertou_7x8
+   bne $s3,7,quad_7x8
+jr $ra
+quad_7x8color_p1:
+   beq $k1,7,acertou_7x8
+   bne $k1,7,quad_7x8
+jr $ra
+
+
+quad_8x8color:
+   beq $t6,$s5,quad_8x8color_p2
+   beq $t6,$s6,quad_8x8color_p1
+jr $ra
+quad_8x8color_p2:
+   beq $s3,8,acertou_8x8
+   bne $s3,8,quad_8x8
+jr $ra
+quad_8x8color_p1:
+   beq $k1,8,acertou_8x8
+   bne $k1,8,quad_8x8
+jr $ra
+
+
+quad_9x8color:
+   beq $t6,$s5,quad_9x8color_p2
+   beq $t6,$s6,quad_9x8color_p1
+jr $ra
+quad_9x8color_p2:
+   beq $s3,9,acertou_9x8
+   bne $s3,9,quad_9x8
+jr $ra
+quad_9x8color_p1:
+   beq $k1,9,acertou_9x8
+   bne $k1,9,quad_9x8
+jr $ra
+
+
+#============================  LINHAS DO TABULEIRO  ===========================
+#==============================================================================
 
 
 
-#===================================== GRAPHICAL USER INTERFACE - GUI =================================
-#======================================================================================================
-	
-	# ========= COLOR LINHA 0 =======
-	quad_0x0color:
-		beq $k1,0,acertou_0x0
-		bne $k1,0,quad_0x0
-		
-	jr $ra
-	quad_1x0color:
-		beq $k1,1,acertou_1x0
-		bne $k1,1,quad_1x0
-		
-	jr $ra
-	quad_2x0color:
-		beq $k1,2,acertou_2x0
-		bne $k1,2,quad_2x0
-		
-	jr $ra
-	quad_3x0color:
-		beq $k1,3,acertou_3x0
-		bne $k1,3,quad_3x0
-		
-	jr $ra
-	
-	quad_4x0color:
-		beq $k1,4,acertou_4x0
-		bne $k1,4,quad_4x0
-		
-	jr $ra
-	
-	quad_5x0color:
-		beq $k1,5,acertou_5x0
-		bne $k1,5,quad_5x0
-	jr $ra
-	
-	quad_6x0color:
-		beq $k1,6,acertou_6x0
-		bne $k1,6,quad_6x0
-	jr $ra
-	quad_7x0color:
-		beq $k1,7,acertou_7x0
-		bne $k1,7,quad_7x0
-		
-	jr $ra
-	quad_8x0color:
-		beq $k1,8,acertou_8x0
-		bne $k1,8,quad_8x0
-		
-	jr $ra
-	quad_9x0color:
-		beq $k1,9,acertou_9x0
-		bne $k1,9,quad_9x0
-		
-	jr $ra
-	
-	#=========== COLOR LINHA 1 =============	
-	quad_0x1color:
-		beq $k1,0,acertou_0x1
-		bne $k1,0,quad_0x1
-	jr $ra
-	quad_1x1color:
-		beq $k1,1 acertou_1x1
-		bne $k1,1,quad_1x1
-	jr $ra
-	quad_2x1color:
-		beq $k1,2,acertou_2x1
-		bne $k1,2,quad_2x1
-	jr $ra
-	quad_3x1color:
-		beq $k1,3,acertou_3x1
-		bne $k1,3,quad_3x1
-	jr $ra
-	
-	quad_4x1color:
-		beq $k1,4,acertou_4x1
-		bne $k1,4,quad_4x1
-	jr $ra
-	
-	quad_5x1color:
-		beq $k1,5,acertou_5x1
-		bne $k1,5,quad_5x1
-	jr $ra
-	
-	quad_6x1color:
-		beq $k1,6,acertou_6x1
-		bne $k1,6,quad_6x1
-	jr $ra
-	quad_7x1color:
-		beq $k1,7,acertou_7x1
-		bne $k1,7,quad_7x1
-	jr $ra
-	quad_8x1color:
-		beq $k1,8,acertou_8x1
-		bne $k1,8,quad_8x1
-	jr $ra
-	quad_9x1color:
-		beq $k1,9,acertou_9x1
-		bne $k1,9,quad_9x1
-	jr $ra
+# ==================== linha 0================== 
+row_0x0:
+    beq $t6,$s5,linha_s5x0x0
+    beq $t6,$s6,linha_s6x0x0
+        bne $t6,$s5,p_0x0
+        p_0x0:bne $t6,$s6,quad_0x0
+jr $ra
+linha_s5x0x0:
+       beq $s5,0,quad_0x0color
+       bne $s5,0,quad_0x0
+jr $ra
+linha_s6x0x0:
+       beq $s6,0,quad_0x0color
+       bne $s6,0,quad_0x0
+jr $ra
 
 
-	#=========== COLOR LINHA 2 =============	
-	quad_0x2color:
-		beq $k1,0,acertou_0x2
-		bne $k1,0,quad_0x2
-	jr $ra
-	quad_1x2color:
-		beq $k1,1 acertou_1x2
-		bne $k1,1,quad_1x2
-	jr $ra
-	quad_2x2color:
-		beq $k1,2,acertou_2x2
-		bne $k1,2,quad_2x2
-	jr $ra
-	quad_3x2color:
-		beq $k1,3,acertou_3x2
-		bne $k1,3,quad_3x2
-	jr $ra
-	
-	quad_4x2color:
-		beq $k1,4,acertou_4x2
-		bne $k1,4,quad_4x2
-	jr $ra
-	
-	quad_5x2color:
-		beq $k1,5,acertou_5x2
-		bne $k1,5,quad_5x2
-	jr $ra
-	
-	quad_6x2color:
-		beq $k1,6,acertou_6x2
-		bne $k1,6,quad_6x2
-	jr $ra
-	quad_7x2color:
-		beq $k1,7,acertou_7x2
-		bne $k1,7,quad_7x2
-	jr $ra
-	quad_8x2color:
-		beq $k1,8,acertou_8x2
-		bne $k1,8,quad_8x2
-	jr $ra
-	quad_9x2color:
-		beq $k1,9,acertou_9x2
-		bne $k1,9,quad_9x2
-	jr $ra
+row_1x0:
+    beq $t6,$s5,linha_s5x1x0
+    beq $t6,$s6,linha_s6x1x0
+        bne $t6,$s5,p_1x0
+        p_1x0:bne $t6,$s6,quad_1x0
+jr $ra
+linha_s5x1x0:
+       beq $s5,0,quad_1x0color
+       bne $s5,0,quad_1x0
+jr $ra
+linha_s6x1x0:
+       beq $s6,0,quad_1x0color
+       bne $s6,0,quad_1x0
+jr $ra
 
 
-	#=========== COLOR LINHA 3 =============	
-	quad_0x3color:
-		beq $k1,0,acertou_0x3
-		bne $k1,0,quad_0x3
-	jr $ra
-	quad_1x3color:
-		beq $k1,1 acertou_1x3
-		bne $k1,1,quad_1x3
-	jr $ra
-	quad_2x3color:
-		beq $k1,2,acertou_2x3
-		bne $k1,2,quad_2x3
-	jr $ra
-	quad_3x3color:
-		beq $k1,3,acertou_3x3
-		bne $k1,3,quad_3x3
-	jr $ra
-	
-	quad_4x3color:
-		beq $k1,4,acertou_4x3
-		bne $k1,4,quad_4x3
-	jr $ra
-	
-	quad_5x3color:
-		beq $k1,5,acertou_5x3
-		bne $k1,5,quad_5x3
-	jr $ra
-	
-	quad_6x3color:
-		beq $k1,6,acertou_6x3
-		bne $k1,6,quad_6x3
-	jr $ra
-	quad_7x3color:
-		beq $k1,7,acertou_7x3
-		bne $k1,7,quad_7x3
-	jr $ra
-	quad_8x3color:
-		beq $k1,8,acertou_8x3
-		bne $k1,8,quad_8x3
-	jr $ra
-	quad_9x3color:
-		beq $k1,9,acertou_9x3
-		bne $k1,9,quad_9x3
-	jr $ra
-
-	#=========== COLOR LINHA 4 =============	
-	quad_0x4color:
-		beq $k1,0,acertou_0x4
-		bne $k1,0,quad_0x4
-	jr $ra
-	quad_1x4color:
-		beq $k1,1 acertou_1x4
-		bne $k1,1,quad_1x4
-	jr $ra
-	quad_2x4color:
-		beq $k1,2,acertou_2x4
-		bne $k1,2,quad_2x4
-	jr $ra
-	quad_3x4color:
-		beq $k1,4,acertou_3x4
-		bne $k1,4,quad_3x4
-	jr $ra
-	
-	quad_4x4color:
-		beq $k1,4,acertou_4x4
-		bne $k1,4,quad_4x4
-	jr $ra
-	
-	quad_5x4color:
-		beq $k1,5,acertou_5x4
-		bne $k1,5,quad_5x4
-	jr $ra
-	
-	quad_6x4color:
-		beq $k1,6,acertou_6x4
-		bne $k1,6,quad_6x4
-	jr $ra
-	quad_7x4color:
-		beq $k1,7,acertou_7x4
-		bne $k1,7,quad_7x4
-	jr $ra
-	quad_8x4color:
-		beq $k1,8,acertou_8x4
-		bne $k1,8,quad_8x4
-	jr $ra
-	quad_9x4color:
-		beq $k1,9,acertou_9x4
-		bne $k1,9,quad_9x4
-	jr $ra
-
-	#=========== COLOR LINHA 5 =============	
-	quad_0x5color:
-		beq $k1,0,acertou_0x5
-		bne $k1,0,quad_0x5
-	jr $ra
-	quad_1x5color:
-		beq $k1,1 acertou_1x5
-		bne $k1,1,quad_1x5
-	jr $ra
-	quad_2x5color:
-		beq $k1,2,acertou_2x5
-		bne $k1,2,quad_2x5
-	jr $ra
-	quad_3x5color:
-		beq $k1,3,acertou_3x5
-		bne $k1,3,quad_3x5
-	jr $ra
-	
-	quad_4x5color:
-		beq $k1,4,acertou_4x5
-		bne $k1,4,quad_4x5
-	jr $ra
-	
-	quad_5x5color:
-		beq $k1,5,acertou_5x5
-		bne $k1,5,quad_5x5
-	jr $ra
-	
-	quad_6x5color:
-		beq $k1,6,acertou_6x5
-		bne $k1,6,quad_6x5
-	jr $ra
-	quad_7x5color:
-		beq $k1,7,acertou_7x5
-		bne $k1,7,quad_7x5
-	jr $ra
-	quad_8x5color:
-		beq $k1,8,acertou_8x5
-		bne $k1,8,quad_8x5
-	jr $ra
-	quad_9x5color:
-		beq $k1,9,acertou_9x5
-		bne $k1,9,quad_9x5
-	jr $ra
-	    
-    #=========== COLOR LINHA 6 =============	
-	quad_0x6color:
-		beq $k1,0,acertou_0x6
-		bne $k1,0,quad_0x6
-	jr $ra
-	quad_1x6color:
-		beq $k1,1 acertou_1x6
-		bne $k1,1,quad_1x6
-	jr $ra
-	quad_2x6color:
-		beq $k1,2,acertou_2x6
-		bne $k1,2,quad_2x6
-	jr $ra
-	quad_3x6color:
-		beq $k1,3,acertou_3x6
-		bne $k1,3,quad_3x6
-	jr $ra
-	
-	quad_4x6color:
-		beq $k1,4,acertou_4x6
-		bne $k1,4,quad_4x6
-	jr $ra
-	
-	quad_5x6color:
-		beq $k1,5,acertou_5x6
-		bne $k1,5,quad_5x6
-	jr $ra
-	
-	quad_6x6color:
-		beq $k1,6,acertou_6x6
-		bne $k1,6,quad_6x6
-	jr $ra
-	quad_7x6color:
-		beq $k1,7,acertou_7x6
-		bne $k1,7,quad_7x6
-	jr $ra
-	quad_8x6color:
-		beq $k1,8,acertou_8x6
-		bne $k1,8,quad_8x6
-	jr $ra
-	quad_9x6color:
-		beq $k1,9,acertou_9x6
-		bne $k1,9,quad_9x6
-	jr $ra
-
-    #=========== COLOR LINHA 7 =============	
-	quad_0x7color:
-		beq $k1,0,acertou_0x7
-		bne $k1,0,quad_0x7
-	jr $ra
-	quad_1x7color:
-		beq $k1,1 acertou_1x7
-		bne $k1,1,quad_1x7
-	jr $ra
-	quad_2x7color:
-		beq $k1,2,acertou_2x7
-		bne $k1,2,quad_2x7
-	jr $ra
-	quad_3x7color:
-		beq $k1,3,acertou_3x7
-		bne $k1,3,quad_3x7
-	jr $ra
-	
-	quad_4x7color:
-		beq $k1,4,acertou_4x7
-		bne $k1,4,quad_4x7
-	jr $ra
-	
-	quad_5x7color:
-		beq $k1,5,acertou_5x7
-		bne $k1,5,quad_5x7
-	jr $ra
-	
-	quad_6x7color:
-		beq $k1,6,acertou_6x7
-		bne $k1,6,quad_6x7
-	jr $ra
-	quad_7x7color:
-		beq $k1,7,acertou_7x7
-		bne $k1,7,quad_7x7
-	jr $ra
-	quad_8x7color:
-		beq $k1,8,acertou_8x7
-		bne $k1,8,quad_8x7
-	jr $ra
-	quad_9x7color:
-		beq $k1,9,acertou_9x7
-		bne $k1,9,quad_9x7
-	jr $ra
-
-    #=========== COLOR LINHA 8 =============	
-	quad_0x8color:
-		beq $k1,0,acertou_0x8
-		bne $k1,0,quad_0x8
-	jr $ra
-	quad_1x8color:
-		beq $k1,1 acertou_1x8
-		bne $k1,1,quad_1x8
-	jr $ra
-	quad_2x8color:
-		beq $k1,2,acertou_2x8
-		bne $k1,2,quad_2x8
-	jr $ra
-	quad_3x8color:
-		beq $k1,3,acertou_3x8
-		bne $k1,3,quad_3x8
-	jr $ra
-	
-	quad_4x8color:
-		beq $k1,4,acertou_4x8
-		bne $k1,4,quad_4x8
-	jr $ra
-	
-	quad_5x8color:
-		beq $k1,5,acertou_5x8
-		bne $k1,5,quad_5x8
-	jr $ra
-	
-	quad_6x8color:
-		beq $k1,6,acertou_6x8
-		bne $k1,6,quad_6x8
-	jr $ra
-	quad_7x8color:
-		beq $k1,7,acertou_7x8
-		bne $k1,7,quad_7x8
-	jr $ra
-	quad_8x8color:
-		beq $k1,8,acertou_8x8
-		bne $k1,8,quad_8x8
-	jr $ra
-	quad_9x8color:
-		beq $k1,9,acertou_9x8
-		bne $k1,9,quad_9x8
-	jr $ra
-   
-   
-   
-   
-
-#================================================================================================
-#================================================================================================
+row_2x0:
+    beq $t6,$s5,linha_s5x2x0
+    beq $t6,$s6,linha_s6x2x0
+        bne $t6,$s5,p_2x0
+        p_2x0:bne $t6,$s6,quad_2x0
+jr $ra
+linha_s5x2x0:
+       beq $s5,0,quad_2x0color
+       bne $s5,0,quad_2x0
+jr $ra
+linha_s6x2x0:
+       beq $s6,0,quad_2x0color
+       bne $s6,0,quad_2x0
+jr $ra
 
 
-	#linha 0 
-	#===========================================
-	row_0x0:
-		beq $s6,0,quad_0x0color
-		bne $s6,0,quad_0x0
-	jr $ra
-	row_1x0:
-		beq $s6,0,quad_1x0color 
-		bne $s6,0,quad_1x0
-	jr $ra
-	row_2x0:
-		beq $s6,0,quad_2x0color
-		bne $s6,0,quad_2x0
-	jr $ra
-	row_3x0:
-		beq $s6,0,quad_3x0color 
-		bne $s6,0,quad_3x0
-	jr $ra
-	row_4x0:
-		beq $s6,0,quad_4x0color	
-		bne $s6,0,quad_4x0
-	jr $ra
-	row_5x0:
-		beq $s6,0,quad_5x0color 
-		bne $s6,0,quad_5x0
-	jr $ra
-	row_6x0:
-		beq $s6,0,quad_6x0color	
-		bne $s6,0,quad_6x0
-	jr $ra
-	row_7x0:
-		beq $s6,0,quad_7x0color 
-		bne $s6,0,quad_7x0
-	jr $ra
-	row_8x0:
-		beq $s6,0,quad_8x0color
-		bne $s6,0,quad_8x0		
-	jr $ra
-	row_9x0:
-		beq $s6,0,quad_9x0color 
-		bne $s6,0,quad_9x0
-	jr $ra
+row_3x0:
+    beq $t6,$s5,linha_s5x3x0
+    beq $t6,$s6,linha_s6x3x0
+        bne $t6,$s5,p_3x0
+        p_3x0:bne $t6,$s6,quad_3x0
+jr $ra
+linha_s5x3x0:
+       beq $s5,0,quad_3x0color
+       bne $s5,0,quad_3x0
+jr $ra
+linha_s6x3x0:
+       beq $s6,0,quad_3x0color
+       bne $s6,0,quad_3x0
+jr $ra
 
-	#linha 1
-	#===========================================
-	row_0x1:
-		beq $s6,1,quad_0x1color
-		bne $s6,1,quad_0x1
-	jr $ra
-	row_1x1:
-		beq $s6,1,quad_1x1color 
-		bne $s6,1,quad_1x1
-	jr $ra
-	row_2x1:
-		beq $s6,1,quad_2x1color
-		bne $s6,1,quad_2x1
-	jr $ra
-	row_3x1:
-		beq $s6,1,quad_3x1color 
-		bne $s6,1,quad_3x1
-	jr $ra
-	row_4x1:
-		beq $s6,1,quad_4x1color	
-		bne $s6,1,quad_4x1
-	jr $ra
-	row_5x1:
-		beq $s6,1,quad_5x1color 
-		bne $s6,1,quad_5x1
-	jr $ra
-	row_6x1:
-		beq $s6,1,quad_6x1color	
-		bne $s6,1,quad_6x1
-	jr $ra
-	row_7x1:
-		beq $s6,1,quad_7x1color 
-		bne $s6,1,quad_7x1
-	jr $ra
-	row_8x1:
-		beq $s6,1,quad_8x1color
-		bne $s6,1,quad_8x1		
-	jr $ra
-	row_9x1:
-		beq $s6,1,quad_9x1color 
-		bne $s6,1,quad_9x1
-	jr $ra
 
-	#linha 2
-	#===========================================
-	row_0x2:
-		beq $s6,2,quad_0x2color
-		bne $s6,2,quad_0x2
-	jr $ra
-	row_1x2:
-		beq $s6,2,quad_1x2color 
-		bne $s6,2,quad_1x2
-	jr $ra
-	row_2x2:
-		beq $s6,2,quad_2x2color
-		bne $s6,2,quad_2x2
-	jr $ra
-	row_3x2:
-		beq $s6,2,quad_3x2color 
-		bne $s6,2,quad_3x2
-	jr $ra
-	row_4x2:
-		beq $s6,2,quad_4x2color	
-		bne $s6,2,quad_4x2
-	jr $ra
-	row_5x2:
-		beq $s6,2,quad_5x2color 
-		bne $s6,2,quad_5x2
-	jr $ra
-	row_6x2:
-		beq $s6,2,quad_6x2color	
-		bne $s6,2,quad_6x2
-	jr $ra
-	row_7x2:
-		beq $s6,2,quad_7x2color 
-		bne $s6,2,quad_7x2
-	jr $ra
-	row_8x2:
-		beq $s6,2,quad_8x2color
-		bne $s6,2,quad_8x2		
-	jr $ra
-	row_9x2:
-		beq $s6,2,quad_9x2color 
-		bne $s6,2,quad_9x2
-	jr $ra
-	
-	#linha 3
-	#===========================================
-	row_0x3:
-		beq $s6,3,quad_0x3color
-		bne $s6,3,quad_0x3
-	jr $ra
-	row_1x3:
-		beq $s6,3,quad_1x3color 
-		bne $s6,3,quad_1x3
-	jr $ra
-	row_2x3:
-		beq $s6,3,quad_2x3color
-		bne $s6,3,quad_2x3
-	jr $ra
-	row_3x3:
-		beq $s6,3,quad_3x3color 
-		bne $s6,3,quad_3x3
-	jr $ra
-	row_4x3:
-		beq $s6,3,quad_4x3color	
-		bne $s6,3,quad_4x3
-	jr $ra
-	row_5x3:
-		beq $s6,3,quad_5x3color 
-		bne $s6,3,quad_5x3
-	jr $ra
-	row_6x3:
-		beq $s6,3,quad_6x3color	
-		bne $s6,3,quad_6x3
-	jr $ra
-	row_7x3:
-		beq $s6,3,quad_7x3color 
-		bne $s6,3,quad_7x3
-	jr $ra
-	row_8x3:
-		beq $s6,3,quad_8x3color
-		bne $s6,3,quad_8x3		
-	jr $ra
-	row_9x3:
-		beq $s6,3,quad_9x3color 
-		bne $s6,3,quad_9x3
-	jr $ra
+row_4x0:
+    beq $t6,$s5,linha_s5x4x0
+    beq $t6,$s6,linha_s6x4x0
+        bne $t6,$s5,p_4x0
+        p_4x0:bne $t6,$s6,quad_4x0
+jr $ra
+linha_s5x4x0:
+       beq $s5,0,quad_4x0color
+       bne $s5,0,quad_4x0
+jr $ra
+linha_s6x4x0:
+       beq $s6,0,quad_4x0color
+       bne $s6,0,quad_4x0
+jr $ra
 
-	#linha 4
-	#===========================================
-	row_0x4:
-		beq $s6,4,quad_0x4color
-		bne $s6,4,quad_0x4
-	jr $ra
-	row_1x4:
-		beq $s6,4,quad_1x4color 
-		bne $s6,4,quad_1x4
-	jr $ra
-	row_2x4:
-		beq $s6,4,quad_2x4color
-		bne $s6,4,quad_2x4
-	jr $ra
-	row_3x4:
-		beq $s6,4,quad_3x4color 
-		bne $s6,4,quad_3x4
-	jr $ra
-	row_4x4:
-		beq $s6,4,quad_4x4color	
-		bne $s6,4,quad_4x4
-	jr $ra
-	row_5x4:
-		beq $s6,4,quad_5x4color 
-		bne $s6,4,quad_5x4
-	jr $ra
-	row_6x4:
-		beq $s6,4,quad_6x4color	
-		bne $s6,4,quad_6x4
-	jr $ra
-	row_7x4:
-		beq $s6,4,quad_7x4color 
-		bne $s6,4,quad_7x4
-	jr $ra
-	row_8x4:
-		beq $s6,4,quad_8x4color
-		bne $s6,4,quad_8x4		
-	jr $ra
-	row_9x4:
-		beq $s6,4,quad_9x4color 
-		bne $s6,4,quad_9x4
-	jr $ra
 
-	#linha 5
-	#===========================================
-	row_0x5:
-		beq $s6,5,quad_0x5color
-		bne $s6,5,quad_0x5
-	jr $ra
-	row_1x5:
-		beq $s6,5,quad_1x5color 
-		bne $s6,5,quad_1x5
-	jr $ra
-	row_2x5:
-		beq $s6,5,quad_2x5color
-		bne $s6,5,quad_2x5
-	jr $ra
-	row_3x5:
-		beq $s6,5,quad_3x5color 
-		bne $s6,5,quad_3x5
-	jr $ra
-	row_4x5:
-		beq $s6,5,quad_4x5color	
-		bne $s6,5,quad_4x5
-	jr $ra
-	row_5x5:
-		beq $s6,5,quad_5x5color 
-		bne $s6,5,quad_5x5
-	jr $ra
-	row_6x5:
-		beq $s6,5,quad_6x5color	
-		bne $s6,5,quad_6x5
-	jr $ra
-	row_7x5:
-		beq $s6,5,quad_7x5color 
-		bne $s6,5,quad_7x5
-	jr $ra
-	row_8x5:
-		beq $s6,5,quad_8x5color
-		bne $s6,5,quad_8x5		
-	jr $ra
-	row_9x5:
-		beq $s6,5,quad_9x5color 
-		bne $s6,5,quad_9x5
-	jr $ra
+row_5x0:
+    beq $t6,$s5,linha_s5x5x0
+    beq $t6,$s6,linha_s6x5x0
+        bne $t6,$s5,p_5x0
+        p_5x0:bne $t6,$s6,quad_5x0
+jr $ra
+linha_s5x5x0:
+       beq $s5,0,quad_5x0color
+       bne $s5,0,quad_5x0
+jr $ra
+linha_s6x5x0:
+       beq $s6,0,quad_5x0color
+       bne $s6,0,quad_5x0
+jr $ra
 
-	#linha 6
-	#===========================================
-	row_0x6:
-		beq $s6,6,quad_0x6color
-		bne $s6,6,quad_0x6
-	jr $ra
-	row_1x6:
-		beq $s6,6,quad_1x6color 
-		bne $s6,6,quad_1x6
-	jr $ra
-	row_2x6:
-		beq $s6,6,quad_2x6color
-		bne $s6,6,quad_2x6
-	jr $ra
-	row_3x6:
-		beq $s6,6,quad_3x6color 
-		bne $s6,6,quad_3x6
-	jr $ra
-	row_4x6:
-		beq $s6,6,quad_4x6color	
-		bne $s6,6,quad_4x6
-	jr $ra
-	row_5x6:
-		beq $s6,6,quad_5x6color 
-		bne $s6,6,quad_5x6
-	jr $ra
-	row_6x6:
-		beq $s6,6,quad_6x6color	
-		bne $s6,6,quad_6x6
-	jr $ra
-	row_7x6:
-		beq $s6,6,quad_7x6color 
-		bne $s6,6,quad_7x6
-	jr $ra
-	row_8x6:
-		beq $s6,6,quad_8x6color
-		bne $s6,6,quad_8x6		
-	jr $ra
-	row_9x6:
-		beq $s6,6,quad_9x6color 
-		bne $s6,6,quad_9x6
-	jr $ra
 
-    #linha 7
-	#===========================================
-	row_0x7:
-		beq $s6,7,quad_0x7color
-		bne $s6,7,quad_0x7
-	jr $ra
-	row_1x7:
-		beq $s6,7,quad_1x7color 
-		bne $s6,7,quad_1x7
-	jr $ra
-	row_2x7:
-		beq $s6,7,quad_2x7color
-		bne $s6,7,quad_2x7
-	jr $ra
-	row_3x7:
-		beq $s6,7,quad_3x7color 
-		bne $s6,7,quad_3x7
-	jr $ra
-	row_4x7:
-		beq $s6,7,quad_4x7color	
-		bne $s6,7,quad_4x7
-	jr $ra
-	row_5x7:
-		beq $s6,7,quad_5x7color 
-		bne $s6,7,quad_5x7
-	jr $ra
-	row_6x7:
-		beq $s6,7,quad_6x7color	
-		bne $s6,7,quad_6x7
-	jr $ra
-	row_7x7:
-		beq $s6,7,quad_7x7color 
-		bne $s6,7,quad_7x7
-	jr $ra
-	row_8x7:
-		beq $s6,7,quad_8x7color
-		bne $s6,7,quad_8x7		
-	jr $ra
-	row_9x7:
-		beq $s6,7,quad_9x7color 
-		bne $s6,7,quad_9x7
-	jr $ra
+row_6x0:
+    beq $t6,$s5,linha_s5x6x0
+    beq $t6,$s6,linha_s6x6x0
+        bne $t6,$s5,p_6x0
+        p_6x0:bne $t6,$s6,quad_6x0
+jr $ra
+linha_s5x6x0:
+       beq $s5,0,quad_6x0color
+       bne $s5,0,quad_6x0
+jr $ra
+linha_s6x6x0:
+       beq $s6,0,quad_6x0color
+       bne $s6,0,quad_6x0
+jr $ra
 
-	#linha 8
-	#===========================================
-	row_0x8:
-		beq $s6,8,quad_0x8color
-		bne $s6,8,quad_0x8
-	jr $ra
-	row_1x8:
-		beq $s6,8,quad_1x8color 
-		bne $s6,8,quad_1x8
-	jr $ra
-	row_2x8:
-		beq $s6,8,quad_2x8color
-		bne $s6,8,quad_2x8
-	jr $ra
-	row_3x8:
-		beq $s6,8,quad_3x8color 
-		bne $s6,8,quad_3x8
-	jr $ra
-	row_4x8:
-		beq $s6,8,quad_4x8color	
-		bne $s6,8,quad_4x8
-	jr $ra
-	row_5x8:
-		beq $s6,8,quad_5x8color 
-		bne $s6,8,quad_5x8
-	jr $ra
-	row_6x8:
-		beq $s6,8,quad_6x8color	
-		bne $s6,8,quad_6x8
-	jr $ra
-	row_7x8:
-		beq $s6,8,quad_7x8color 
-		bne $s6,8,quad_7x8
-	jr $ra
-	row_8x8:
-		beq $s6,8,quad_8x8color
-		bne $s6,8,quad_8x8		
-	jr $ra
-	row_9x8:
-		beq $s6,8,quad_9x8color 
-		bne $s6,8,quad_9x8
-	jr $ra   
 
-   
-   
-   
-   
-   
+row_7x0:
+    beq $t6,$s5,linha_s5x7x0
+    beq $t6,$s6,linha_s6x7x0
+        bne $t6,$s5,p_7x0
+        p_7x0:bne $t6,$s6,quad_7x0
+jr $ra
+linha_s5x7x0:
+       beq $s5,0,quad_7x0color
+       bne $s5,0,quad_7x0
+jr $ra
+linha_s6x7x0:
+       beq $s6,0,quad_7x0color
+       bne $s6,0,quad_7x0
+jr $ra
+
+
+row_8x0:
+    beq $t6,$s5,linha_s5x8x0
+    beq $t6,$s6,linha_s6x8x0
+        bne $t6,$s5,p_8x0
+        p_8x0:bne $t6,$s6,quad_8x0
+jr $ra
+linha_s5x8x0:
+       beq $s5,0,quad_8x0color
+       bne $s5,0,quad_8x0
+jr $ra
+linha_s6x8x0:
+       beq $s6,0,quad_8x0color
+       bne $s6,0,quad_8x0
+jr $ra
+
+
+row_9x0:
+    beq $t6,$s5,linha_s5x9x0
+    beq $t6,$s6,linha_s6x9x0
+        bne $t6,$s5,p_9x0
+        p_9x0:bne $t6,$s6,quad_9x0
+jr $ra
+linha_s5x9x0:
+       beq $s5,0,quad_9x0color
+       bne $s5,0,quad_9x0
+jr $ra
+linha_s6x9x0:
+       beq $s6,0,quad_9x0color
+       bne $s6,0,quad_9x0
+jr $ra
+
+
+# ==================== linha 1================== 
+row_0x1:
+    beq $t6,$s5,linha_s5x0x1
+    beq $t6,$s6,linha_s6x0x1
+        bne $t6,$s5,p_0x1
+        p_0x1:bne $t6,$s6,quad_0x1
+jr $ra
+linha_s5x0x1:
+       beq $s5,1,quad_0x1color
+       bne $s5,1,quad_0x1
+jr $ra
+linha_s6x0x1:
+       beq $s6,1,quad_0x1color
+       bne $s6,1,quad_0x1
+jr $ra
+
+
+row_1x1:
+    beq $t6,$s5,linha_s5x1x1
+    beq $t6,$s6,linha_s6x1x1
+        bne $t6,$s5,p_1x1
+        p_1x1:bne $t6,$s6,quad_1x1
+jr $ra
+linha_s5x1x1:
+       beq $s5,1,quad_1x1color
+       bne $s5,1,quad_1x1
+jr $ra
+linha_s6x1x1:
+       beq $s6,1,quad_1x1color
+       bne $s6,1,quad_1x1
+jr $ra
+
+
+row_2x1:
+    beq $t6,$s5,linha_s5x2x1
+    beq $t6,$s6,linha_s6x2x1
+        bne $t6,$s5,p_2x1
+        p_2x1:bne $t6,$s6,quad_2x1
+jr $ra
+linha_s5x2x1:
+       beq $s5,1,quad_2x1color
+       bne $s5,1,quad_2x1
+jr $ra
+linha_s6x2x1:
+       beq $s6,1,quad_2x1color
+       bne $s6,1,quad_2x1
+jr $ra
+
+
+row_3x1:
+    beq $t6,$s5,linha_s5x3x1
+    beq $t6,$s6,linha_s6x3x1
+        bne $t6,$s5,p_3x1
+        p_3x1:bne $t6,$s6,quad_3x1
+jr $ra
+linha_s5x3x1:
+       beq $s5,1,quad_3x1color
+       bne $s5,1,quad_3x1
+jr $ra
+linha_s6x3x1:
+       beq $s6,1,quad_3x1color
+       bne $s6,1,quad_3x1
+jr $ra
+
+
+row_4x1:
+    beq $t6,$s5,linha_s5x4x1
+    beq $t6,$s6,linha_s6x4x1
+        bne $t6,$s5,p_4x1
+        p_4x1:bne $t6,$s6,quad_4x1
+jr $ra
+linha_s5x4x1:
+       beq $s5,1,quad_4x1color
+       bne $s5,1,quad_4x1
+jr $ra
+linha_s6x4x1:
+       beq $s6,1,quad_4x1color
+       bne $s6,1,quad_4x1
+jr $ra
+
+
+row_5x1:
+    beq $t6,$s5,linha_s5x5x1
+    beq $t6,$s6,linha_s6x5x1
+        bne $t6,$s5,p_5x1
+        p_5x1:bne $t6,$s6,quad_5x1
+jr $ra
+linha_s5x5x1:
+       beq $s5,1,quad_5x1color
+       bne $s5,1,quad_5x1
+jr $ra
+linha_s6x5x1:
+       beq $s6,1,quad_5x1color
+       bne $s6,1,quad_5x1
+jr $ra
+
+
+row_6x1:
+    beq $t6,$s5,linha_s5x6x1
+    beq $t6,$s6,linha_s6x6x1
+        bne $t6,$s5,p_6x1
+        p_6x1:bne $t6,$s6,quad_6x1
+jr $ra
+linha_s5x6x1:
+       beq $s5,1,quad_6x1color
+       bne $s5,1,quad_6x1
+jr $ra
+linha_s6x6x1:
+       beq $s6,1,quad_6x1color
+       bne $s6,1,quad_6x1
+jr $ra
+
+
+row_7x1:
+    beq $t6,$s5,linha_s5x7x1
+    beq $t6,$s6,linha_s6x7x1
+        bne $t6,$s5,p_7x1
+        p_7x1:bne $t6,$s6,quad_7x1
+jr $ra
+linha_s5x7x1:
+       beq $s5,1,quad_7x1color
+       bne $s5,1,quad_7x1
+jr $ra
+linha_s6x7x1:
+       beq $s6,1,quad_7x1color
+       bne $s6,1,quad_7x1
+jr $ra
+
+
+row_8x1:
+    beq $t6,$s5,linha_s5x8x1
+    beq $t6,$s6,linha_s6x8x1
+        bne $t6,$s5,p_8x1
+        p_8x1:bne $t6,$s6,quad_8x1
+jr $ra
+linha_s5x8x1:
+       beq $s5,1,quad_8x1color
+       bne $s5,1,quad_8x1
+jr $ra
+linha_s6x8x1:
+       beq $s6,1,quad_8x1color
+       bne $s6,1,quad_8x1
+jr $ra
+
+
+row_9x1:
+    beq $t6,$s5,linha_s5x9x1
+    beq $t6,$s6,linha_s6x9x1
+        bne $t6,$s5,p_9x1
+        p_9x1:bne $t6,$s6,quad_9x1
+jr $ra
+linha_s5x9x1:
+       beq $s5,1,quad_9x1color
+       bne $s5,1,quad_9x1
+jr $ra
+linha_s6x9x1:
+       beq $s6,1,quad_9x1color
+       bne $s6,1,quad_9x1
+jr $ra
+
+
+# ==================== linha 2================== 
+row_0x2:
+    beq $t6,$s5,linha_s5x0x2
+    beq $t6,$s6,linha_s6x0x2
+        bne $t6,$s5,p_0x2
+        p_0x2:bne $t6,$s6,quad_0x2
+jr $ra
+linha_s5x0x2:
+       beq $s5,2,quad_0x2color
+       bne $s5,2,quad_0x2
+jr $ra
+linha_s6x0x2:
+       beq $s6,2,quad_0x2color
+       bne $s6,2,quad_0x2
+jr $ra
+
+
+row_1x2:
+    beq $t6,$s5,linha_s5x1x2
+    beq $t6,$s6,linha_s6x1x2
+        bne $t6,$s5,p_1x2
+        p_1x2:bne $t6,$s6,quad_1x2
+jr $ra
+linha_s5x1x2:
+       beq $s5,2,quad_1x2color
+       bne $s5,2,quad_1x2
+jr $ra
+linha_s6x1x2:
+       beq $s6,2,quad_1x2color
+       bne $s6,2,quad_1x2
+jr $ra
+
+
+row_2x2:
+    beq $t6,$s5,linha_s5x2x2
+    beq $t6,$s6,linha_s6x2x2
+        bne $t6,$s5,p_2x2
+        p_2x2:bne $t6,$s6,quad_2x2
+jr $ra
+linha_s5x2x2:
+       beq $s5,2,quad_2x2color
+       bne $s5,2,quad_2x2
+jr $ra
+linha_s6x2x2:
+       beq $s6,2,quad_2x2color
+       bne $s6,2,quad_2x2
+jr $ra
+
+
+row_3x2:
+    beq $t6,$s5,linha_s5x3x2
+    beq $t6,$s6,linha_s6x3x2
+        bne $t6,$s5,p_3x2
+        p_3x2:bne $t6,$s6,quad_3x2
+jr $ra
+linha_s5x3x2:
+       beq $s5,2,quad_3x2color
+       bne $s5,2,quad_3x2
+jr $ra
+linha_s6x3x2:
+       beq $s6,2,quad_3x2color
+       bne $s6,2,quad_3x2
+jr $ra
+
+
+row_4x2:
+    beq $t6,$s5,linha_s5x4x2
+    beq $t6,$s6,linha_s6x4x2
+        bne $t6,$s5,p_4x2
+        p_4x2:bne $t6,$s6,quad_4x2
+jr $ra
+linha_s5x4x2:
+       beq $s5,2,quad_4x2color
+       bne $s5,2,quad_4x2
+jr $ra
+linha_s6x4x2:
+       beq $s6,2,quad_4x2color
+       bne $s6,2,quad_4x2
+jr $ra
+
+
+row_5x2:
+    beq $t6,$s5,linha_s5x5x2
+    beq $t6,$s6,linha_s6x5x2
+        bne $t6,$s5,p_5x2
+        p_5x2:bne $t6,$s6,quad_5x2
+jr $ra
+linha_s5x5x2:
+       beq $s5,2,quad_5x2color
+       bne $s5,2,quad_5x2
+jr $ra
+linha_s6x5x2:
+       beq $s6,2,quad_5x2color
+       bne $s6,2,quad_5x2
+jr $ra
+
+
+row_6x2:
+    beq $t6,$s5,linha_s5x6x2
+    beq $t6,$s6,linha_s6x6x2
+        bne $t6,$s5,p_6x2
+        p_6x2:bne $t6,$s6,quad_6x2
+jr $ra
+linha_s5x6x2:
+       beq $s5,2,quad_6x2color
+       bne $s5,2,quad_6x2
+jr $ra
+linha_s6x6x2:
+       beq $s6,2,quad_6x2color
+       bne $s6,2,quad_6x2
+jr $ra
+
+
+row_7x2:
+    beq $t6,$s5,linha_s5x7x2
+    beq $t6,$s6,linha_s6x7x2
+        bne $t6,$s5,p_7x2
+        p_7x2:bne $t6,$s6,quad_7x2
+jr $ra
+linha_s5x7x2:
+       beq $s5,2,quad_7x2color
+       bne $s5,2,quad_7x2
+jr $ra
+linha_s6x7x2:
+       beq $s6,2,quad_7x2color
+       bne $s6,2,quad_7x2
+jr $ra
+
+
+row_8x2:
+    beq $t6,$s5,linha_s5x8x2
+    beq $t6,$s6,linha_s6x8x2
+        bne $t6,$s5,p_8x2
+        p_8x2:bne $t6,$s6,quad_8x2
+jr $ra
+linha_s5x8x2:
+       beq $s5,2,quad_8x2color
+       bne $s5,2,quad_8x2
+jr $ra
+linha_s6x8x2:
+       beq $s6,2,quad_8x2color
+       bne $s6,2,quad_8x2
+jr $ra
+
+
+row_9x2:
+    beq $t6,$s5,linha_s5x9x2
+    beq $t6,$s6,linha_s6x9x2
+        bne $t6,$s5,p_9x2
+        p_9x2:bne $t6,$s6,quad_9x2
+jr $ra
+linha_s5x9x2:
+       beq $s5,2,quad_9x2color
+       bne $s5,2,quad_9x2
+jr $ra
+linha_s6x9x2:
+       beq $s6,2,quad_9x2color
+       bne $s6,2,quad_9x2
+jr $ra
+
+
+# ==================== linha 3================== 
+row_0x3:
+    beq $t6,$s5,linha_s5x0x3
+    beq $t6,$s6,linha_s6x0x3
+        bne $t6,$s5,p_0x3
+        p_0x3:bne $t6,$s6,quad_0x3
+jr $ra
+linha_s5x0x3:
+       beq $s5,3,quad_0x3color
+       bne $s5,3,quad_0x3
+jr $ra
+linha_s6x0x3:
+       beq $s6,3,quad_0x3color
+       bne $s6,3,quad_0x3
+jr $ra
+
+
+row_1x3:
+    beq $t6,$s5,linha_s5x1x3
+    beq $t6,$s6,linha_s6x1x3
+        bne $t6,$s5,p_1x3
+        p_1x3:bne $t6,$s6,quad_1x3
+jr $ra
+linha_s5x1x3:
+       beq $s5,3,quad_1x3color
+       bne $s5,3,quad_1x3
+jr $ra
+linha_s6x1x3:
+       beq $s6,3,quad_1x3color
+       bne $s6,3,quad_1x3
+jr $ra
+
+
+row_2x3:
+    beq $t6,$s5,linha_s5x2x3
+    beq $t6,$s6,linha_s6x2x3
+        bne $t6,$s5,p_2x3
+        p_2x3:bne $t6,$s6,quad_2x3
+jr $ra
+linha_s5x2x3:
+       beq $s5,3,quad_2x3color
+       bne $s5,3,quad_2x3
+jr $ra
+linha_s6x2x3:
+       beq $s6,3,quad_2x3color
+       bne $s6,3,quad_2x3
+jr $ra
+
+
+row_3x3:
+    beq $t6,$s5,linha_s5x3x3
+    beq $t6,$s6,linha_s6x3x3
+        bne $t6,$s5,p_3x3
+        p_3x3:bne $t6,$s6,quad_3x3
+jr $ra
+linha_s5x3x3:
+       beq $s5,3,quad_3x3color
+       bne $s5,3,quad_3x3
+jr $ra
+linha_s6x3x3:
+       beq $s6,3,quad_3x3color
+       bne $s6,3,quad_3x3
+jr $ra
+
+
+row_4x3:
+    beq $t6,$s5,linha_s5x4x3
+    beq $t6,$s6,linha_s6x4x3
+        bne $t6,$s5,p_4x3
+        p_4x3:bne $t6,$s6,quad_4x3
+jr $ra
+linha_s5x4x3:
+       beq $s5,3,quad_4x3color
+       bne $s5,3,quad_4x3
+jr $ra
+linha_s6x4x3:
+       beq $s6,3,quad_4x3color
+       bne $s6,3,quad_4x3
+jr $ra
+
+
+row_5x3:
+    beq $t6,$s5,linha_s5x5x3
+    beq $t6,$s6,linha_s6x5x3
+        bne $t6,$s5,p_5x3
+        p_5x3:bne $t6,$s6,quad_5x3
+jr $ra
+linha_s5x5x3:
+       beq $s5,3,quad_5x3color
+       bne $s5,3,quad_5x3
+jr $ra
+linha_s6x5x3:
+       beq $s6,3,quad_5x3color
+       bne $s6,3,quad_5x3
+jr $ra
+
+
+row_6x3:
+    beq $t6,$s5,linha_s5x6x3
+    beq $t6,$s6,linha_s6x6x3
+        bne $t6,$s5,p_6x3
+        p_6x3:bne $t6,$s6,quad_6x3
+jr $ra
+linha_s5x6x3:
+       beq $s5,3,quad_6x3color
+       bne $s5,3,quad_6x3
+jr $ra
+linha_s6x6x3:
+       beq $s6,3,quad_6x3color
+       bne $s6,3,quad_6x3
+jr $ra
+
+
+row_7x3:
+    beq $t6,$s5,linha_s5x7x3
+    beq $t6,$s6,linha_s6x7x3
+        bne $t6,$s5,p_7x3
+        p_7x3:bne $t6,$s6,quad_7x3
+jr $ra
+linha_s5x7x3:
+       beq $s5,3,quad_7x3color
+       bne $s5,3,quad_7x3
+jr $ra
+linha_s6x7x3:
+       beq $s6,3,quad_7x3color
+       bne $s6,3,quad_7x3
+jr $ra
+
+
+row_8x3:
+    beq $t6,$s5,linha_s5x8x3
+    beq $t6,$s6,linha_s6x8x3
+        bne $t6,$s5,p_8x3
+        p_8x3:bne $t6,$s6,quad_8x3
+jr $ra
+linha_s5x8x3:
+       beq $s5,3,quad_8x3color
+       bne $s5,3,quad_8x3
+jr $ra
+linha_s6x8x3:
+       beq $s6,3,quad_8x3color
+       bne $s6,3,quad_8x3
+jr $ra
+
+
+row_9x3:
+    beq $t6,$s5,linha_s5x9x3
+    beq $t6,$s6,linha_s6x9x3
+        bne $t6,$s5,p_9x3
+        p_9x3:bne $t6,$s6,quad_9x3
+jr $ra
+linha_s5x9x3:
+       beq $s5,3,quad_9x3color
+       bne $s5,3,quad_9x3
+jr $ra
+linha_s6x9x3:
+       beq $s6,3,quad_9x3color
+       bne $s6,3,quad_9x3
+jr $ra
+
+
+# ==================== linha 4================== 
+row_0x4:
+    beq $t6,$s5,linha_s5x0x4
+    beq $t6,$s6,linha_s6x0x4
+        bne $t6,$s5,p_0x4
+        p_0x4:bne $t6,$s6,quad_0x4
+jr $ra
+linha_s5x0x4:
+       beq $s5,4,quad_0x4color
+       bne $s5,4,quad_0x4
+jr $ra
+linha_s6x0x4:
+       beq $s6,4,quad_0x4color
+       bne $s6,4,quad_0x4
+jr $ra
+
+
+row_1x4:
+    beq $t6,$s5,linha_s5x1x4
+    beq $t6,$s6,linha_s6x1x4
+        bne $t6,$s5,p_1x4
+        p_1x4:bne $t6,$s6,quad_1x4
+jr $ra
+linha_s5x1x4:
+       beq $s5,4,quad_1x4color
+       bne $s5,4,quad_1x4
+jr $ra
+linha_s6x1x4:
+       beq $s6,4,quad_1x4color
+       bne $s6,4,quad_1x4
+jr $ra
+
+
+row_2x4:
+    beq $t6,$s5,linha_s5x2x4
+    beq $t6,$s6,linha_s6x2x4
+        bne $t6,$s5,p_2x4
+        p_2x4:bne $t6,$s6,quad_2x4
+jr $ra
+linha_s5x2x4:
+       beq $s5,4,quad_2x4color
+       bne $s5,4,quad_2x4
+jr $ra
+linha_s6x2x4:
+       beq $s6,4,quad_2x4color
+       bne $s6,4,quad_2x4
+jr $ra
+
+
+row_3x4:
+    beq $t6,$s5,linha_s5x3x4
+    beq $t6,$s6,linha_s6x3x4
+        bne $t6,$s5,p_3x4
+        p_3x4:bne $t6,$s6,quad_3x4
+jr $ra
+linha_s5x3x4:
+       beq $s5,4,quad_3x4color
+       bne $s5,4,quad_3x4
+jr $ra
+linha_s6x3x4:
+       beq $s6,4,quad_3x4color
+       bne $s6,4,quad_3x4
+jr $ra
+
+
+row_4x4:
+    beq $t6,$s5,linha_s5x4x4
+    beq $t6,$s6,linha_s6x4x4
+        bne $t6,$s5,p_4x4
+        p_4x4:bne $t6,$s6,quad_4x4
+jr $ra
+linha_s5x4x4:
+       beq $s5,4,quad_4x4color
+       bne $s5,4,quad_4x4
+jr $ra
+linha_s6x4x4:
+       beq $s6,4,quad_4x4color
+       bne $s6,4,quad_4x4
+jr $ra
+
+
+row_5x4:
+    beq $t6,$s5,linha_s5x5x4
+    beq $t6,$s6,linha_s6x5x4
+        bne $t6,$s5,p_5x4
+        p_5x4:bne $t6,$s6,quad_5x4
+jr $ra
+linha_s5x5x4:
+       beq $s5,4,quad_5x4color
+       bne $s5,4,quad_5x4
+jr $ra
+linha_s6x5x4:
+       beq $s6,4,quad_5x4color
+       bne $s6,4,quad_5x4
+jr $ra
+
+
+row_6x4:
+    beq $t6,$s5,linha_s5x6x4
+    beq $t6,$s6,linha_s6x6x4
+        bne $t6,$s5,p_6x4
+        p_6x4:bne $t6,$s6,quad_6x4
+jr $ra
+linha_s5x6x4:
+       beq $s5,4,quad_6x4color
+       bne $s5,4,quad_6x4
+jr $ra
+linha_s6x6x4:
+       beq $s6,4,quad_6x4color
+       bne $s6,4,quad_6x4
+jr $ra
+
+
+row_7x4:
+    beq $t6,$s5,linha_s5x7x4
+    beq $t6,$s6,linha_s6x7x4
+        bne $t6,$s5,p_7x4
+        p_7x4:bne $t6,$s6,quad_7x4
+jr $ra
+linha_s5x7x4:
+       beq $s5,4,quad_7x4color
+       bne $s5,4,quad_7x4
+jr $ra
+linha_s6x7x4:
+       beq $s6,4,quad_7x4color
+       bne $s6,4,quad_7x4
+jr $ra
+
+
+row_8x4:
+    beq $t6,$s5,linha_s5x8x4
+    beq $t6,$s6,linha_s6x8x4
+        bne $t6,$s5,p_8x4
+        p_8x4:bne $t6,$s6,quad_8x4
+jr $ra
+linha_s5x8x4:
+       beq $s5,4,quad_8x4color
+       bne $s5,4,quad_8x4
+jr $ra
+linha_s6x8x4:
+       beq $s6,4,quad_8x4color
+       bne $s6,4,quad_8x4
+jr $ra
+
+
+row_9x4:
+    beq $t6,$s5,linha_s5x9x4
+    beq $t6,$s6,linha_s6x9x4
+        bne $t6,$s5,p_9x4
+        p_9x4:bne $t6,$s6,quad_9x4
+jr $ra
+linha_s5x9x4:
+       beq $s5,4,quad_9x4color
+       bne $s5,4,quad_9x4
+jr $ra
+linha_s6x9x4:
+       beq $s6,4,quad_9x4color
+       bne $s6,4,quad_9x4
+jr $ra
+
+
+# ==================== linha 5================== 
+row_0x5:
+    beq $t6,$s5,linha_s5x0x5
+    beq $t6,$s6,linha_s6x0x5
+        bne $t6,$s5,p_0x5
+        p_0x5:bne $t6,$s6,quad_0x5
+jr $ra
+linha_s5x0x5:
+       beq $s5,5,quad_0x5color
+       bne $s5,5,quad_0x5
+jr $ra
+linha_s6x0x5:
+       beq $s6,5,quad_0x5color
+       bne $s6,5,quad_0x5
+jr $ra
+
+
+row_1x5:
+    beq $t6,$s5,linha_s5x1x5
+    beq $t6,$s6,linha_s6x1x5
+        bne $t6,$s5,p_1x5
+        p_1x5:bne $t6,$s6,quad_1x5
+jr $ra
+linha_s5x1x5:
+       beq $s5,5,quad_1x5color
+       bne $s5,5,quad_1x5
+jr $ra
+linha_s6x1x5:
+       beq $s6,5,quad_1x5color
+       bne $s6,5,quad_1x5
+jr $ra
+
+
+row_2x5:
+    beq $t6,$s5,linha_s5x2x5
+    beq $t6,$s6,linha_s6x2x5
+        bne $t6,$s5,p_2x5
+        p_2x5:bne $t6,$s6,quad_2x5
+jr $ra
+linha_s5x2x5:
+       beq $s5,5,quad_2x5color
+       bne $s5,5,quad_2x5
+jr $ra
+linha_s6x2x5:
+       beq $s6,5,quad_2x5color
+       bne $s6,5,quad_2x5
+jr $ra
+
+
+row_3x5:
+    beq $t6,$s5,linha_s5x3x5
+    beq $t6,$s6,linha_s6x3x5
+        bne $t6,$s5,p_3x5
+        p_3x5:bne $t6,$s6,quad_3x5
+jr $ra
+linha_s5x3x5:
+       beq $s5,5,quad_3x5color
+       bne $s5,5,quad_3x5
+jr $ra
+linha_s6x3x5:
+       beq $s6,5,quad_3x5color
+       bne $s6,5,quad_3x5
+jr $ra
+
+
+row_4x5:
+    beq $t6,$s5,linha_s5x4x5
+    beq $t6,$s6,linha_s6x4x5
+        bne $t6,$s5,p_4x5
+        p_4x5:bne $t6,$s6,quad_4x5
+jr $ra
+linha_s5x4x5:
+       beq $s5,5,quad_4x5color
+       bne $s5,5,quad_4x5
+jr $ra
+linha_s6x4x5:
+       beq $s6,5,quad_4x5color
+       bne $s6,5,quad_4x5
+jr $ra
+
+
+row_5x5:
+    beq $t6,$s5,linha_s5x5x5
+    beq $t6,$s6,linha_s6x5x5
+        bne $t6,$s5,p_5x5
+        p_5x5:bne $t6,$s6,quad_5x5
+jr $ra
+linha_s5x5x5:
+       beq $s5,5,quad_5x5color
+       bne $s5,5,quad_5x5
+jr $ra
+linha_s6x5x5:
+       beq $s6,5,quad_5x5color
+       bne $s6,5,quad_5x5
+jr $ra
+
+
+row_6x5:
+    beq $t6,$s5,linha_s5x6x5
+    beq $t6,$s6,linha_s6x6x5
+        bne $t6,$s5,p_6x5
+        p_6x5:bne $t6,$s6,quad_6x5
+jr $ra
+linha_s5x6x5:
+       beq $s5,5,quad_6x5color
+       bne $s5,5,quad_6x5
+jr $ra
+linha_s6x6x5:
+       beq $s6,5,quad_6x5color
+       bne $s6,5,quad_6x5
+jr $ra
+
+
+row_7x5:
+    beq $t6,$s5,linha_s5x7x5
+    beq $t6,$s6,linha_s6x7x5
+        bne $t6,$s5,p_7x5
+        p_7x5:bne $t6,$s6,quad_7x5
+jr $ra
+linha_s5x7x5:
+       beq $s5,5,quad_7x5color
+       bne $s5,5,quad_7x5
+jr $ra
+linha_s6x7x5:
+       beq $s6,5,quad_7x5color
+       bne $s6,5,quad_7x5
+jr $ra
+
+
+row_8x5:
+    beq $t6,$s5,linha_s5x8x5
+    beq $t6,$s6,linha_s6x8x5
+        bne $t6,$s5,p_8x5
+        p_8x5:bne $t6,$s6,quad_8x5
+jr $ra
+linha_s5x8x5:
+       beq $s5,5,quad_8x5color
+       bne $s5,5,quad_8x5
+jr $ra
+linha_s6x8x5:
+       beq $s6,5,quad_8x5color
+       bne $s6,5,quad_8x5
+jr $ra
+
+
+row_9x5:
+    beq $t6,$s5,linha_s5x9x5
+    beq $t6,$s6,linha_s6x9x5
+        bne $t6,$s5,p_9x5
+        p_9x5:bne $t6,$s6,quad_9x5
+jr $ra
+linha_s5x9x5:
+       beq $s5,5,quad_9x5color
+       bne $s5,5,quad_9x5
+jr $ra
+linha_s6x9x5:
+       beq $s6,5,quad_9x5color
+       bne $s6,5,quad_9x5
+jr $ra
+
+
+# ==================== linha 6================== 
+row_0x6:
+    beq $t6,$s5,linha_s5x0x6
+    beq $t6,$s6,linha_s6x0x6
+        bne $t6,$s5,p_0x6
+        p_0x6:bne $t6,$s6,quad_0x6
+jr $ra
+linha_s5x0x6:
+       beq $s5,6,quad_0x6color
+       bne $s5,6,quad_0x6
+jr $ra
+linha_s6x0x6:
+       beq $s6,6,quad_0x6color
+       bne $s6,6,quad_0x6
+jr $ra
+
+
+row_1x6:
+    beq $t6,$s5,linha_s5x1x6
+    beq $t6,$s6,linha_s6x1x6
+        bne $t6,$s5,p_1x6
+        p_1x6:bne $t6,$s6,quad_1x6
+jr $ra
+linha_s5x1x6:
+       beq $s5,6,quad_1x6color
+       bne $s5,6,quad_1x6
+jr $ra
+linha_s6x1x6:
+       beq $s6,6,quad_1x6color
+       bne $s6,6,quad_1x6
+jr $ra
+
+
+row_2x6:
+    beq $t6,$s5,linha_s5x2x6
+    beq $t6,$s6,linha_s6x2x6
+        bne $t6,$s5,p_2x6
+        p_2x6:bne $t6,$s6,quad_2x6
+jr $ra
+linha_s5x2x6:
+       beq $s5,6,quad_2x6color
+       bne $s5,6,quad_2x6
+jr $ra
+linha_s6x2x6:
+       beq $s6,6,quad_2x6color
+       bne $s6,6,quad_2x6
+jr $ra
+
+
+row_3x6:
+    beq $t6,$s5,linha_s5x3x6
+    beq $t6,$s6,linha_s6x3x6
+        bne $t6,$s5,p_3x6
+        p_3x6:bne $t6,$s6,quad_3x6
+jr $ra
+linha_s5x3x6:
+       beq $s5,6,quad_3x6color
+       bne $s5,6,quad_3x6
+jr $ra
+linha_s6x3x6:
+       beq $s6,6,quad_3x6color
+       bne $s6,6,quad_3x6
+jr $ra
+
+
+row_4x6:
+    beq $t6,$s5,linha_s5x4x6
+    beq $t6,$s6,linha_s6x4x6
+        bne $t6,$s5,p_4x6
+        p_4x6:bne $t6,$s6,quad_4x6
+jr $ra
+linha_s5x4x6:
+       beq $s5,6,quad_4x6color
+       bne $s5,6,quad_4x6
+jr $ra
+linha_s6x4x6:
+       beq $s6,6,quad_4x6color
+       bne $s6,6,quad_4x6
+jr $ra
+
+
+row_5x6:
+    beq $t6,$s5,linha_s5x5x6
+    beq $t6,$s6,linha_s6x5x6
+        bne $t6,$s5,p_5x6
+        p_5x6:bne $t6,$s6,quad_5x6
+jr $ra
+linha_s5x5x6:
+       beq $s5,6,quad_5x6color
+       bne $s5,6,quad_5x6
+jr $ra
+linha_s6x5x6:
+       beq $s6,6,quad_5x6color
+       bne $s6,6,quad_5x6
+jr $ra
+
+
+row_6x6:
+    beq $t6,$s5,linha_s5x6x6
+    beq $t6,$s6,linha_s6x6x6
+        bne $t6,$s5,p_6x6
+        p_6x6:bne $t6,$s6,quad_6x6
+jr $ra
+linha_s5x6x6:
+       beq $s5,6,quad_6x6color
+       bne $s5,6,quad_6x6
+jr $ra
+linha_s6x6x6:
+       beq $s6,6,quad_6x6color
+       bne $s6,6,quad_6x6
+jr $ra
+
+
+row_7x6:
+    beq $t6,$s5,linha_s5x7x6
+    beq $t6,$s6,linha_s6x7x6
+        bne $t6,$s5,p_7x6
+        p_7x6:bne $t6,$s6,quad_7x6
+jr $ra
+linha_s5x7x6:
+       beq $s5,6,quad_7x6color
+       bne $s5,6,quad_7x6
+jr $ra
+linha_s6x7x6:
+       beq $s6,6,quad_7x6color
+       bne $s6,6,quad_7x6
+jr $ra
+
+
+row_8x6:
+    beq $t6,$s5,linha_s5x8x6
+    beq $t6,$s6,linha_s6x8x6
+        bne $t6,$s5,p_8x6
+        p_8x6:bne $t6,$s6,quad_8x6
+jr $ra
+linha_s5x8x6:
+       beq $s5,6,quad_8x6color
+       bne $s5,6,quad_8x6
+jr $ra
+linha_s6x8x6:
+       beq $s6,6,quad_8x6color
+       bne $s6,6,quad_8x6
+jr $ra
+
+
+row_9x6:
+    beq $t6,$s5,linha_s5x9x6
+    beq $t6,$s6,linha_s6x9x6
+        bne $t6,$s5,p_9x6
+        p_9x6:bne $t6,$s6,quad_9x6
+jr $ra
+linha_s5x9x6:
+       beq $s5,6,quad_9x6color
+       bne $s5,6,quad_9x6
+jr $ra
+linha_s6x9x6:
+       beq $s6,6,quad_9x6color
+       bne $s6,6,quad_9x6
+jr $ra
+
+
+# ==================== linha 7================== 
+row_0x7:
+    beq $t6,$s5,linha_s5x0x7
+    beq $t6,$s6,linha_s6x0x7
+        bne $t6,$s5,p_0x7
+        p_0x7:bne $t6,$s6,quad_0x7
+jr $ra
+linha_s5x0x7:
+       beq $s5,7,quad_0x7color
+       bne $s5,7,quad_0x7
+jr $ra
+linha_s6x0x7:
+       beq $s6,7,quad_0x7color
+       bne $s6,7,quad_0x7
+jr $ra
+
+
+row_1x7:
+    beq $t6,$s5,linha_s5x1x7
+    beq $t6,$s6,linha_s6x1x7
+        bne $t6,$s5,p_1x7
+        p_1x7:bne $t6,$s6,quad_1x7
+jr $ra
+linha_s5x1x7:
+       beq $s5,7,quad_1x7color
+       bne $s5,7,quad_1x7
+jr $ra
+linha_s6x1x7:
+       beq $s6,7,quad_1x7color
+       bne $s6,7,quad_1x7
+jr $ra
+
+
+row_2x7:
+    beq $t6,$s5,linha_s5x2x7
+    beq $t6,$s6,linha_s6x2x7
+        bne $t6,$s5,p_2x7
+        p_2x7:bne $t6,$s6,quad_2x7
+jr $ra
+linha_s5x2x7:
+       beq $s5,7,quad_2x7color
+       bne $s5,7,quad_2x7
+jr $ra
+linha_s6x2x7:
+       beq $s6,7,quad_2x7color
+       bne $s6,7,quad_2x7
+jr $ra
+
+
+row_3x7:
+    beq $t6,$s5,linha_s5x3x7
+    beq $t6,$s6,linha_s6x3x7
+        bne $t6,$s5,p_3x7
+        p_3x7:bne $t6,$s6,quad_3x7
+jr $ra
+linha_s5x3x7:
+       beq $s5,7,quad_3x7color
+       bne $s5,7,quad_3x7
+jr $ra
+linha_s6x3x7:
+       beq $s6,7,quad_3x7color
+       bne $s6,7,quad_3x7
+jr $ra
+
+
+row_4x7:
+    beq $t6,$s5,linha_s5x4x7
+    beq $t6,$s6,linha_s6x4x7
+        bne $t6,$s5,p_4x7
+        p_4x7:bne $t6,$s6,quad_4x7
+jr $ra
+linha_s5x4x7:
+       beq $s5,7,quad_4x7color
+       bne $s5,7,quad_4x7
+jr $ra
+linha_s6x4x7:
+       beq $s6,7,quad_4x7color
+       bne $s6,7,quad_4x7
+jr $ra
+
+
+row_5x7:
+    beq $t6,$s5,linha_s5x5x7
+    beq $t6,$s6,linha_s6x5x7
+        bne $t6,$s5,p_5x7
+        p_5x7:bne $t6,$s6,quad_5x7
+jr $ra
+linha_s5x5x7:
+       beq $s5,7,quad_5x7color
+       bne $s5,7,quad_5x7
+jr $ra
+linha_s6x5x7:
+       beq $s6,7,quad_5x7color
+       bne $s6,7,quad_5x7
+jr $ra
+
+
+row_6x7:
+    beq $t6,$s5,linha_s5x6x7
+    beq $t6,$s6,linha_s6x6x7
+        bne $t6,$s5,p_6x7
+        p_6x7:bne $t6,$s6,quad_6x7
+jr $ra
+linha_s5x6x7:
+       beq $s5,7,quad_6x7color
+       bne $s5,7,quad_6x7
+jr $ra
+linha_s6x6x7:
+       beq $s6,7,quad_6x7color
+       bne $s6,7,quad_6x7
+jr $ra
+
+
+row_7x7:
+    beq $t6,$s5,linha_s5x7x7
+    beq $t6,$s6,linha_s6x7x7
+        bne $t6,$s5,p_7x7
+        p_7x7:bne $t6,$s6,quad_7x7
+jr $ra
+linha_s5x7x7:
+       beq $s5,7,quad_7x7color
+       bne $s5,7,quad_7x7
+jr $ra
+linha_s6x7x7:
+       beq $s6,7,quad_7x7color
+       bne $s6,7,quad_7x7
+jr $ra
+
+
+row_8x7:
+    beq $t6,$s5,linha_s5x8x7
+    beq $t6,$s6,linha_s6x8x7
+        bne $t6,$s5,p_8x7
+        p_8x7:bne $t6,$s6,quad_8x7
+jr $ra
+linha_s5x8x7:
+       beq $s5,7,quad_8x7color
+       bne $s5,7,quad_8x7
+jr $ra
+linha_s6x8x7:
+       beq $s6,7,quad_8x7color
+       bne $s6,7,quad_8x7
+jr $ra
+
+
+row_9x7:
+    beq $t6,$s5,linha_s5x9x7
+    beq $t6,$s6,linha_s6x9x7
+        bne $t6,$s5,p_9x7
+        p_9x7:bne $t6,$s6,quad_9x7
+jr $ra
+linha_s5x9x7:
+       beq $s5,7,quad_9x7color
+       bne $s5,7,quad_9x7
+jr $ra
+linha_s6x9x7:
+       beq $s6,7,quad_9x7color
+       bne $s6,7,quad_9x7
+jr $ra
+
+
+# ==================== linha 8================== 
+row_0x8:
+    beq $t6,$s5,linha_s5x0x8
+    beq $t6,$s6,linha_s6x0x8
+        bne $t6,$s5,p_0x8
+        p_0x8:bne $t6,$s6,quad_0x8
+jr $ra
+linha_s5x0x8:
+       beq $s5,8,quad_0x8color
+       bne $s5,8,quad_0x8
+jr $ra
+linha_s6x0x8:
+       beq $s6,8,quad_0x8color
+       bne $s6,8,quad_0x8
+jr $ra
+
+
+row_1x8:
+    beq $t6,$s5,linha_s5x1x8
+    beq $t6,$s6,linha_s6x1x8
+        bne $t6,$s5,p_1x8
+        p_1x8:bne $t6,$s6,quad_1x8
+jr $ra
+linha_s5x1x8:
+       beq $s5,8,quad_1x8color
+       bne $s5,8,quad_1x8
+jr $ra
+linha_s6x1x8:
+       beq $s6,8,quad_1x8color
+       bne $s6,8,quad_1x8
+jr $ra
+
+
+row_2x8:
+    beq $t6,$s5,linha_s5x2x8
+    beq $t6,$s6,linha_s6x2x8
+        bne $t6,$s5,p_2x8
+        p_2x8:bne $t6,$s6,quad_2x8
+jr $ra
+linha_s5x2x8:
+       beq $s5,8,quad_2x8color
+       bne $s5,8,quad_2x8
+jr $ra
+linha_s6x2x8:
+       beq $s6,8,quad_2x8color
+       bne $s6,8,quad_2x8
+jr $ra
+
+
+row_3x8:
+    beq $t6,$s5,linha_s5x3x8
+    beq $t6,$s6,linha_s6x3x8
+        bne $t6,$s5,p_3x8
+        p_3x8:bne $t6,$s6,quad_3x8
+jr $ra
+linha_s5x3x8:
+       beq $s5,8,quad_3x8color
+       bne $s5,8,quad_3x8
+jr $ra
+linha_s6x3x8:
+       beq $s6,8,quad_3x8color
+       bne $s6,8,quad_3x8
+jr $ra
+
+
+row_4x8:
+    beq $t6,$s5,linha_s5x4x8
+    beq $t6,$s6,linha_s6x4x8
+        bne $t6,$s5,p_4x8
+        p_4x8:bne $t6,$s6,quad_4x8
+jr $ra
+linha_s5x4x8:
+       beq $s5,8,quad_4x8color
+       bne $s5,8,quad_4x8
+jr $ra
+linha_s6x4x8:
+       beq $s6,8,quad_4x8color
+       bne $s6,8,quad_4x8
+jr $ra
+
+
+row_5x8:
+    beq $t6,$s5,linha_s5x5x8
+    beq $t6,$s6,linha_s6x5x8
+        bne $t6,$s5,p_5x8
+        p_5x8:bne $t6,$s6,quad_5x8
+jr $ra
+linha_s5x5x8:
+       beq $s5,8,quad_5x8color
+       bne $s5,8,quad_5x8
+jr $ra
+linha_s6x5x8:
+       beq $s6,8,quad_5x8color
+       bne $s6,8,quad_5x8
+jr $ra
+
+
+row_6x8:
+    beq $t6,$s5,linha_s5x6x8
+    beq $t6,$s6,linha_s6x6x8
+        bne $t6,$s5,p_6x8
+        p_6x8:bne $t6,$s6,quad_6x8
+jr $ra
+linha_s5x6x8:
+       beq $s5,8,quad_6x8color
+       bne $s5,8,quad_6x8
+jr $ra
+linha_s6x6x8:
+       beq $s6,8,quad_6x8color
+       bne $s6,8,quad_6x8
+jr $ra
+
+
+row_7x8:
+    beq $t6,$s5,linha_s5x7x8
+    beq $t6,$s6,linha_s6x7x8
+        bne $t6,$s5,p_7x8
+        p_7x8:bne $t6,$s6,quad_7x8
+jr $ra
+linha_s5x7x8:
+       beq $s5,8,quad_7x8color
+       bne $s5,8,quad_7x8
+jr $ra
+linha_s6x7x8:
+       beq $s6,8,quad_7x8color
+       bne $s6,8,quad_7x8
+jr $ra
+
+
+row_8x8:
+    beq $t6,$s5,linha_s5x8x8
+    beq $t6,$s6,linha_s6x8x8
+        bne $t6,$s5,p_8x8
+        p_8x8:bne $t6,$s6,quad_8x8
+jr $ra
+linha_s5x8x8:
+       beq $s5,8,quad_8x8color
+       bne $s5,8,quad_8x8
+jr $ra
+linha_s6x8x8:
+       beq $s6,8,quad_8x8color
+       bne $s6,8,quad_8x8
+jr $ra
+
+
+row_9x8:
+    beq $t6,$s5,linha_s5x9x8
+    beq $t6,$s6,linha_s6x9x8
+        bne $t6,$s5,p_9x8
+        p_9x8:bne $t6,$s6,quad_9x8
+jr $ra
+linha_s5x9x8:
+       beq $s5,8,quad_9x8color
+       bne $s5,8,quad_9x8
+jr $ra
+linha_s6x9x8:
+       beq $s6,8,quad_9x8color
+       bne $s6,8,quad_9x8
+jr $ra
+
+
+
 	coluna_0:			
 		beq $t6,0,row_0x0
 		beq $t6,1,row_0x1
@@ -2921,8 +4952,9 @@
 		sw $s0, 4088($t2)
 	jr $ra
 	
-	desenha_tabuleiro:
 	
+
+	desenha_tabuleiro:	
 	#Cores das bordas
 	addi $s0, $zero, 0xFFFF00 #Amarela
 	sw $s0, 0($t2)
