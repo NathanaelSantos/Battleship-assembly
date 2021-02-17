@@ -384,32 +384,67 @@
 		add $a0, $v1, $t8
 		beq $a0, 12, verifica_vencedor
 
+		sgt $a0,$t5,6 
+		
+		beq $a0,0,IA_percorre
+		beq $a0,1,IA_jogada_normal
+		
+		
+		IA_percorre:
+			jal on_player_2	
+			la $a0, maquina_jogando
+			li $v0, 4
+			syscall	
+			li $v0, 32
+			li $a0, 4000
+			syscall
 
-		jal on_player_2	
-		la $a0, maquina_jogando
-		li $v0, 4
-	    syscall	
-		li $v0, 32
-		li $a0, 3000
-		syscall
-
-		addi $t5,$t5,1
-	
-		jal opcao_H
-			jal quebra_linha
-		jal opcao_V
+			addi $t5,$t5,1
+				
+			jal opcao_H
+				jal quebra_linha
+			jal opcao_V
 			move $t6,$t6
 
 			jal conta
 			jal conta2
 			jal conta3
 
-	        jal get_coluna
+			jal get_coluna
 				beq, $k0,1,IA_acertou
-	        jal jogada_player1
-
+			jal jogada_player1					
+			jal  maquina_escolhe_jogada
+		jr $ra
 		
-		jal  maquina_escolhe_jogada
+		IA_jogada_normal:
+			jal on_player_2	
+			la $a0, maquina_jogando
+			li $v0, 4
+			syscall	
+			li $v0, 32
+			li $a0, 4000
+			syscall
+
+			jal opcao_H
+			jal jogada_horizontal
+				move $t5,$a0
+				jal quebra_linha
+			jal opcao_V
+			jal jogada_vertical
+				move $t6,$a0
+
+				jal conta
+				jal conta2
+				jal conta3
+
+				jal get_coluna
+					beq, $k0,1,IA_acertou
+				jal jogada_player1
+
+			jal  maquina_escolhe_jogada
+		jr $ra
+
+
 	jr  $ra
 	
 	msg_menu:
