@@ -15,7 +15,11 @@
 
 	Destroyer_2:
   	.alig 2
-  	.space 16 #aloca 4 espacos no arra
+  	.space 16 
+  		
+  	Destroyer_3:
+  	.alig 2
+  	.space 16 
   	
  	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n**      3       EXIT                   **\n*****************************************\n*****************************************\n"
  	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
@@ -34,7 +38,7 @@
 	player2: .asciiz "\n\nVencedor player 2\n"
 
 	msg_empate: .asciiz "\n********* Empate! *********\n"
-
+	msg_mesma_coord: .asciiz "\n Jogada na mesma casa nao e permitido!\n"
 	alerta_big_valor_coluna: .asciiz "\nATENCAO: Valor digitado pra coluna deve ser menor ou igual a 9!"
 	alerta_big_valor_linha: .asciiz "\nATENCAO: Valor digitado pra linha deve ser menor ou igual a 8!\n"
 
@@ -87,7 +91,8 @@
   		addi $t9, $t9, 4
   	j imprime2
   	saiDaImpressao2:jal quebra_linha
-	
+  	
+  	
 	
 	# ========== Gera coordenadas das linhas ==========
 
@@ -107,7 +112,6 @@
     	bne $s6,$s5, exit_while  
     j while
 	exit_while:
-	
 	
 	main:	
 
@@ -175,6 +179,13 @@
 		add $a0, $zero, $t8
 		li $v0, 1
 		syscall	
+	jr $ra
+
+	jogada_mesma_coordenada:
+		la $a0, msg_mesma_coord
+		li $v0, 4
+		syscall	
+		addi $k0,$zero,0
 	jr $ra
 
 	jogada_player1:
@@ -3296,7 +3307,7 @@ jr $ra
 
 	# ==================================================================
 	# ============================ culuna 0 ============================
-		
+	
 	quad_0x0:				     
 		sw $s2, 132($t2)	
 		sw $s2, 136($t2)
@@ -3304,13 +3315,18 @@ jr $ra
 		sw $s2, 264($t2)
 	jr $ra	
 	acertou_0x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 132($t2)	
-		sw $s2, 136($t2)
-		sw $s2, 260($t2)
-		sw $s2, 264($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 132($t2)
+		beq $t4, $s1, poss_jogada_0x0
+			poss_jogada_0x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 132($t2)	
+				sw $s2, 136($t2)
+				sw $s2, 260($t2)
+				sw $s2, 264($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_0x1:	
@@ -3321,13 +3337,18 @@ jr $ra
 		sw $s2, 648($t2)		
 	jr $ra
 	acertou_0x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 516($t2)
-		sw $s2, 520($t2)
-		sw $s2, 644($t2)
-		sw $s2, 648($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 516($t2)
+		bne $t4, $s1, poss_jogada_0x1	
+			poss_jogada_0x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 516($t2)
+				sw $s2, 520($t2)
+				sw $s2, 644($t2)
+				sw $s2, 648($t2)			
+				addi $s2, $zero, 0xff3333 #LARANJA
+			
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 		
 	quad_0x2:
@@ -3338,13 +3359,18 @@ jr $ra
 		sw $s2, 1032($t2)		
 	jr $ra
 	acertou_0x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 900($t2)
-		sw $s2, 904($t2)
-		sw $s2, 1028($t2)
-		sw $s2, 1032($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 900($t2)
+		bne $t4, $s1, poss_jogada_0x2
+			poss_jogada_0x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 900($t2)
+				sw $s2, 904($t2)
+				sw $s2, 1028($t2)
+				sw $s2, 1032($t2)			
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_0x3:
@@ -3355,13 +3381,18 @@ jr $ra
 		sw $s2, 1416($t2)		
 	jr $ra
 	acertou_0x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1284($t2)
-		sw $s2, 1288($t2)
-		sw $s2, 1412($t2)
-		sw $s2, 1416($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 1284($t2)	
+		bne $t4, $s1, poss_jogada_0x3
+			poss_jogada_0x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1284($t2)
+				sw $s2, 1288($t2)
+				sw $s2, 1412($t2)
+				sw $s2, 1416($t2)			
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 
 	
@@ -3373,13 +3404,18 @@ jr $ra
 		sw $s2, 1800($t2)		
 	jr $ra
 	acertou_0x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1668($t2)
-		sw $s2, 1672($t2)
-		sw $s2, 1796($t2)
-		sw $s2, 1800($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 1668($t2)
+		bne $t4, $s1, poss_jogada_0x4
+			poss_jogada_0x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1668($t2)
+				sw $s2, 1672($t2)
+				sw $s2, 1796($t2)
+				sw $s2, 1800($t2)			
+				addi $s2, $zero, 0xff3333 #LARANJA
+				
+		bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_0x5:
@@ -3390,13 +3426,18 @@ jr $ra
 		sw $s2, 2184($t2)			
 	jr $ra
 	acertou_0x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2052($t2)
-		sw $s2, 2056($t2)
-		sw $s2, 2180($t2)
-		sw $s2, 2184($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 2052($t2)
+		bne $t4, $s1, poss_jogada_0x5
+			poss_jogada_0x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2052($t2)
+				sw $s2, 2056($t2)
+				sw $s2, 2180($t2)
+				sw $s2, 2184($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_0x6:
@@ -3407,13 +3448,17 @@ jr $ra
 		sw $s2, 2568($t2)		
 	jr $ra
 	acertou_0x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2436($t2)
-		sw $s2, 2440($t2)
-		sw $s2, 2564($t2)
-		sw $s2, 2568($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 2436($t2)
+		bne $t4, $s1, poss_jogada_0x6
+			poss_jogada_0x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2436($t2)
+				sw $s2, 2440($t2)
+				sw $s2, 2564($t2)
+				sw $s2, 2568($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada			
 	jr $ra
 	
 	quad_0x7:
@@ -3424,13 +3469,17 @@ jr $ra
 		sw $s2, 2952($t2)			
 	jr $ra
 	acertou_0x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2820($t2)
-		sw $s2, 2824($t2)
-		sw $s2, 2948($t2)
-		sw $s2, 2952($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 2820($t2)
+		bne $t4, $s1, poss_jogada_0x7
+			poss_jogada_0x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2820($t2)
+				sw $s2, 2824($t2)
+				sw $s2, 2948($t2)
+				sw $s2, 2952($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_0x8:
@@ -3441,13 +3490,17 @@ jr $ra
 		sw $s2, 3336($t2)			
 	jr $ra
 	acertou_0x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3204($t2)
-		sw $s2, 3208($t2)
-		sw $s2, 3332($t2)
-		sw $s2, 3336($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+		lw $t4, 3204($t2)
+		bne $t4, $s1, poss_jogada_0x8
+			poss_jogada_0x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3204($t2)
+				sw $s2, 3208($t2)
+				sw $s2, 3332($t2)
+				sw $s2, 3336($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 
@@ -3462,13 +3515,17 @@ jr $ra
 		sw $s2, 276($t2)
 	jr $ra
 	acertou_1x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 144($t2)
-		sw $s2, 148($t2)
-		sw $s2, 272($t2)
-		sw $s2, 276($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 144($t2)
+		bne $t4, $s1, poss_jogada_1x0
+			poss_jogada_1x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 144($t2)
+				sw $s2, 148($t2)
+				sw $s2, 272($t2)
+				sw $s2, 276($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_1x1:
@@ -3479,13 +3536,17 @@ jr $ra
 		sw $s2, 660($t2)	
 	jr $ra
 	acertou_1x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 528($t2)
-		sw $s2, 532($t2)
-		sw $s2, 656($t2)
-		sw $s2, 660($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 528($t2)
+		bne $t4, $s1, poss_jogada_1x1
+			poss_jogada_1x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 528($t2)
+				sw $s2, 532($t2)
+				sw $s2, 656($t2)
+				sw $s2, 660($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_1x2:
@@ -3496,13 +3557,17 @@ jr $ra
 		sw $s2, 1044($t2)	
 	jr $ra
 	acertou_1x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 912($t2)
-		sw $s2, 916($t2)
-		sw $s2, 1040($t2)
-		sw $s2, 1044($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 912($t2)
+		bne $t4, $s1, poss_jogada_1x2
+			poss_jogada_1x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 912($t2)
+				sw $s2, 916($t2)
+				sw $s2, 1040($t2)
+				sw $s2, 1044($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_1x3:
@@ -3513,13 +3578,17 @@ jr $ra
 		sw $s2, 1428($t2)	
 	jr $ra
 	acertou_1x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1296($t2)
-		sw $s2, 1300($t2)
-		sw $s2, 1424($t2)
-		sw $s2, 1428($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1296($t2)
+		bne $t4, $s1, poss_jogada_1x3
+			poss_jogada_1x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1296($t2)
+				sw $s2, 1300($t2)
+				sw $s2, 1424($t2)
+				sw $s2, 1428($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_1x4:
@@ -3530,13 +3599,17 @@ jr $ra
 		sw $s2, 1812($t2)	
 	jr $ra
 	acertou_1x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1680($t2)
-		sw $s2, 1684($t2)
-		sw $s2, 1808($t2)
-		sw $s2, 1812($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1680($t2)
+		bne $t4, $s1, poss_jogada_1x4
+			poss_jogada_1x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1680($t2)
+				sw $s2, 1684($t2)
+				sw $s2, 1808($t2)
+				sw $s2, 1812($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_1x5:
@@ -3547,13 +3620,17 @@ jr $ra
 		sw $s2, 2196($t2)	
 	jr $ra
 	acertou_1x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2064($t2)
-		sw $s2, 2068($t2)
-		sw $s2, 2192($t2)
-		sw $s2, 2196($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2064($t2)
+		bne $t4, $s1, poss_jogada_1x5
+			poss_jogada_1x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2064($t2)
+				sw $s2, 2068($t2)
+				sw $s2, 2192($t2)
+				sw $s2, 2196($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_1x6:
@@ -3564,13 +3641,17 @@ jr $ra
 		sw $s2, 2580($t2)	
 	jr $ra
 	acertou_1x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2448($t2)
-		sw $s2, 2452($t2)
-		sw $s2, 2576($t2)
-		sw $s2, 2580($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2448($t2)
+		bne $t4, $s1, poss_jogada_1x6
+			poss_jogada_1x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2448($t2)
+				sw $s2, 2452($t2)
+				sw $s2, 2576($t2)
+				sw $s2, 2580($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_1x7:
@@ -3581,13 +3662,17 @@ jr $ra
 		sw $s2, 2964($t2)	
 	jr $ra
 	acertou_1x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2832($t2)
-		sw $s2, 2836($t2)
-		sw $s2, 2960($t2)
-		sw $s2, 2964($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2832($t2)
+		bne $t4, $s1, poss_jogada_1x7
+			poss_jogada_1x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2832($t2)
+				sw $s2, 2836($t2)
+				sw $s2, 2960($t2)
+				sw $s2, 2964($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada		
 	jr $ra
 	
 	quad_1x8:
@@ -3598,13 +3683,17 @@ jr $ra
 		sw $s2, 3348($t2)	
 	jr $ra
 	acertou_1x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3216($t2)
-		sw $s2, 3220($t2)
-		sw $s2, 3344($t2)
-		sw $s2, 3348($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3216($t2)
+		bne $t4, $s1, poss_jogada_1x8
+			poss_jogada_1x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3216($t2)
+				sw $s2, 3220($t2)
+				sw $s2, 3344($t2)
+				sw $s2, 3348($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 
@@ -3621,13 +3710,17 @@ jr $ra
 		sw $s2, 288($t2)	
 	jr $ra
 	acertou_2x0:
-	   	addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 156($t2)
-		sw $s2, 160($t2)
-		sw $s2, 284($t2)
-		sw $s2, 288($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 156($t2)
+		bne $t4, $s1, poss_jogada_2x0
+			poss_jogada_2x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 156($t2)
+				sw $s2, 160($t2)
+				sw $s2, 284($t2)
+				sw $s2, 288($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_2x1:
@@ -3638,13 +3731,17 @@ jr $ra
 		sw $s2, 672($t2)	
 	jr $ra
 	acertou_2x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 540($t2)
-		sw $s2, 544($t2)
-		sw $s2, 668($t2)
-		sw $s2, 672($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 540($t2)
+		bne $t4, $s1, poss_jogada_2x1
+			poss_jogada_2x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 540($t2)
+				sw $s2, 544($t2)
+				sw $s2, 668($t2)
+				sw $s2, 672($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_2x2:
@@ -3655,13 +3752,17 @@ jr $ra
 		sw $s2, 1056($t2)	
 	jr $ra
 	acertou_2x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 924($t2)
-		sw $s2, 928($t2)
-		sw $s2, 1052($t2)
-		sw $s2, 1056($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 924($t2)
+		bne $t4, $s1, poss_jogada_2x2
+			poss_jogada_2x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 924($t2)
+				sw $s2, 928($t2)
+				sw $s2, 1052($t2)
+				sw $s2, 1056($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_2x3:
@@ -3672,13 +3773,17 @@ jr $ra
 		sw $s2, 1440($t2)	
 	jr $ra
 	acertou_2x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1308($t2)
-		sw $s2, 1312($t2)
-		sw $s2, 1436($t2)
-		sw $s2, 1440($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1308($t2)
+		bne $t4, $s1, poss_jogada_2x3
+			poss_jogada_2x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1308($t2)
+				sw $s2, 1312($t2)
+				sw $s2, 1436($t2)
+				sw $s2, 1440($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 		
 	quad_2x4:
@@ -3689,13 +3794,17 @@ jr $ra
 		sw $s2, 1824($t2)	
 	jr $ra
 	acertou_2x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1692($t2)
-		sw $s2, 1696($t2)
-		sw $s2, 1820($t2)
-		sw $s2, 1824($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1692($t2)
+		bne $t4, $s1, poss_jogada_2x4
+			poss_jogada_2x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1692($t2)
+				sw $s2, 1696($t2)
+				sw $s2, 1820($t2)
+				sw $s2, 1824($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_2x5:
@@ -3706,13 +3815,17 @@ jr $ra
 		sw $s2, 2208($t2)	
 	jr $ra
 	acertou_2x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2076($t2)
-		sw $s2, 2080($t2)
-		sw $s2, 2204($t2)
-		sw $s2, 2208($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2076($t2)
+		bne $t4, $s1, poss_jogada_2x5
+			poss_jogada_2x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2076($t2)
+				sw $s2, 2080($t2)
+				sw $s2, 2204($t2)
+				sw $s2, 2208($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_2x6:
@@ -3723,13 +3836,17 @@ jr $ra
 		sw $s2, 2592($t2)	
 	jr $ra
 	acertou_2x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2460($t2)
-		sw $s2, 2464($t2)
-		sw $s2, 2588($t2)
-		sw $s2, 2592($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2460($t2)
+		bne $t4, $s1, poss_jogada_2x6
+			poss_jogada_2x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2460($t2)
+				sw $s2, 2464($t2)
+				sw $s2, 2588($t2)
+				sw $s2, 2592($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_2x7:
@@ -3740,13 +3857,17 @@ jr $ra
 		sw $s2, 2976($t2)	
 	jr $ra
 	acertou_2x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2844($t2)
-		sw $s2, 2848($t2)
-		sw $s2, 2972($t2)
-		sw $s2, 2976($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2844($t2)
+		bne $t4, $s1, poss_jogada_2x7
+			poss_jogada_2x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2844($t2)
+				sw $s2, 2848($t2)
+				sw $s2, 2972($t2)
+				sw $s2, 2976($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_2x8:
@@ -3757,13 +3878,17 @@ jr $ra
 		sw $s2, 3360($t2)	
 	jr $ra
 	acertou_2x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3228($t2)
-		sw $s2, 3232($t2)
-		sw $s2, 3356($t2)
-		sw $s2, 3360($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3228($t2)
+		bne $t4, $s1, poss_jogada_2x8
+			poss_jogada_2x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3228($t2)
+				sw $s2, 3232($t2)
+				sw $s2, 3356($t2)
+				sw $s2, 3360($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 
@@ -3779,13 +3904,17 @@ jr $ra
 		sw $s2, 300($t2)	
 	jr $ra
 	acertou_3x0:
-	    addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 168($t2)
-		sw $s2, 172($t2)
-		sw $s2, 296($t2)
-		sw $s2, 300($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 168($t2)
+		bne $t4, $s1, poss_jogada_3x0
+			poss_jogada_3x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 168($t2)
+				sw $s2, 172($t2)
+				sw $s2, 296($t2)
+				sw $s2, 300($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+		    bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_3x1:
@@ -3796,13 +3925,17 @@ jr $ra
 		sw $s2, 684($t2)	
 	jr $ra
 	acertou_3x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 552($t2)
-		sw $s2, 556($t2)
-		sw $s2, 680($t2)
-		sw $s2, 684($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 552($t2)
+		bne $t4, $s1, poss_jogada_3x1
+			poss_jogada_3x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 552($t2)
+				sw $s2, 556($t2)
+				sw $s2, 680($t2)
+				sw $s2, 684($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 	
 	quad_3x2:
@@ -3813,13 +3946,17 @@ jr $ra
 		sw $s2, 1068($t2)		
 	jr $ra
 	acertou_3x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 936($t2)
-		sw $s2, 940($t2)
-		sw $s2, 1064($t2)
-		sw $s2, 1068($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 936($t2)
+		bne $t4, $s1, poss_jogada_3x2
+			poss_jogada_3x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 936($t2)
+				sw $s2, 940($t2)
+				sw $s2, 1064($t2)
+				sw $s2, 1068($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_3x3:
@@ -3830,13 +3967,17 @@ jr $ra
 		sw $s2, 1452($t2)	
 	jr $ra
 	acertou_3x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1320($t2)
-		sw $s2, 1324($t2)
-		sw $s2, 1448($t2)
-		sw $s2, 1452($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1320($t2)
+		bne $t4, $s1, poss_jogada_3x3
+			poss_jogada_3x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1320($t2)
+				sw $s2, 1324($t2)
+				sw $s2, 1448($t2)
+				sw $s2, 1452($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra	
 		
 	quad_3x4:
@@ -3847,13 +3988,17 @@ jr $ra
 		sw $s2, 1836($t2)	
 	jr $ra
 	acertou_3x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1704($t2)
-		sw $s2, 1708($t2)
-		sw $s2, 1832($t2)
-		sw $s2, 1836($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1704($t2)
+		bne $t4, $s1, poss_jogada_3x4
+			poss_jogada_3x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1704($t2)
+				sw $s2, 1708($t2)
+				sw $s2, 1832($t2)
+				sw $s2, 1836($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_3x5:
@@ -3864,13 +4009,17 @@ jr $ra
 		sw $s2, 2220($t2)	
 	jr $ra
 	acertou_3x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2088($t2)
-		sw $s2, 2092($t2)
-		sw $s2, 2216($t2)
-		sw $s2, 2220($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2088($t2)
+		bne $t4, $s1, poss_jogada_3x5
+			poss_jogada_3x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2088($t2)
+				sw $s2, 2092($t2)
+				sw $s2, 2216($t2)
+				sw $s2, 2220($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_3x6:
@@ -3881,13 +4030,17 @@ jr $ra
 		sw $s2, 2604($t2)	
 	jr $ra
 	acertou_3x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2472($t2)
-		sw $s2, 2476($t2)
-		sw $s2, 2600($t2)
-		sw $s2, 2604($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2472($t2)
+		bne $t4, $s1, poss_jogada_3x6
+			poss_jogada_3x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2472($t2)
+				sw $s2, 2476($t2)
+				sw $s2, 2600($t2)
+				sw $s2, 2604($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_3x7:
@@ -3898,13 +4051,17 @@ jr $ra
 		sw $s2, 2988($t2)	
 	jr $ra
 	acertou_3x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2856($t2)
-		sw $s2, 2860($t2)
-		sw $s2, 2984($t2)
-		sw $s2, 2988($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2856($t2)
+		bne $t4, $s1, poss_jogada_3x7
+			poss_jogada_3x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2856($t2)
+				sw $s2, 2860($t2)
+				sw $s2, 2984($t2)
+				sw $s2, 2988($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+		bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_3x8:
@@ -3915,13 +4072,17 @@ jr $ra
 		sw $s2, 3372($t2)	
 	jr $ra
 	acertou_3x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3240($t2)
-		sw $s2, 3244($t2)
-		sw $s2, 3368($t2)
-		sw $s2, 3372($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3240($t2)
+		bne $t4, $s1, poss_jogada_3x8
+			poss_jogada_3x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3240($t2)
+				sw $s2, 3244($t2)
+				sw $s2, 3368($t2)
+				sw $s2, 3372($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	# ==================================================================
@@ -3936,13 +4097,17 @@ jr $ra
 		sw $s2, 312($t2)	
 	jr $ra
 	acertou_4x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 180($t2)
-		sw $s2, 184($t2)
-		sw $s2, 308($t2)
-		sw $s2, 312($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 180($t2)
+		bne $t4, $s1, poss_jogada_4x0
+			poss_jogada_4x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 180($t2)
+				sw $s2, 184($t2)
+				sw $s2, 308($t2)
+				sw $s2, 312($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_4x1:
@@ -3953,13 +4118,17 @@ jr $ra
 		sw $s2, 696($t2)	
 	jr $ra
 	acertou_4x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 564($t2)
-		sw $s2, 568($t2)
-		sw $s2, 692($t2)
-		sw $s2, 696($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 564($t2)
+		bne $t4, $s1, poss_jogada_4x1
+			poss_jogada_4x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 564($t2)
+				sw $s2, 568($t2)
+				sw $s2, 692($t2)
+				sw $s2, 696($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_4x2:
@@ -3970,13 +4139,17 @@ jr $ra
 		sw $s2, 1080($t2)	
 	jr $ra
 	acertou_4x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 948($t2)
-		sw $s2, 952($t2)
-		sw $s2, 1076($t2)
-		sw $s2, 1080($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 948($t2)
+		bne $t4, $s1, poss_jogada_4x2
+			poss_jogada_4x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 948($t2)
+				sw $s2, 952($t2)
+				sw $s2, 1076($t2)
+				sw $s2, 1080($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_4x3:
@@ -3987,13 +4160,17 @@ jr $ra
 		sw $s2, 1464($t2)	
 	jr $ra
 	acertou_4x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1332($t2)
-		sw $s2, 1336($t2)
-		sw $s2, 1460($t2)
-		sw $s2, 1464($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1332($t2)
+		bne $t4, $s1, poss_jogada_4x3
+			poss_jogada_4x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1332($t2)
+				sw $s2, 1336($t2)
+				sw $s2, 1460($t2)
+				sw $s2, 1464($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_4x4:
@@ -4004,13 +4181,17 @@ jr $ra
 		sw $s2, 1848($t2)	
 	jr $ra
 	acertou_4x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1716($t2)
-		sw $s2, 1720($t2)
-		sw $s2, 1844($t2)
-		sw $s2, 1848($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1716($t2)
+		bne $t4, $s1, poss_jogada_4x4
+			poss_jogada_4x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1716($t2)
+				sw $s2, 1720($t2)
+				sw $s2, 1844($t2)
+				sw $s2, 1848($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_4x5:
@@ -4021,13 +4202,17 @@ jr $ra
 		sw $s2, 2232($t2)	
 	jr $ra
 	acertou_4x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2100($t2)
-		sw $s2, 2104($t2)
-		sw $s2, 2228($t2)
-		sw $s2, 2232($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2100($t2)
+		bne $t4, $s1, poss_jogada_4x5
+			poss_jogada_4x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2100($t2)
+				sw $s2, 2104($t2)
+				sw $s2, 2228($t2)
+				sw $s2, 2232($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_4x6:
@@ -4038,13 +4223,17 @@ jr $ra
 		sw $s2, 2616($t2)	
 	jr $ra
 	acertou_4x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2484($t2)
-		sw $s2, 2488($t2)
-		sw $s2, 2612($t2)
-		sw $s2, 2616($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2484($t2)
+		bne $t4, $s1, poss_jogada_4x6
+			poss_jogada_4x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2484($t2)
+				sw $s2, 2488($t2)
+				sw $s2, 2612($t2)
+				sw $s2, 2616($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_4x7:
@@ -4055,13 +4244,17 @@ jr $ra
 		sw $s2, 3000($t2)	
 	jr $ra
 	acertou_4x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2868($t2)
-		sw $s2, 2872($t2)
-		sw $s2, 2996($t2)
-		sw $s2, 3000($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2868($t2)
+		bne $t4, $s1, poss_jogada_4x7
+			poss_jogada_4x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2868($t2)
+				sw $s2, 2872($t2)
+				sw $s2, 2996($t2)
+				sw $s2, 3000($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_4x8:
@@ -4072,13 +4265,17 @@ jr $ra
 		sw $s2, 3384($t2)	
 	jr $ra
 	acertou_4x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3252($t2)
-		sw $s2, 3256($t2)
-		sw $s2, 3380($t2)
-		sw $s2, 3384($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3252($t2)
+		bne $t4, $s1, poss_jogada_4x8
+			poss_jogada_4x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3252($t2)
+				sw $s2, 3256($t2)
+				sw $s2, 3380($t2)
+				sw $s2, 3384($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	
@@ -4094,13 +4291,17 @@ jr $ra
 		sw $s2, 324($t2)	
 	jr $ra
 	acertou_5x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 192($t2)
-		sw $s2, 196($t2)
-		sw $s2, 320($t2)
-		sw $s2, 324($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 192($t2)
+		bne $t4, $s1, poss_jogada_5x0
+			poss_jogada_5x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 192($t2)
+				sw $s2, 196($t2)
+				sw $s2, 320($t2)
+				sw $s2, 324($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_5x1:
@@ -4111,13 +4312,17 @@ jr $ra
 		sw $s2, 708($t2)	
 	jr $ra
 	acertou_5x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 576($t2)
-		sw $s2, 580($t2)
-		sw $s2, 704($t2)
-		sw $s2, 708($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 576($t2)
+		bne $t4, $s1, poss_jogada_5x1
+			poss_jogada_5x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 576($t2)
+				sw $s2, 580($t2)
+				sw $s2, 704($t2)
+				sw $s2, 708($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_5x2:
@@ -4128,13 +4333,17 @@ jr $ra
 		sw $s2, 1092($t2)	
 	jr $ra
 	acertou_5x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 960($t2)
-		sw $s2, 964($t2)
-		sw $s2, 1088($t2)
-		sw $s2, 1092($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 960($t2)
+		bne $t4, $s1, poss_jogada_5x2
+			poss_jogada_5x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 960($t2)
+				sw $s2, 964($t2)
+				sw $s2, 1088($t2)
+				sw $s2, 1092($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_5x3:
@@ -4145,13 +4354,17 @@ jr $ra
 		sw $s2, 1476($t2)	
 	jr $ra
 	acertou_5x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1344($t2)
-		sw $s2, 1348($t2)
-		sw $s2, 1472($t2)
-		sw $s2, 1476($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1344($t2)
+		bne $t4, $s1, poss_jogada_5x3
+			poss_jogada_5x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1344($t2)
+				sw $s2, 1348($t2)
+				sw $s2, 1472($t2)
+				sw $s2, 1476($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_5x4:
@@ -4162,13 +4375,17 @@ jr $ra
 		sw $s2, 1860($t2)	
 	jr $ra
 	acertou_5x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1728($t2)
-		sw $s2, 1732($t2)
-		sw $s2, 1856($t2)
-		sw $s2, 1860($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1728($t2)
+		bne $t4, $s1, poss_jogada_5x4
+			poss_jogada_5x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1728($t2)
+				sw $s2, 1732($t2)
+				sw $s2, 1856($t2)
+				sw $s2, 1860($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_5x5:
@@ -4179,13 +4396,17 @@ jr $ra
 		sw $s2, 2244($t2)	
 	jr $ra
 	acertou_5x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2112($t2)
-		sw $s2, 2116($t2)
-		sw $s2, 2240($t2)
-		sw $s2, 2244($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2112($t2)
+		bne $t4, $s1, poss_jogada_5x5
+			poss_jogada_5x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2112($t2)
+				sw $s2, 2116($t2)
+				sw $s2, 2240($t2)
+				sw $s2, 2244($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_5x6:
@@ -4196,13 +4417,17 @@ jr $ra
 		sw $s2, 2628($t2)	
 	jr $ra
 	acertou_5x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2496($t2)
-		sw $s2, 2500($t2)
-		sw $s2, 2624($t2)
-		sw $s2, 2628($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2496($t2)
+		bne $t4, $s1, poss_jogada_5x6
+			poss_jogada_5x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2496($t2)
+				sw $s2, 2500($t2)
+				sw $s2, 2624($t2)
+				sw $s2, 2628($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_5x7:
@@ -4213,13 +4438,17 @@ jr $ra
 		sw $s2, 3012($t2)	
 	jr $ra
 	acertou_5x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2880($t2)
-		sw $s2, 2884($t2)
-		sw $s2, 3008($t2)
-		sw $s2, 3012($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2880($t2)
+		bne $t4, $s1, poss_jogada_5x7
+			poss_jogada_5x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2880($t2)
+				sw $s2, 2884($t2)
+				sw $s2, 3008($t2)
+				sw $s2, 3012($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_5x8:
@@ -4230,13 +4459,17 @@ jr $ra
 		sw $s2, 3396($t2)	
 	jr $ra
 	acertou_5x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3264($t2)
-		sw $s2, 3268($t2)
-		sw $s2, 3392($t2)
-		sw $s2, 3396($t2)		
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3264($t2)
+		bne $t4, $s1, poss_jogada_5x8
+			poss_jogada_5x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3264($t2)
+				sw $s2, 3268($t2)
+				sw $s2, 3392($t2)
+				sw $s2, 3396($t2)		
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 
 
@@ -4252,13 +4485,17 @@ jr $ra
 		sw $s2, 336($t2)		
 	jr $ra
 	acertou_6x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 204($t2)
-		sw $s2, 208($t2)
-		sw $s2, 332($t2)
-		sw $s2, 336($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4,  204($t2)
+		bne $t4, $s1, poss_jogada_6x0
+			poss_jogada_6x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 204($t2)
+				sw $s2, 208($t2)
+				sw $s2, 332($t2)
+				sw $s2, 336($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x1:
@@ -4269,13 +4506,17 @@ jr $ra
 		sw $s2, 720($t2)		
 	jr $ra
 	acertou_6x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 588($t2)
-		sw $s2, 592($t2)
-		sw $s2, 716($t2)
-		sw $s2, 720($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 588($t2)
+		bne $t4, $s1, poss_jogada_6x1
+			poss_jogada_6x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 588($t2)
+				sw $s2, 592($t2)
+				sw $s2, 716($t2)
+				sw $s2, 720($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x2:
@@ -4286,13 +4527,17 @@ jr $ra
 		sw $s2, 1104($t2)		
 	jr $ra
 	acertou_6x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 972($t2)
-		sw $s2, 976($t2)
-		sw $s2, 1100($t2)
-		sw $s2, 1104($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 972($t2)
+		bne $t4, $s1, poss_jogada_6x2
+			poss_jogada_6x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 972($t2)
+				sw $s2, 976($t2)
+				sw $s2, 1100($t2)
+				sw $s2, 1104($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x3:
@@ -4303,13 +4548,17 @@ jr $ra
 		sw $s2, 1488($t2)
 	jr $ra
 	acertou_6x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1356($t2)
-		sw $s2, 1360($t2)
-		sw $s2, 1484($t2)
-		sw $s2, 1488($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1356($t2)
+		bne $t4, $s1, poss_jogada_6x3
+			poss_jogada_6x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1356($t2)
+				sw $s2, 1360($t2)
+				sw $s2, 1484($t2)
+				sw $s2, 1488($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 		
 	quad_6x4:
@@ -4320,13 +4569,17 @@ jr $ra
 		sw $s2, 1872($t2)		
 	jr $ra
 	acertou_6x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1740($t2)
-		sw $s2, 1744($t2)
-		sw $s2, 1868($t2)
-		sw $s2, 1872($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1740($t2)
+		bne $t4, $s1, poss_jogada_6x4
+			poss_jogada_6x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1740($t2)
+				sw $s2, 1744($t2)
+				sw $s2, 1868($t2)
+				sw $s2, 1872($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x5:
@@ -4337,13 +4590,17 @@ jr $ra
 		sw $s2, 2256($t2)			
 	jr $ra
 	acertou_6x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2124($t2)
-		sw $s2, 2128($t2)
-		sw $s2, 2252($t2)
-		sw $s2, 2256($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2124($t2)
+		bne $t4, $s1, poss_jogada_6x5
+			poss_jogada_6x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2124($t2)
+				sw $s2, 2128($t2)
+				sw $s2, 2252($t2)
+				sw $s2, 2256($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_6x6:
@@ -4354,13 +4611,17 @@ jr $ra
 		sw $s2, 2640($t2)	
 	jr $ra
 	acertou_6x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2508($t2)
-		sw $s2, 2512($t2)
-		sw $s2, 2636($t2)
-		sw $s2, 2640($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2508($t2)
+		bne $t4, $s1, poss_jogada_6x6
+			poss_jogada_6x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2508($t2)
+				sw $s2, 2512($t2)
+				sw $s2, 2636($t2)
+				sw $s2, 2640($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x7:
@@ -4371,13 +4632,17 @@ jr $ra
 		sw $s2, 3024($t2)	
 	jr $ra
 	acertou_6x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2892($t2)
-		sw $s2, 2896($t2)
-		sw $s2, 3020($t2)
-		sw $s2, 3024($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2892($t2)
+		bne $t4, $s1, poss_jogada_6x7
+			poss_jogada_6x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2892($t2)
+				sw $s2, 2896($t2)
+				sw $s2, 3020($t2)
+				sw $s2, 3024($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_6x8:
@@ -4388,13 +4653,17 @@ jr $ra
 		sw $s2, 3408($t2)	
 	jr $ra
 	acertou_6x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3276($t2)
-		sw $s2, 3280($t2)
-		sw $s2, 3404($t2)
-		sw $s2, 3408($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3276($t2)
+		bne $t4, $s1, poss_jogada_6x8
+			poss_jogada_6x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3276($t2)
+				sw $s2, 3280($t2)
+				sw $s2, 3404($t2)
+				sw $s2, 3408($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 
 
@@ -4410,13 +4679,17 @@ jr $ra
 		sw $s2, 348($t2)	
 	jr $ra
 	acertou_7x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 216($t2)
-		sw $s2, 220($t2)
-		sw $s2, 344($t2)
-		sw $s2, 348($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 216($t2)
+		bne $t4, $s1, poss_jogada_7x0
+			poss_jogada_7x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 216($t2)
+				sw $s2, 220($t2)
+				sw $s2, 344($t2)
+				sw $s2, 348($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_7x1:
@@ -4427,13 +4700,17 @@ jr $ra
 		sw $s2, 732($t2)	
 	jr $ra
 	acertou_7x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 600($t2)
-		sw $s2, 604($t2)
-		sw $s2, 728($t2)	
-		sw $s2, 732($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 600($t2)
+		bne $t4, $s1, poss_jogada_7x1
+			poss_jogada_7x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 600($t2)
+				sw $s2, 604($t2)
+				sw $s2, 728($t2)	
+				sw $s2, 732($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_7x2:
@@ -4444,13 +4721,17 @@ jr $ra
 		sw $s2, 1116($t2)	
 	jr $ra
 	acertou_7x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 984($t2)
-		sw $s2, 988($t2)
-		sw $s2, 1112($t2)
-		sw $s2, 1116($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 984($t2)
+		bne $t4, $s1, poss_jogada_7x2
+			poss_jogada_7x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 984($t2)
+				sw $s2, 988($t2)
+				sw $s2, 1112($t2)
+				sw $s2, 1116($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_7x3:
@@ -4461,13 +4742,17 @@ jr $ra
 		sw $s2, 1500($t2)	
 	jr $ra
 	acertou_7x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1368($t2)
-		sw $s2, 1372($t2)
-		sw $s2, 1496($t2)
-		sw $s2, 1500($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1368($t2)
+		bne $t4, $s1, poss_jogada_7x3
+			poss_jogada_7x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1368($t2)
+				sw $s2, 1372($t2)
+				sw $s2, 1496($t2)
+				sw $s2, 1500($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_7x4:
@@ -4478,13 +4763,17 @@ jr $ra
 		sw $s2, 1884($t2)	
 	jr $ra
 	acertou_7x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1752($t2)
-		sw $s2, 1756($t2)
-		sw $s2, 1880($t2)
-		sw $s2, 1884($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1752($t2)
+		bne $t4, $s1, poss_jogada_7x4
+			poss_jogada_7x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1752($t2)
+				sw $s2, 1756($t2)
+				sw $s2, 1880($t2)
+				sw $s2, 1884($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_7x5:
@@ -4495,13 +4784,17 @@ jr $ra
 		sw $s2, 2268($t2)	
 	jr $ra
 	acertou_7x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2136($t2)
-		sw $s2, 2140($t2)
-		sw $s2, 2264($t2)
-		sw $s2, 2268($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2136($t2)
+		bne $t4, $s1, poss_jogada_7x5
+			poss_jogada_7x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2136($t2)
+				sw $s2, 2140($t2)
+				sw $s2, 2264($t2)
+				sw $s2, 2268($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 		
 	quad_7x6:
@@ -4512,13 +4805,17 @@ jr $ra
 		sw $s2, 2652($t2)	
 	jr $ra
 	acertou_7x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2520($t2)
-		sw $s2, 2524($t2)
-		sw $s2, 2648($t2)
-		sw $s2, 2652($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2520($t2)
+		bne $t4, $s1, poss_jogada_7x6
+			poss_jogada_7x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2520($t2)
+				sw $s2, 2524($t2)
+				sw $s2, 2648($t2)
+				sw $s2, 2652($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_7x7:
@@ -4529,13 +4826,17 @@ jr $ra
 		sw $s2, 3036($t2)	
 	jr $ra
 	acertou_7x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2904($t2)
-		sw $s2, 2908($t2)
-		sw $s2, 3032($t2)
-		sw $s2, 3036($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2904($t2)
+		bne $t4, $s1, poss_jogada_7x7
+			poss_jogada_7x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2904($t2)
+				sw $s2, 2908($t2)
+				sw $s2, 3032($t2)
+				sw $s2, 3036($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_7x8:
@@ -4546,13 +4847,17 @@ jr $ra
 		sw $s2, 3420($t2)	
 	jr $ra
 	acertou_7x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3288($t2)
-		sw $s2, 3292($t2)
-		sw $s2, 3416($t2)
-		sw $s2, 3420($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3288($t2)
+		bne $t4, $s1, poss_jogada_7x8
+			poss_jogada_7x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3288($t2)
+				sw $s2, 3292($t2)
+				sw $s2, 3416($t2)
+				sw $s2, 3420($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	
@@ -4568,13 +4873,17 @@ jr $ra
 		sw $s2, 360($t2)	
 	jr $ra
 	acertou_8x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 228($t2)
-		sw $s2, 232($t2)
-		sw $s2, 356($t2)
-		sw $s2, 360($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 228($t2)
+		bne $t4, $s1, poss_jogada_8x0
+			poss_jogada_8x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 228($t2)
+				sw $s2, 232($t2)
+				sw $s2, 356($t2)
+				sw $s2, 360($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_8x1:
@@ -4585,13 +4894,17 @@ jr $ra
 		sw $s2, 744($t2)	
 	jr $ra
 	acertou_8x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 612($t2)
-		sw $s2, 616($t2)
-		sw $s2, 740($t2)		
-		sw $s2, 744($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 612($t2)
+		bne $t4, $s1, poss_jogada_8x1
+			poss_jogada_8x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 612($t2)
+				sw $s2, 616($t2)
+				sw $s2, 740($t2)		
+				sw $s2, 744($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_8x2:
@@ -4602,13 +4915,17 @@ jr $ra
 		sw $s2, 1128($t2)	
 	jr $ra
 	acertou_8x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 996($t2)
-		sw $s2, 1000($t2)
-		sw $s2, 1124($t2)
-		sw $s2, 1128($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 996($t2)
+		bne $t4, $s1, poss_jogada_8x2
+			poss_jogada_8x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 996($t2)
+				sw $s2, 1000($t2)
+				sw $s2, 1124($t2)
+				sw $s2, 1128($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_8x3:
@@ -4619,13 +4936,17 @@ jr $ra
 		sw $s2, 1512($t2)	
 	jr $ra
 	acertou_8x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1380($t2)
-		sw $s2, 1384($t2)
-		sw $s2, 1508($t2)
-		sw $s2, 1512($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1380($t2)
+		bne $t4, $s1, poss_jogada_8x3
+			poss_jogada_8x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1380($t2)
+				sw $s2, 1384($t2)
+				sw $s2, 1508($t2)
+				sw $s2, 1512($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_8x4:
@@ -4636,13 +4957,17 @@ jr $ra
 		sw $s2, 1896($t2)	
 	jr $ra
 	acertou_8x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1764($t2)
-		sw $s2, 1768($t2)
-		sw $s2, 1892($t2)
-		sw $s2, 1896($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1764($t2)
+		bne $t4, $s1, poss_jogada_8x4
+			poss_jogada_8x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1764($t2)
+				sw $s2, 1768($t2)
+				sw $s2, 1892($t2)
+				sw $s2, 1896($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_8x5:
@@ -4653,13 +4978,17 @@ jr $ra
 		sw $s2, 2280($t2)	
 	jr $ra
 	acertou_8x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2148($t2)
-		sw $s2, 2152($t2)
-		sw $s2, 2276($t2)
-		sw $s2, 2280($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2148($t2)
+		bne $t4, $s1, poss_jogada_8x5
+			poss_jogada_8x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2148($t2)
+				sw $s2, 2152($t2)
+				sw $s2, 2276($t2)
+				sw $s2, 2280($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 		
 	quad_8x6:
@@ -4670,13 +4999,17 @@ jr $ra
 		sw $s2, 2664($t2)		
 	jr $ra
 	acertou_8x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2532($t2)
-		sw $s2, 2536($t2)
-		sw $s2, 2660($t2)
-		sw $s2, 2664($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2532($t2)
+		bne $t4, $s1, poss_jogada_8x6
+			poss_jogada_8x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2532($t2)
+				sw $s2, 2536($t2)
+				sw $s2, 2660($t2)
+				sw $s2, 2664($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_8x7:
@@ -4687,13 +5020,17 @@ jr $ra
 		sw $s2, 3048($t2)		
 	jr $ra
 	acertou_8x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2916($t2)
-		sw $s2, 2920($t2)
-		sw $s2, 3044($t2)
-		sw $s2, 3048($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2916($t2)
+		bne $t4, $s1, poss_jogada_8x7
+			poss_jogada_8x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2916($t2)
+				sw $s2, 2920($t2)
+				sw $s2, 3044($t2)
+				sw $s2, 3048($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_8x8:
@@ -4704,13 +5041,17 @@ jr $ra
 		sw $s2, 3432($t2)			
 	jr $ra
 	acertou_8x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3300($t2)
-		sw $s2, 3304($t2)
-		sw $s2, 3428($t2)
-		sw $s2, 3432($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3300($t2)
+		bne $t4, $s1, poss_jogada_8x8
+			poss_jogada_8x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3300($t2)
+				sw $s2, 3304($t2)
+				sw $s2, 3428($t2)
+				sw $s2, 3432($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	
@@ -4725,13 +5066,17 @@ jr $ra
 		sw $s2, 372($t2)			
 	jr $ra
 	acertou_9x0:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 240($t2)
-		sw $s2, 244($t2)
-		sw $s2, 368($t2)
-		sw $s2, 372($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA
+	lw $t4, 240($t2)
+		bne $t4, $s1, poss_jogada_9x0
+			poss_jogada_9x0:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 240($t2)
+				sw $s2, 244($t2)
+				sw $s2, 368($t2)
+				sw $s2, 372($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_9x1:
@@ -4742,13 +5087,17 @@ jr $ra
 		sw $s2, 756($t2)			
 	jr $ra
 	acertou_9x1:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 624($t2)
-		sw $s2, 628($t2)
-		sw $s2, 752($t2)
-		sw $s2, 756($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 624($t2)
+		bne $t4, $s1, poss_jogada_9x1
+			poss_jogada_9x1:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 624($t2)
+				sw $s2, 628($t2)
+				sw $s2, 752($t2)
+				sw $s2, 756($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_9x2:
@@ -4759,13 +5108,17 @@ jr $ra
 		sw $s2, 1140($t2)		
 	jr $ra
 	acertou_9x2:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1008($t2)
-		sw $s2, 1012($t2)
-		sw $s2, 1136($t2)
-		sw $s2, 1140($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1008($t2)
+		bne $t4, $s1, poss_jogada_9x2
+			poss_jogada_9x2:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1008($t2)
+				sw $s2, 1012($t2)
+				sw $s2, 1136($t2)
+				sw $s2, 1140($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	quad_9x3:
@@ -4776,13 +5129,17 @@ jr $ra
 		sw $s2, 1524($t2)			
 	jr $ra
 	acertou_9x3:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1392($t2)
-		sw $s2, 1396($t2)
-		sw $s2, 1520($t2)
-		sw $s2, 1524($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1392($t2)
+		bne $t4, $s1, poss_jogada_9x3
+			poss_jogada_9x3:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1392($t2)
+				sw $s2, 1396($t2)
+				sw $s2, 1520($t2)
+				sw $s2, 1524($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 		
 	quad_9x4:
@@ -4793,13 +5150,17 @@ jr $ra
 		sw $s2, 1908($t2)			
 	jr $ra
 	acertou_9x4:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 1776($t2)
-		sw $s2, 1780($t2)
-		sw $s2, 1904($t2)
-		sw $s2, 1908($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 1776($t2)
+		bne $t4, $s1, poss_jogada_9x4
+			poss_jogada_9x4:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 1776($t2)
+				sw $s2, 1780($t2)
+				sw $s2, 1904($t2)
+				sw $s2, 1908($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_9x5:
@@ -4810,13 +5171,17 @@ jr $ra
 		sw $s2, 2292($t2)			
 	jr $ra
 	acertou_9x5:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2160($t2)
-		sw $s2, 2164($t2)
-		sw $s2, 2288($t2)
-		sw $s2, 2292($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2160($t2)
+		bne $t4, $s1, poss_jogada_9x5
+			poss_jogada_9x5:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2160($t2)
+				sw $s2, 2164($t2)
+				sw $s2, 2288($t2)
+				sw $s2, 2292($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 		
 	quad_9x6:
@@ -4827,13 +5192,17 @@ jr $ra
 		sw $s2, 2676($t2)			
 	jr $ra
 	acertou_9x6:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2544($t2)
-		sw $s2, 2548($t2)
-		sw $s2, 2672($t2)
-		sw $s2, 2676($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2544($t2)
+		bne $t4, $s1, poss_jogada_9x6
+			poss_jogada_9x6:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2544($t2)
+				sw $s2, 2548($t2)
+				sw $s2, 2672($t2)
+				sw $s2, 2676($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_9x7:
@@ -4844,13 +5213,17 @@ jr $ra
 		sw $s2, 3060($t2)			
 	jr $ra
 	acertou_9x7:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 2928($t2)
-		sw $s2, 2932($t2)
-		sw $s2, 3056($t2)
-		sw $s2, 3060($t2)
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 2928($t2)
+		bne $t4, $s1, poss_jogada_9x7
+			poss_jogada_9x7:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 2928($t2)
+				sw $s2, 2932($t2)
+				sw $s2, 3056($t2)
+				sw $s2, 3060($t2)
+				addi $s2, $zero, 0xff3333 #LARANJA	
+			bne $t4,$s1,jogada_mesma_coordenada
 	jr $ra
 	
 	quad_9x8:
@@ -4861,13 +5234,17 @@ jr $ra
 		sw $s2, 3444($t2)	
 	jr $ra
 	acertou_9x8:
-		addi $k0, $zero,1
-		addi $s2, $zero, 0x17FD04  #Amarela	     
-		sw $s2, 3312($t2)
-		sw $s2, 3316($t2)
-		sw $s2, 3440($t2)
-		sw $s2, 3444($t2)	
-		addi $s2, $zero, 0xff3333 #LARANJA	
+	lw $t4, 3312($t2)
+		bne $t4, $s1, poss_jogada_9x8
+			poss_jogada_9x8:
+				addi $k0, $zero,1
+				addi $s2, $zero, 0x17FD04  #Amarela	     
+				sw $s2, 3312($t2)
+				sw $s2, 3316($t2)
+				sw $s2, 3440($t2)
+				sw $s2, 3444($t2)	
+				addi $s2, $zero, 0xff3333 #LARANJA
+			bne $t4,$s1,jogada_mesma_coordenada	
 	jr $ra
 	
 	on_player_1:
