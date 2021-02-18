@@ -151,14 +151,14 @@
 		jal menu_game
 			
 		cores:
-	     	addi $s1, $zero, 0x0040ff #Azul 
-	     	addi $s2, $zero, 0xff3333 #VERMELHA
+	     	addi $s1, $zero, 0x0040ff # Cor Azul (água)
+	     	addi $s2, $zero, 0xff3333 # Cor VERMELHA (Bombas)
 		jr $ra
 	
 		define_fundo:
-	   		addi $t1, $zero, 1024	#mapa possui 1024 quadrados
+	   		addi $t1, $zero, 1024	# Mapa possui 1024 quadrados
 			add $t2, $zero, $t1
-			lui $t2, 0x1000		#posição inicial dos dados para serem pintados
+			lui $t2, 0x1000		# Posição inicial dos dados para serem pintados
 		jr $ra
 
 		titulo_jogo:	
@@ -254,14 +254,11 @@
 
 		jal get_coluna
 	
-    
-		beq, $k0,1,player1_acertou		
-		
+		beq, $k0,1,player1_acertou			
 	
-	        #Se escolhida a opcao 1 
+	        #Se escolhida a opcao 1 no menu, ou seja, p1 vs IA
 	        beq $s7,1,maquina_escolhe_jogada
-	        jal jogada_player2 #SE NAO 
-	        		                       
+	        jal jogada_player2 #SE NAO         		                       
 	jr $ra
 	
 	
