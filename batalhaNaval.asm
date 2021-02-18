@@ -20,6 +20,10 @@
   	Destroyer_3:
   	.alig 2
   	.space 16 
+
+	Destroyer_4:
+  	.alig 2
+  	.space 16 
   	
  	titulo: .asciiz "\n************* Batalha naval *************\n*****************************************\n**                MENU                 **\n**      1       P1 vs IA               **\n**      2       P1 vs P2               **\n**      3       EXIT                   **\n*****************************************\n*****************************************\n"
  	maquina_jogando: .asciiz "\nMaquina esta processando a jogada...\n"
@@ -47,48 +51,47 @@
 	#gera destroyers 1
   	jal coordenada_inicial
   	loop:
-  		beq $t0,16, saiDoLoop
-  		sw $a0, Destroyer_1($t0)
-  		addi $t0, $t0, 4
+  		beq $a2,16, saiDoLoop
+  		sw $a0, Destroyer_1($a2)
+  		addi $a2, $a2, 4
   		addi $a0, $a0,1
   		j loop		
   	saiDoLoop:
 
-  	move $t0, $zero
-  	lw $a0, Destroyer_1 ($t0)
+  	move $a2, $zero
+  	lw $a0, Destroyer_1 ($a2)
   	move $k1,$a0
   	
   	imprime:
-  		beq $t0, 16, saiDaImpressao
+  		beq $a2, 16, saiDaImpressao
   		li $v0,1
-  		lw $a0, Destroyer_1 ($t0)
-  		syscall
-  			
-  		addi $t0, $t0, 4
+  		lw $a0, Destroyer_1 ($a2)
+  		syscall		
+  		addi $a2, $a2, 4
   	j imprime
   	saiDaImpressao:jal quebra_linha
+  	
 
 	#gera destroyers 2
   	jal coordenada_inicial
   	loop2:
-  		beq $t9,16, saiDoLoop2
-  		sw $a0, Destroyer_2($t9)
-  		addi $t9, $t9, 4
+  		beq $a3,16, saiDoLoop2
+  		sw $a0, Destroyer_2($a3)
+  		addi $a3, $a3, 4
   		addi $a0, $a0,1
   		j loop2		
   	saiDoLoop2:
   	
-  	move $t9, $zero
-  	lw $a0, Destroyer_2 ($t9)
+  	move $a3, $zero
+  	lw $a0, Destroyer_2 ($a3)
   	move $s3,$a0
-  
+	  
   	imprime2:
-  		beq $t9, 16, saiDaImpressao2
+  		beq $a3, 16, saiDaImpressao2
   		li $v0,1
-  		lw $a0, Destroyer_2 ($t9)
-  		syscall
-  			
-  		addi $t9, $t9, 4
+  		lw $a0, Destroyer_2 ($a3)
+  		syscall	
+  		addi $a3, $a3, 4
   	j imprime2
   	saiDaImpressao2:jal quebra_linha
 
@@ -101,7 +104,7 @@
   		addi $a0, $a0,1
   		j loop3		
   	saiDoLoop3:
-  	
+	
   	move $t7, $zero
   	lw $a0, Destroyer_3 ($t7)
   	move $t3,$a0
@@ -116,7 +119,29 @@
   	j imprime3
   	saiDaImpressao3:jal quebra_linha
 
-
+	#gera destroyers 4
+  	jal coordenada_inicial 
+  	loop4:
+  		beq $t0,16, saiDoLoop4
+  		sw $a0, Destroyer_4($t0)
+  		addi $t0, $t0, 4
+  		addi $a0, $a0,1
+  		j loop4	
+  	saiDoLoop4:
+	
+  	move $t0, $zero
+  	lw $a0, Destroyer_4 ($t0)
+  	move $t9,$a0
+  
+  	imprime4:
+  		beq $t0, 16, saiDaImpressao4
+  		li $v0,1
+  		lw $a0, Destroyer_4 ($t0)
+  		syscall
+  			
+  		addi $t0, $t0, 4
+  	j imprime4
+  	saiDaImpressao4:jal quebra_linha
 
 	
 	# ========== Gera coordenadas das linhas ==========
@@ -133,10 +158,18 @@
 
 		#gera coordenada linha destroyers 3
 		jal coordenada_inicial
-		move $s4, $a0
+		move $s4, $a0 
 	
 		beq $s4, $s6, while
 		beq $s4, $s5, while
+
+		#gera coordenada linha destroyers 4
+		jal coordenada_inicial
+		move $s7, $a0
+
+		beq $s7, $s6, while
+		beq $s7, $s5, while
+		beq $s7, $s4, while
 
 		j exit_while
     j while
@@ -175,7 +208,7 @@
 			li $v0, 5	#Opcao ditigitada
 			syscall
 
-			move $s7, $v0
+			move $k0, $v0
 			
 			beq $v0, 3, exit_game
 			
@@ -186,7 +219,7 @@
 			jal jogada_player1
 	
 		jr $ra
-			
+		
 	jr $ra
 
 	coordenada_inicial:
@@ -214,7 +247,7 @@
 		la $a0, msg_mesma_coord
 		li $v0, 4
 		syscall	
-		addi $k0,$zero,0
+		addi $fp,$zero,0
 	jr $ra
 
 	jogada_player1:
@@ -251,15 +284,16 @@
 		jal conta
 		jal conta2
 		jal conta3
+		jal conta4
 
 		jal get_coluna
 	
     
-		beq, $k0,1,player1_acertou		
+		beq, $fp,1,player1_acertou		
 		
 	
 	        #Se escolhida a opcao 1 
-	        beq $s7,1,maquina_escolhe_jogada
+	        beq $k0,1,maquina_escolhe_jogada
 	        jal jogada_player2 #SE NAO 
 	        		                       
 	jr $ra
@@ -279,24 +313,24 @@
 		
 
 	conta:
-		move $t0, $zero
+		move $a2, $zero
 		print:
-  			beq $t0, 16, exit
+  			beq $a2, 16, exit
   			li $v0,1
-  			lw $a0, Destroyer_1 ($t0)	
+  			lw $a0, Destroyer_1 ($a2)	
   				beq $t5,$a0,posicao	
-  				addi $t0, $t0, 4
+  				addi $a2, $a2, 4
   		j print	
   	exit:jr $ra
 
 	conta2:
-		move $t9, $zero
+		move $a3, $zero
 		print2:
-  			beq $t9, 16, exit2
+  			beq $a3, 16, exit2
   			li $v0,1
-  			lw $a0, Destroyer_2 ($t9)	
+  			lw $a0, Destroyer_2 ($a3)	
   				beq $t5,$a0,posicao2	
-  				addi $t9, $t9, 4
+  				addi $a3, $a3, 4
   		j print2	
   	exit2:jr $ra
   	
@@ -310,6 +344,17 @@
   				addi $t7, $t7, 4
   		j print3	
   	exit3:jr $ra
+	
+	conta4:
+		move $t0, $zero
+		print4:
+  			beq $t0, 16, exit4
+  			li $v0,1
+  			lw $a0, Destroyer_4 ($t0)	
+  				beq $t5,$a0,posicao4	
+  				addi $t0, $t0, 4
+  		j print4	
+  	exit4:jr $ra
   
 	posicao:move $k1,$a0
 	jr $ra
@@ -320,13 +365,16 @@
 	posicao3:move $t3,$a0
 	jr $ra
 
+	posicao4:move $t9,$a0
+	jr $ra
+
 	
 	player1_acertou:
 		addi $v1,$v1,1
 		
 		jal placar
 		add $a0, $v1, $t8
-		beq $a0, 12, verifica_vencedor
+		beq $a0, 16, verifica_vencedor
 		
 		jal jogada_player1
 	jr $ra
@@ -361,9 +409,10 @@
 		jal conta
 		jal conta2
 		jal conta3
+		jal conta4
 
 	        jal get_coluna
-				beq, $k0,1,player2_acertou			
+				beq, $fp,1,player2_acertou			
 	        	jal jogada_player1	       
 	    
 	jr $ra
@@ -373,7 +422,7 @@
 		
 		jal placar
 		add $a0, $v1, $t8
-		beq $a0, 12, verifica_vencedor
+		beq $a0, 16, verifica_vencedor
 		
 		jal  jogada_player2
 	jr  $ra
@@ -382,15 +431,9 @@
 		
 		jal placar
 		add $a0, $v1, $t8
-		beq $a0, 12, verifica_vencedor
+		beq $a0, 16, verifica_vencedor
 
-		sgt $a0,$t5,6 
-		
-		beq $a0,0,IA_percorre
-		beq $a0,1,IA_jogada_normal
-		
-		
-		IA_percorre:
+
 			jal on_player_2	
 			la $a0, maquina_jogando
 			li $v0, 4
@@ -400,23 +443,32 @@
 			syscall
 
 			addi $t5,$t5,1
-				
+
+				sgt $a0,$t5,9 	
+				beq $a0,1, IA_jogada_normal	
+
 			jal opcao_H
+				move $a0,$t5
+				li $v0, 1   
+				syscall     
 				jal quebra_linha
 			jal opcao_V
+				move $a0,$t6
+				li $v0, 1   
+				syscall 
 			move $t6,$t6
 
 			jal conta
 			jal conta2
 			jal conta3
+			jal conta4
 
 			jal get_coluna
-				beq, $k0,1,IA_acertou
+				beq, $fp,1,IA_acertou
 			jal jogada_player1					
 			jal  maquina_escolhe_jogada
-		jr $ra
-		
-		IA_jogada_normal:
+	jr  $ra
+	IA_jogada_normal:
 			jal on_player_2	
 			la $a0, maquina_jogando
 			li $v0, 4
@@ -436,16 +488,15 @@
 				jal conta
 				jal conta2
 				jal conta3
+				jal conta4
 
 				jal get_coluna
-					beq, $k0,1,IA_acertou
+					beq, $fp,1,IA_acertou
 				jal jogada_player1
 
 			jal  maquina_escolhe_jogada
-		jr $ra
+	jr $ra
 
-
-	jr  $ra
 	
 	msg_menu:
 		la $a0, msg_valor_menu
@@ -487,7 +538,6 @@
 			li $v0, 10		
 			syscall	
 			
-		
 	exit_game:
 		li $v0, 10		
 		syscall
@@ -514,9 +564,10 @@
 			jal conta
 			jal conta2
 			jal conta3
+			jal conta4
 
 	        jal get_coluna
-				beq, $k0,1,IA_acertou
+				beq, $fp,1,IA_acertou
 	        jal jogada_player1	   	        	
 	jr $ra
 
@@ -578,6 +629,7 @@ quad_0x0color:
    beq $t6,$s5,quad_0x0color_p2
    beq $t6,$s6,quad_0x0color_p1
    beq $t6,$s4,quad_0x0color_p3
+   beq $t6,$s7,quad_0x0color_p4
 jr $ra
 quad_0x0color_p2:
    beq $s3,0,acertou_0x0
@@ -591,12 +643,17 @@ quad_0x0color_p3:
    beq $t3,0,acertou_0x0
    bne $t3,0,quad_0x0
 jr $ra
+quad_0x0color_p4:
+   beq $t9,0,acertou_0x0
+   bne $t9,0,quad_0x0
+jr $ra
 
 
 quad_1x0color:
    beq $t6,$s5,quad_1x0color_p2
    beq $t6,$s6,quad_1x0color_p1
    beq $t6,$s4,quad_1x0color_p3
+   beq $t6,$s7,quad_1x0color_p4
 jr $ra
 quad_1x0color_p2:
    beq $s3,1,acertou_1x0
@@ -610,12 +667,17 @@ quad_1x0color_p3:
    beq $t3,1,acertou_1x0
    bne $t3,1,quad_1x0
 jr $ra
+quad_1x0color_p4:
+   beq $t9,1,acertou_1x0
+   bne $t9,1,quad_1x0
+jr $ra
 
 
 quad_2x0color:
    beq $t6,$s5,quad_2x0color_p2
    beq $t6,$s6,quad_2x0color_p1
    beq $t6,$s4,quad_2x0color_p3
+   beq $t6,$s7,quad_2x0color_p4
 jr $ra
 quad_2x0color_p2:
    beq $s3,2,acertou_2x0
@@ -629,12 +691,17 @@ quad_2x0color_p3:
    beq $t3,2,acertou_2x0
    bne $t3,2,quad_2x0
 jr $ra
+quad_2x0color_p4:
+   beq $t9,2,acertou_2x0
+   bne $t9,2,quad_2x0
+jr $ra
 
 
 quad_3x0color:
    beq $t6,$s5,quad_3x0color_p2
    beq $t6,$s6,quad_3x0color_p1
    beq $t6,$s4,quad_3x0color_p3
+   beq $t6,$s7,quad_3x0color_p4
 jr $ra
 quad_3x0color_p2:
    beq $s3,3,acertou_3x0
@@ -648,12 +715,17 @@ quad_3x0color_p3:
    beq $t3,3,acertou_3x0
    bne $t3,3,quad_3x0
 jr $ra
+quad_3x0color_p4:
+   beq $t9,3,acertou_3x0
+   bne $t9,3,quad_3x0
+jr $ra
 
 
 quad_4x0color:
    beq $t6,$s5,quad_4x0color_p2
    beq $t6,$s6,quad_4x0color_p1
    beq $t6,$s4,quad_4x0color_p3
+   beq $t6,$s7,quad_4x0color_p4
 jr $ra
 quad_4x0color_p2:
    beq $s3,4,acertou_4x0
@@ -667,12 +739,17 @@ quad_4x0color_p3:
    beq $t3,4,acertou_4x0
    bne $t3,4,quad_4x0
 jr $ra
+quad_4x0color_p4:
+   beq $t9,4,acertou_4x0
+   bne $t9,4,quad_4x0
+jr $ra
 
 
 quad_5x0color:
    beq $t6,$s5,quad_5x0color_p2
    beq $t6,$s6,quad_5x0color_p1
    beq $t6,$s4,quad_5x0color_p3
+   beq $t6,$s7,quad_5x0color_p4
 jr $ra
 quad_5x0color_p2:
    beq $s3,5,acertou_5x0
@@ -686,12 +763,17 @@ quad_5x0color_p3:
    beq $t3,5,acertou_5x0
    bne $t3,5,quad_5x0
 jr $ra
+quad_5x0color_p4:
+   beq $t9,5,acertou_5x0
+   bne $t9,5,quad_5x0
+jr $ra
 
 
 quad_6x0color:
    beq $t6,$s5,quad_6x0color_p2
    beq $t6,$s6,quad_6x0color_p1
    beq $t6,$s4,quad_6x0color_p3
+   beq $t6,$s7,quad_6x0color_p4
 jr $ra
 quad_6x0color_p2:
    beq $s3,6,acertou_6x0
@@ -705,12 +787,17 @@ quad_6x0color_p3:
    beq $t3,6,acertou_6x0
    bne $t3,6,quad_6x0
 jr $ra
+quad_6x0color_p4:
+   beq $t9,6,acertou_6x0
+   bne $t9,6,quad_6x0
+jr $ra
 
 
 quad_7x0color:
    beq $t6,$s5,quad_7x0color_p2
    beq $t6,$s6,quad_7x0color_p1
    beq $t6,$s4,quad_7x0color_p3
+   beq $t6,$s7,quad_7x0color_p4
 jr $ra
 quad_7x0color_p2:
    beq $s3,7,acertou_7x0
@@ -724,12 +811,17 @@ quad_7x0color_p3:
    beq $t3,7,acertou_7x0
    bne $t3,7,quad_7x0
 jr $ra
+quad_7x0color_p4:
+   beq $t9,7,acertou_7x0
+   bne $t9,7,quad_7x0
+jr $ra
 
 
 quad_8x0color:
    beq $t6,$s5,quad_8x0color_p2
    beq $t6,$s6,quad_8x0color_p1
    beq $t6,$s4,quad_8x0color_p3
+   beq $t6,$s7,quad_8x0color_p4
 jr $ra
 quad_8x0color_p2:
    beq $s3,8,acertou_8x0
@@ -743,12 +835,17 @@ quad_8x0color_p3:
    beq $t3,8,acertou_8x0
    bne $t3,8,quad_8x0
 jr $ra
+quad_8x0color_p4:
+   beq $t9,8,acertou_8x0
+   bne $t9,8,quad_8x0
+jr $ra
 
 
 quad_9x0color:
    beq $t6,$s5,quad_9x0color_p2
    beq $t6,$s6,quad_9x0color_p1
    beq $t6,$s4,quad_9x0color_p3
+   beq $t6,$s7,quad_9x0color_p4
 jr $ra
 quad_9x0color_p2:
    beq $s3,9,acertou_9x0
@@ -762,6 +859,10 @@ quad_9x0color_p3:
    beq $t3,9,acertou_9x0
    bne $t3,9,quad_9x0
 jr $ra
+quad_9x0color_p4:
+   beq $t9,9,acertou_9x0
+   bne $t9,9,quad_9x0
+jr $ra
 
 
 # linha1
@@ -769,6 +870,7 @@ quad_0x1color:
    beq $t6,$s5,quad_0x1color_p2
    beq $t6,$s6,quad_0x1color_p1
    beq $t6,$s4,quad_0x1color_p3
+   beq $t6,$s7,quad_0x1color_p4
 jr $ra
 quad_0x1color_p2:
    beq $s3,0,acertou_0x1
@@ -782,12 +884,17 @@ quad_0x1color_p3:
    beq $t3,0,acertou_0x1
    bne $t3,0,quad_0x1
 jr $ra
+quad_0x1color_p4:
+   beq $t9,0,acertou_0x1
+   bne $t9,0,quad_0x1
+jr $ra
 
 
 quad_1x1color:
    beq $t6,$s5,quad_1x1color_p2
    beq $t6,$s6,quad_1x1color_p1
    beq $t6,$s4,quad_1x1color_p3
+   beq $t6,$s7,quad_1x1color_p4
 jr $ra
 quad_1x1color_p2:
    beq $s3,1,acertou_1x1
@@ -801,12 +908,17 @@ quad_1x1color_p3:
    beq $t3,1,acertou_1x1
    bne $t3,1,quad_1x1
 jr $ra
+quad_1x1color_p4:
+   beq $t9,1,acertou_1x1
+   bne $t9,1,quad_1x1
+jr $ra
 
 
 quad_2x1color:
    beq $t6,$s5,quad_2x1color_p2
    beq $t6,$s6,quad_2x1color_p1
    beq $t6,$s4,quad_2x1color_p3
+   beq $t6,$s7,quad_2x1color_p4
 jr $ra
 quad_2x1color_p2:
    beq $s3,2,acertou_2x1
@@ -820,12 +932,17 @@ quad_2x1color_p3:
    beq $t3,2,acertou_2x1
    bne $t3,2,quad_2x1
 jr $ra
+quad_2x1color_p4:
+   beq $t9,2,acertou_2x1
+   bne $t9,2,quad_2x1
+jr $ra
 
 
 quad_3x1color:
    beq $t6,$s5,quad_3x1color_p2
    beq $t6,$s6,quad_3x1color_p1
    beq $t6,$s4,quad_3x1color_p3
+   beq $t6,$s7,quad_3x1color_p4
 jr $ra
 quad_3x1color_p2:
    beq $s3,3,acertou_3x1
@@ -839,12 +956,17 @@ quad_3x1color_p3:
    beq $t3,3,acertou_3x1
    bne $t3,3,quad_3x1
 jr $ra
+quad_3x1color_p4:
+   beq $t9,3,acertou_3x1
+   bne $t9,3,quad_3x1
+jr $ra
 
 
 quad_4x1color:
    beq $t6,$s5,quad_4x1color_p2
    beq $t6,$s6,quad_4x1color_p1
    beq $t6,$s4,quad_4x1color_p3
+   beq $t6,$s7,quad_4x1color_p4
 jr $ra
 quad_4x1color_p2:
    beq $s3,4,acertou_4x1
@@ -858,12 +980,17 @@ quad_4x1color_p3:
    beq $t3,4,acertou_4x1
    bne $t3,4,quad_4x1
 jr $ra
+quad_4x1color_p4:
+   beq $t9,4,acertou_4x1
+   bne $t9,4,quad_4x1
+jr $ra
 
 
 quad_5x1color:
    beq $t6,$s5,quad_5x1color_p2
    beq $t6,$s6,quad_5x1color_p1
    beq $t6,$s4,quad_5x1color_p3
+   beq $t6,$s7,quad_5x1color_p4
 jr $ra
 quad_5x1color_p2:
    beq $s3,5,acertou_5x1
@@ -877,12 +1004,17 @@ quad_5x1color_p3:
    beq $t3,5,acertou_5x1
    bne $t3,5,quad_5x1
 jr $ra
+quad_5x1color_p4:
+   beq $t9,5,acertou_5x1
+   bne $t9,5,quad_5x1
+jr $ra
 
 
 quad_6x1color:
    beq $t6,$s5,quad_6x1color_p2
    beq $t6,$s6,quad_6x1color_p1
    beq $t6,$s4,quad_6x1color_p3
+   beq $t6,$s7,quad_6x1color_p4
 jr $ra
 quad_6x1color_p2:
    beq $s3,6,acertou_6x1
@@ -896,12 +1028,17 @@ quad_6x1color_p3:
    beq $t3,6,acertou_6x1
    bne $t3,6,quad_6x1
 jr $ra
+quad_6x1color_p4:
+   beq $t9,6,acertou_6x1
+   bne $t9,6,quad_6x1
+jr $ra
 
 
 quad_7x1color:
    beq $t6,$s5,quad_7x1color_p2
    beq $t6,$s6,quad_7x1color_p1
    beq $t6,$s4,quad_7x1color_p3
+   beq $t6,$s7,quad_7x1color_p4
 jr $ra
 quad_7x1color_p2:
    beq $s3,7,acertou_7x1
@@ -915,12 +1052,17 @@ quad_7x1color_p3:
    beq $t3,7,acertou_7x1
    bne $t3,7,quad_7x1
 jr $ra
+quad_7x1color_p4:
+   beq $t9,7,acertou_7x1
+   bne $t9,7,quad_7x1
+jr $ra
 
 
 quad_8x1color:
    beq $t6,$s5,quad_8x1color_p2
    beq $t6,$s6,quad_8x1color_p1
    beq $t6,$s4,quad_8x1color_p3
+   beq $t6,$s7,quad_8x1color_p4
 jr $ra
 quad_8x1color_p2:
    beq $s3,8,acertou_8x1
@@ -934,12 +1076,17 @@ quad_8x1color_p3:
    beq $t3,8,acertou_8x1
    bne $t3,8,quad_8x1
 jr $ra
+quad_8x1color_p4:
+   beq $t9,8,acertou_8x1
+   bne $t9,8,quad_8x1
+jr $ra
 
 
 quad_9x1color:
    beq $t6,$s5,quad_9x1color_p2
    beq $t6,$s6,quad_9x1color_p1
    beq $t6,$s4,quad_9x1color_p3
+   beq $t6,$s7,quad_9x1color_p4
 jr $ra
 quad_9x1color_p2:
    beq $s3,9,acertou_9x1
@@ -953,6 +1100,10 @@ quad_9x1color_p3:
    beq $t3,9,acertou_9x1
    bne $t3,9,quad_9x1
 jr $ra
+quad_9x1color_p4:
+   beq $t9,9,acertou_9x1
+   bne $t9,9,quad_9x1
+jr $ra
 
 
 # linha2
@@ -960,6 +1111,7 @@ quad_0x2color:
    beq $t6,$s5,quad_0x2color_p2
    beq $t6,$s6,quad_0x2color_p1
    beq $t6,$s4,quad_0x2color_p3
+   beq $t6,$s7,quad_0x2color_p4
 jr $ra
 quad_0x2color_p2:
    beq $s3,0,acertou_0x2
@@ -973,12 +1125,17 @@ quad_0x2color_p3:
    beq $t3,0,acertou_0x2
    bne $t3,0,quad_0x2
 jr $ra
+quad_0x2color_p4:
+   beq $t9,0,acertou_0x2
+   bne $t9,0,quad_0x2
+jr $ra
 
 
 quad_1x2color:
    beq $t6,$s5,quad_1x2color_p2
    beq $t6,$s6,quad_1x2color_p1
    beq $t6,$s4,quad_1x2color_p3
+   beq $t6,$s7,quad_1x2color_p4
 jr $ra
 quad_1x2color_p2:
    beq $s3,1,acertou_1x2
@@ -992,12 +1149,17 @@ quad_1x2color_p3:
    beq $t3,1,acertou_1x2
    bne $t3,1,quad_1x2
 jr $ra
+quad_1x2color_p4:
+   beq $t9,1,acertou_1x2
+   bne $t9,1,quad_1x2
+jr $ra
 
 
 quad_2x2color:
    beq $t6,$s5,quad_2x2color_p2
    beq $t6,$s6,quad_2x2color_p1
    beq $t6,$s4,quad_2x2color_p3
+   beq $t6,$s7,quad_2x2color_p4
 jr $ra
 quad_2x2color_p2:
    beq $s3,2,acertou_2x2
@@ -1011,12 +1173,17 @@ quad_2x2color_p3:
    beq $t3,2,acertou_2x2
    bne $t3,2,quad_2x2
 jr $ra
+quad_2x2color_p4:
+   beq $t9,2,acertou_2x2
+   bne $t9,2,quad_2x2
+jr $ra
 
 
 quad_3x2color:
    beq $t6,$s5,quad_3x2color_p2
    beq $t6,$s6,quad_3x2color_p1
    beq $t6,$s4,quad_3x2color_p3
+   beq $t6,$s7,quad_3x2color_p4
 jr $ra
 quad_3x2color_p2:
    beq $s3,3,acertou_3x2
@@ -1030,12 +1197,17 @@ quad_3x2color_p3:
    beq $t3,3,acertou_3x2
    bne $t3,3,quad_3x2
 jr $ra
+quad_3x2color_p4:
+   beq $t9,3,acertou_3x2
+   bne $t9,3,quad_3x2
+jr $ra
 
 
 quad_4x2color:
    beq $t6,$s5,quad_4x2color_p2
    beq $t6,$s6,quad_4x2color_p1
    beq $t6,$s4,quad_4x2color_p3
+   beq $t6,$s7,quad_4x2color_p4
 jr $ra
 quad_4x2color_p2:
    beq $s3,4,acertou_4x2
@@ -1049,12 +1221,17 @@ quad_4x2color_p3:
    beq $t3,4,acertou_4x2
    bne $t3,4,quad_4x2
 jr $ra
+quad_4x2color_p4:
+   beq $t9,4,acertou_4x2
+   bne $t9,4,quad_4x2
+jr $ra
 
 
 quad_5x2color:
    beq $t6,$s5,quad_5x2color_p2
    beq $t6,$s6,quad_5x2color_p1
    beq $t6,$s4,quad_5x2color_p3
+   beq $t6,$s7,quad_5x2color_p4
 jr $ra
 quad_5x2color_p2:
    beq $s3,5,acertou_5x2
@@ -1068,12 +1245,17 @@ quad_5x2color_p3:
    beq $t3,5,acertou_5x2
    bne $t3,5,quad_5x2
 jr $ra
+quad_5x2color_p4:
+   beq $t9,5,acertou_5x2
+   bne $t9,5,quad_5x2
+jr $ra
 
 
 quad_6x2color:
    beq $t6,$s5,quad_6x2color_p2
    beq $t6,$s6,quad_6x2color_p1
    beq $t6,$s4,quad_6x2color_p3
+   beq $t6,$s7,quad_6x2color_p4
 jr $ra
 quad_6x2color_p2:
    beq $s3,6,acertou_6x2
@@ -1087,12 +1269,17 @@ quad_6x2color_p3:
    beq $t3,6,acertou_6x2
    bne $t3,6,quad_6x2
 jr $ra
+quad_6x2color_p4:
+   beq $t9,6,acertou_6x2
+   bne $t9,6,quad_6x2
+jr $ra
 
 
 quad_7x2color:
    beq $t6,$s5,quad_7x2color_p2
    beq $t6,$s6,quad_7x2color_p1
    beq $t6,$s4,quad_7x2color_p3
+   beq $t6,$s7,quad_7x2color_p4
 jr $ra
 quad_7x2color_p2:
    beq $s3,7,acertou_7x2
@@ -1106,12 +1293,17 @@ quad_7x2color_p3:
    beq $t3,7,acertou_7x2
    bne $t3,7,quad_7x2
 jr $ra
+quad_7x2color_p4:
+   beq $t9,7,acertou_7x2
+   bne $t9,7,quad_7x2
+jr $ra
 
 
 quad_8x2color:
    beq $t6,$s5,quad_8x2color_p2
    beq $t6,$s6,quad_8x2color_p1
    beq $t6,$s4,quad_8x2color_p3
+   beq $t6,$s7,quad_8x2color_p4
 jr $ra
 quad_8x2color_p2:
    beq $s3,8,acertou_8x2
@@ -1125,12 +1317,17 @@ quad_8x2color_p3:
    beq $t3,8,acertou_8x2
    bne $t3,8,quad_8x2
 jr $ra
+quad_8x2color_p4:
+   beq $t9,8,acertou_8x2
+   bne $t9,8,quad_8x2
+jr $ra
 
 
 quad_9x2color:
    beq $t6,$s5,quad_9x2color_p2
    beq $t6,$s6,quad_9x2color_p1
    beq $t6,$s4,quad_9x2color_p3
+   beq $t6,$s7,quad_9x2color_p4
 jr $ra
 quad_9x2color_p2:
    beq $s3,9,acertou_9x2
@@ -1144,6 +1341,10 @@ quad_9x2color_p3:
    beq $t3,9,acertou_9x2
    bne $t3,9,quad_9x2
 jr $ra
+quad_9x2color_p4:
+   beq $t9,9,acertou_9x2
+   bne $t9,9,quad_9x2
+jr $ra
 
 
 # linha3
@@ -1151,6 +1352,7 @@ quad_0x3color:
    beq $t6,$s5,quad_0x3color_p2
    beq $t6,$s6,quad_0x3color_p1
    beq $t6,$s4,quad_0x3color_p3
+   beq $t6,$s7,quad_0x3color_p4
 jr $ra
 quad_0x3color_p2:
    beq $s3,0,acertou_0x3
@@ -1164,12 +1366,17 @@ quad_0x3color_p3:
    beq $t3,0,acertou_0x3
    bne $t3,0,quad_0x3
 jr $ra
+quad_0x3color_p4:
+   beq $t9,0,acertou_0x3
+   bne $t9,0,quad_0x3
+jr $ra
 
 
 quad_1x3color:
    beq $t6,$s5,quad_1x3color_p2
    beq $t6,$s6,quad_1x3color_p1
    beq $t6,$s4,quad_1x3color_p3
+   beq $t6,$s7,quad_1x3color_p4
 jr $ra
 quad_1x3color_p2:
    beq $s3,1,acertou_1x3
@@ -1183,12 +1390,17 @@ quad_1x3color_p3:
    beq $t3,1,acertou_1x3
    bne $t3,1,quad_1x3
 jr $ra
+quad_1x3color_p4:
+   beq $t9,1,acertou_1x3
+   bne $t9,1,quad_1x3
+jr $ra
 
 
 quad_2x3color:
    beq $t6,$s5,quad_2x3color_p2
    beq $t6,$s6,quad_2x3color_p1
    beq $t6,$s4,quad_2x3color_p3
+   beq $t6,$s7,quad_2x3color_p4
 jr $ra
 quad_2x3color_p2:
    beq $s3,2,acertou_2x3
@@ -1202,12 +1414,17 @@ quad_2x3color_p3:
    beq $t3,2,acertou_2x3
    bne $t3,2,quad_2x3
 jr $ra
+quad_2x3color_p4:
+   beq $t9,2,acertou_2x3
+   bne $t9,2,quad_2x3
+jr $ra
 
 
 quad_3x3color:
    beq $t6,$s5,quad_3x3color_p2
    beq $t6,$s6,quad_3x3color_p1
    beq $t6,$s4,quad_3x3color_p3
+   beq $t6,$s7,quad_3x3color_p4
 jr $ra
 quad_3x3color_p2:
    beq $s3,3,acertou_3x3
@@ -1221,12 +1438,17 @@ quad_3x3color_p3:
    beq $t3,3,acertou_3x3
    bne $t3,3,quad_3x3
 jr $ra
+quad_3x3color_p4:
+   beq $t9,3,acertou_3x3
+   bne $t9,3,quad_3x3
+jr $ra
 
 
 quad_4x3color:
    beq $t6,$s5,quad_4x3color_p2
    beq $t6,$s6,quad_4x3color_p1
    beq $t6,$s4,quad_4x3color_p3
+   beq $t6,$s7,quad_4x3color_p4
 jr $ra
 quad_4x3color_p2:
    beq $s3,4,acertou_4x3
@@ -1240,12 +1462,17 @@ quad_4x3color_p3:
    beq $t3,4,acertou_4x3
    bne $t3,4,quad_4x3
 jr $ra
+quad_4x3color_p4:
+   beq $t9,4,acertou_4x3
+   bne $t9,4,quad_4x3
+jr $ra
 
 
 quad_5x3color:
    beq $t6,$s5,quad_5x3color_p2
    beq $t6,$s6,quad_5x3color_p1
    beq $t6,$s4,quad_5x3color_p3
+   beq $t6,$s7,quad_5x3color_p4
 jr $ra
 quad_5x3color_p2:
    beq $s3,5,acertou_5x3
@@ -1259,12 +1486,17 @@ quad_5x3color_p3:
    beq $t3,5,acertou_5x3
    bne $t3,5,quad_5x3
 jr $ra
+quad_5x3color_p4:
+   beq $t9,5,acertou_5x3
+   bne $t9,5,quad_5x3
+jr $ra
 
 
 quad_6x3color:
    beq $t6,$s5,quad_6x3color_p2
    beq $t6,$s6,quad_6x3color_p1
    beq $t6,$s4,quad_6x3color_p3
+   beq $t6,$s7,quad_6x3color_p4
 jr $ra
 quad_6x3color_p2:
    beq $s3,6,acertou_6x3
@@ -1278,12 +1510,17 @@ quad_6x3color_p3:
    beq $t3,6,acertou_6x3
    bne $t3,6,quad_6x3
 jr $ra
+quad_6x3color_p4:
+   beq $t9,6,acertou_6x3
+   bne $t9,6,quad_6x3
+jr $ra
 
 
 quad_7x3color:
    beq $t6,$s5,quad_7x3color_p2
    beq $t6,$s6,quad_7x3color_p1
    beq $t6,$s4,quad_7x3color_p3
+   beq $t6,$s7,quad_7x3color_p4
 jr $ra
 quad_7x3color_p2:
    beq $s3,7,acertou_7x3
@@ -1297,12 +1534,17 @@ quad_7x3color_p3:
    beq $t3,7,acertou_7x3
    bne $t3,7,quad_7x3
 jr $ra
+quad_7x3color_p4:
+   beq $t9,7,acertou_7x3
+   bne $t9,7,quad_7x3
+jr $ra
 
 
 quad_8x3color:
    beq $t6,$s5,quad_8x3color_p2
    beq $t6,$s6,quad_8x3color_p1
    beq $t6,$s4,quad_8x3color_p3
+   beq $t6,$s7,quad_8x3color_p4
 jr $ra
 quad_8x3color_p2:
    beq $s3,8,acertou_8x3
@@ -1316,12 +1558,17 @@ quad_8x3color_p3:
    beq $t3,8,acertou_8x3
    bne $t3,8,quad_8x3
 jr $ra
+quad_8x3color_p4:
+   beq $t9,8,acertou_8x3
+   bne $t9,8,quad_8x3
+jr $ra
 
 
 quad_9x3color:
    beq $t6,$s5,quad_9x3color_p2
    beq $t6,$s6,quad_9x3color_p1
    beq $t6,$s4,quad_9x3color_p3
+   beq $t6,$s7,quad_9x3color_p4
 jr $ra
 quad_9x3color_p2:
    beq $s3,9,acertou_9x3
@@ -1335,6 +1582,10 @@ quad_9x3color_p3:
    beq $t3,9,acertou_9x3
    bne $t3,9,quad_9x3
 jr $ra
+quad_9x3color_p4:
+   beq $t9,9,acertou_9x3
+   bne $t9,9,quad_9x3
+jr $ra
 
 
 # linha4
@@ -1342,6 +1593,7 @@ quad_0x4color:
    beq $t6,$s5,quad_0x4color_p2
    beq $t6,$s6,quad_0x4color_p1
    beq $t6,$s4,quad_0x4color_p3
+   beq $t6,$s7,quad_0x4color_p4
 jr $ra
 quad_0x4color_p2:
    beq $s3,0,acertou_0x4
@@ -1355,12 +1607,17 @@ quad_0x4color_p3:
    beq $t3,0,acertou_0x4
    bne $t3,0,quad_0x4
 jr $ra
+quad_0x4color_p4:
+   beq $t9,0,acertou_0x4
+   bne $t9,0,quad_0x4
+jr $ra
 
 
 quad_1x4color:
    beq $t6,$s5,quad_1x4color_p2
    beq $t6,$s6,quad_1x4color_p1
    beq $t6,$s4,quad_1x4color_p3
+   beq $t6,$s7,quad_1x4color_p4
 jr $ra
 quad_1x4color_p2:
    beq $s3,1,acertou_1x4
@@ -1374,12 +1631,17 @@ quad_1x4color_p3:
    beq $t3,1,acertou_1x4
    bne $t3,1,quad_1x4
 jr $ra
+quad_1x4color_p4:
+   beq $t9,1,acertou_1x4
+   bne $t9,1,quad_1x4
+jr $ra
 
 
 quad_2x4color:
    beq $t6,$s5,quad_2x4color_p2
    beq $t6,$s6,quad_2x4color_p1
    beq $t6,$s4,quad_2x4color_p3
+   beq $t6,$s7,quad_2x4color_p4
 jr $ra
 quad_2x4color_p2:
    beq $s3,2,acertou_2x4
@@ -1393,12 +1655,17 @@ quad_2x4color_p3:
    beq $t3,2,acertou_2x4
    bne $t3,2,quad_2x4
 jr $ra
+quad_2x4color_p4:
+   beq $t9,2,acertou_2x4
+   bne $t9,2,quad_2x4
+jr $ra
 
 
 quad_3x4color:
    beq $t6,$s5,quad_3x4color_p2
    beq $t6,$s6,quad_3x4color_p1
    beq $t6,$s4,quad_3x4color_p3
+   beq $t6,$s7,quad_3x4color_p4
 jr $ra
 quad_3x4color_p2:
    beq $s3,3,acertou_3x4
@@ -1412,12 +1679,17 @@ quad_3x4color_p3:
    beq $t3,3,acertou_3x4
    bne $t3,3,quad_3x4
 jr $ra
+quad_3x4color_p4:
+   beq $t9,3,acertou_3x4
+   bne $t9,3,quad_3x4
+jr $ra
 
 
 quad_4x4color:
    beq $t6,$s5,quad_4x4color_p2
    beq $t6,$s6,quad_4x4color_p1
    beq $t6,$s4,quad_4x4color_p3
+   beq $t6,$s7,quad_4x4color_p4
 jr $ra
 quad_4x4color_p2:
    beq $s3,4,acertou_4x4
@@ -1431,12 +1703,17 @@ quad_4x4color_p3:
    beq $t3,4,acertou_4x4
    bne $t3,4,quad_4x4
 jr $ra
+quad_4x4color_p4:
+   beq $t9,4,acertou_4x4
+   bne $t9,4,quad_4x4
+jr $ra
 
 
 quad_5x4color:
    beq $t6,$s5,quad_5x4color_p2
    beq $t6,$s6,quad_5x4color_p1
    beq $t6,$s4,quad_5x4color_p3
+   beq $t6,$s7,quad_5x4color_p4
 jr $ra
 quad_5x4color_p2:
    beq $s3,5,acertou_5x4
@@ -1450,12 +1727,17 @@ quad_5x4color_p3:
    beq $t3,5,acertou_5x4
    bne $t3,5,quad_5x4
 jr $ra
+quad_5x4color_p4:
+   beq $t9,5,acertou_5x4
+   bne $t9,5,quad_5x4
+jr $ra
 
 
 quad_6x4color:
    beq $t6,$s5,quad_6x4color_p2
    beq $t6,$s6,quad_6x4color_p1
    beq $t6,$s4,quad_6x4color_p3
+   beq $t6,$s7,quad_6x4color_p4
 jr $ra
 quad_6x4color_p2:
    beq $s3,6,acertou_6x4
@@ -1469,12 +1751,17 @@ quad_6x4color_p3:
    beq $t3,6,acertou_6x4
    bne $t3,6,quad_6x4
 jr $ra
+quad_6x4color_p4:
+   beq $t9,6,acertou_6x4
+   bne $t9,6,quad_6x4
+jr $ra
 
 
 quad_7x4color:
    beq $t6,$s5,quad_7x4color_p2
    beq $t6,$s6,quad_7x4color_p1
    beq $t6,$s4,quad_7x4color_p3
+   beq $t6,$s7,quad_7x4color_p4
 jr $ra
 quad_7x4color_p2:
    beq $s3,7,acertou_7x4
@@ -1488,12 +1775,17 @@ quad_7x4color_p3:
    beq $t3,7,acertou_7x4
    bne $t3,7,quad_7x4
 jr $ra
+quad_7x4color_p4:
+   beq $t9,7,acertou_7x4
+   bne $t9,7,quad_7x4
+jr $ra
 
 
 quad_8x4color:
    beq $t6,$s5,quad_8x4color_p2
    beq $t6,$s6,quad_8x4color_p1
    beq $t6,$s4,quad_8x4color_p3
+   beq $t6,$s7,quad_8x4color_p4
 jr $ra
 quad_8x4color_p2:
    beq $s3,8,acertou_8x4
@@ -1507,12 +1799,17 @@ quad_8x4color_p3:
    beq $t3,8,acertou_8x4
    bne $t3,8,quad_8x4
 jr $ra
+quad_8x4color_p4:
+   beq $t9,8,acertou_8x4
+   bne $t9,8,quad_8x4
+jr $ra
 
 
 quad_9x4color:
    beq $t6,$s5,quad_9x4color_p2
    beq $t6,$s6,quad_9x4color_p1
    beq $t6,$s4,quad_9x4color_p3
+   beq $t6,$s7,quad_9x4color_p4
 jr $ra
 quad_9x4color_p2:
    beq $s3,9,acertou_9x4
@@ -1526,6 +1823,10 @@ quad_9x4color_p3:
    beq $t3,9,acertou_9x4
    bne $t3,9,quad_9x4
 jr $ra
+quad_9x4color_p4:
+   beq $t9,9,acertou_9x4
+   bne $t9,9,quad_9x4
+jr $ra
 
 
 # linha5
@@ -1533,6 +1834,7 @@ quad_0x5color:
    beq $t6,$s5,quad_0x5color_p2
    beq $t6,$s6,quad_0x5color_p1
    beq $t6,$s4,quad_0x5color_p3
+   beq $t6,$s7,quad_0x5color_p4
 jr $ra
 quad_0x5color_p2:
    beq $s3,0,acertou_0x5
@@ -1546,12 +1848,17 @@ quad_0x5color_p3:
    beq $t3,0,acertou_0x5
    bne $t3,0,quad_0x5
 jr $ra
+quad_0x5color_p4:
+   beq $t9,0,acertou_0x5
+   bne $t9,0,quad_0x5
+jr $ra
 
 
 quad_1x5color:
    beq $t6,$s5,quad_1x5color_p2
    beq $t6,$s6,quad_1x5color_p1
    beq $t6,$s4,quad_1x5color_p3
+   beq $t6,$s7,quad_1x5color_p4
 jr $ra
 quad_1x5color_p2:
    beq $s3,1,acertou_1x5
@@ -1565,12 +1872,17 @@ quad_1x5color_p3:
    beq $t3,1,acertou_1x5
    bne $t3,1,quad_1x5
 jr $ra
+quad_1x5color_p4:
+   beq $t9,1,acertou_1x5
+   bne $t9,1,quad_1x5
+jr $ra
 
 
 quad_2x5color:
    beq $t6,$s5,quad_2x5color_p2
    beq $t6,$s6,quad_2x5color_p1
    beq $t6,$s4,quad_2x5color_p3
+   beq $t6,$s7,quad_2x5color_p4
 jr $ra
 quad_2x5color_p2:
    beq $s3,2,acertou_2x5
@@ -1584,12 +1896,17 @@ quad_2x5color_p3:
    beq $t3,2,acertou_2x5
    bne $t3,2,quad_2x5
 jr $ra
+quad_2x5color_p4:
+   beq $t9,2,acertou_2x5
+   bne $t9,2,quad_2x5
+jr $ra
 
 
 quad_3x5color:
    beq $t6,$s5,quad_3x5color_p2
    beq $t6,$s6,quad_3x5color_p1
    beq $t6,$s4,quad_3x5color_p3
+   beq $t6,$s7,quad_3x5color_p4
 jr $ra
 quad_3x5color_p2:
    beq $s3,3,acertou_3x5
@@ -1603,12 +1920,17 @@ quad_3x5color_p3:
    beq $t3,3,acertou_3x5
    bne $t3,3,quad_3x5
 jr $ra
+quad_3x5color_p4:
+   beq $t9,3,acertou_3x5
+   bne $t9,3,quad_3x5
+jr $ra
 
 
 quad_4x5color:
    beq $t6,$s5,quad_4x5color_p2
    beq $t6,$s6,quad_4x5color_p1
    beq $t6,$s4,quad_4x5color_p3
+   beq $t6,$s7,quad_4x5color_p4
 jr $ra
 quad_4x5color_p2:
    beq $s3,4,acertou_4x5
@@ -1622,12 +1944,17 @@ quad_4x5color_p3:
    beq $t3,4,acertou_4x5
    bne $t3,4,quad_4x5
 jr $ra
+quad_4x5color_p4:
+   beq $t9,4,acertou_4x5
+   bne $t9,4,quad_4x5
+jr $ra
 
 
 quad_5x5color:
    beq $t6,$s5,quad_5x5color_p2
    beq $t6,$s6,quad_5x5color_p1
    beq $t6,$s4,quad_5x5color_p3
+   beq $t6,$s7,quad_5x5color_p4
 jr $ra
 quad_5x5color_p2:
    beq $s3,5,acertou_5x5
@@ -1641,12 +1968,17 @@ quad_5x5color_p3:
    beq $t3,5,acertou_5x5
    bne $t3,5,quad_5x5
 jr $ra
+quad_5x5color_p4:
+   beq $t9,5,acertou_5x5
+   bne $t9,5,quad_5x5
+jr $ra
 
 
 quad_6x5color:
    beq $t6,$s5,quad_6x5color_p2
    beq $t6,$s6,quad_6x5color_p1
    beq $t6,$s4,quad_6x5color_p3
+   beq $t6,$s7,quad_6x5color_p4
 jr $ra
 quad_6x5color_p2:
    beq $s3,6,acertou_6x5
@@ -1660,12 +1992,17 @@ quad_6x5color_p3:
    beq $t3,6,acertou_6x5
    bne $t3,6,quad_6x5
 jr $ra
+quad_6x5color_p4:
+   beq $t9,6,acertou_6x5
+   bne $t9,6,quad_6x5
+jr $ra
 
 
 quad_7x5color:
    beq $t6,$s5,quad_7x5color_p2
    beq $t6,$s6,quad_7x5color_p1
    beq $t6,$s4,quad_7x5color_p3
+   beq $t6,$s7,quad_7x5color_p4
 jr $ra
 quad_7x5color_p2:
    beq $s3,7,acertou_7x5
@@ -1679,12 +2016,17 @@ quad_7x5color_p3:
    beq $t3,7,acertou_7x5
    bne $t3,7,quad_7x5
 jr $ra
+quad_7x5color_p4:
+   beq $t9,7,acertou_7x5
+   bne $t9,7,quad_7x5
+jr $ra
 
 
 quad_8x5color:
    beq $t6,$s5,quad_8x5color_p2
    beq $t6,$s6,quad_8x5color_p1
    beq $t6,$s4,quad_8x5color_p3
+   beq $t6,$s7,quad_8x5color_p4
 jr $ra
 quad_8x5color_p2:
    beq $s3,8,acertou_8x5
@@ -1698,12 +2040,17 @@ quad_8x5color_p3:
    beq $t3,8,acertou_8x5
    bne $t3,8,quad_8x5
 jr $ra
+quad_8x5color_p4:
+   beq $t9,8,acertou_8x5
+   bne $t9,8,quad_8x5
+jr $ra
 
 
 quad_9x5color:
    beq $t6,$s5,quad_9x5color_p2
    beq $t6,$s6,quad_9x5color_p1
    beq $t6,$s4,quad_9x5color_p3
+   beq $t6,$s7,quad_9x5color_p4
 jr $ra
 quad_9x5color_p2:
    beq $s3,9,acertou_9x5
@@ -1717,6 +2064,10 @@ quad_9x5color_p3:
    beq $t3,9,acertou_9x5
    bne $t3,9,quad_9x5
 jr $ra
+quad_9x5color_p4:
+   beq $t9,9,acertou_9x5
+   bne $t9,9,quad_9x5
+jr $ra
 
 
 # linha6
@@ -1724,6 +2075,7 @@ quad_0x6color:
    beq $t6,$s5,quad_0x6color_p2
    beq $t6,$s6,quad_0x6color_p1
    beq $t6,$s4,quad_0x6color_p3
+   beq $t6,$s7,quad_0x6color_p4
 jr $ra
 quad_0x6color_p2:
    beq $s3,0,acertou_0x6
@@ -1737,12 +2089,17 @@ quad_0x6color_p3:
    beq $t3,0,acertou_0x6
    bne $t3,0,quad_0x6
 jr $ra
+quad_0x6color_p4:
+   beq $t9,0,acertou_0x6
+   bne $t9,0,quad_0x6
+jr $ra
 
 
 quad_1x6color:
    beq $t6,$s5,quad_1x6color_p2
    beq $t6,$s6,quad_1x6color_p1
    beq $t6,$s4,quad_1x6color_p3
+   beq $t6,$s7,quad_1x6color_p4
 jr $ra
 quad_1x6color_p2:
    beq $s3,1,acertou_1x6
@@ -1756,12 +2113,17 @@ quad_1x6color_p3:
    beq $t3,1,acertou_1x6
    bne $t3,1,quad_1x6
 jr $ra
+quad_1x6color_p4:
+   beq $t9,1,acertou_1x6
+   bne $t9,1,quad_1x6
+jr $ra
 
 
 quad_2x6color:
    beq $t6,$s5,quad_2x6color_p2
    beq $t6,$s6,quad_2x6color_p1
    beq $t6,$s4,quad_2x6color_p3
+   beq $t6,$s7,quad_2x6color_p4
 jr $ra
 quad_2x6color_p2:
    beq $s3,2,acertou_2x6
@@ -1775,12 +2137,17 @@ quad_2x6color_p3:
    beq $t3,2,acertou_2x6
    bne $t3,2,quad_2x6
 jr $ra
+quad_2x6color_p4:
+   beq $t9,2,acertou_2x6
+   bne $t9,2,quad_2x6
+jr $ra
 
 
 quad_3x6color:
    beq $t6,$s5,quad_3x6color_p2
    beq $t6,$s6,quad_3x6color_p1
    beq $t6,$s4,quad_3x6color_p3
+   beq $t6,$s7,quad_3x6color_p4
 jr $ra
 quad_3x6color_p2:
    beq $s3,3,acertou_3x6
@@ -1794,12 +2161,17 @@ quad_3x6color_p3:
    beq $t3,3,acertou_3x6
    bne $t3,3,quad_3x6
 jr $ra
+quad_3x6color_p4:
+   beq $t9,3,acertou_3x6
+   bne $t9,3,quad_3x6
+jr $ra
 
 
 quad_4x6color:
    beq $t6,$s5,quad_4x6color_p2
    beq $t6,$s6,quad_4x6color_p1
    beq $t6,$s4,quad_4x6color_p3
+   beq $t6,$s7,quad_4x6color_p4
 jr $ra
 quad_4x6color_p2:
    beq $s3,4,acertou_4x6
@@ -1813,12 +2185,17 @@ quad_4x6color_p3:
    beq $t3,4,acertou_4x6
    bne $t3,4,quad_4x6
 jr $ra
+quad_4x6color_p4:
+   beq $t9,4,acertou_4x6
+   bne $t9,4,quad_4x6
+jr $ra
 
 
 quad_5x6color:
    beq $t6,$s5,quad_5x6color_p2
    beq $t6,$s6,quad_5x6color_p1
    beq $t6,$s4,quad_5x6color_p3
+   beq $t6,$s7,quad_5x6color_p4
 jr $ra
 quad_5x6color_p2:
    beq $s3,5,acertou_5x6
@@ -1832,12 +2209,17 @@ quad_5x6color_p3:
    beq $t3,5,acertou_5x6
    bne $t3,5,quad_5x6
 jr $ra
+quad_5x6color_p4:
+   beq $t9,5,acertou_5x6
+   bne $t9,5,quad_5x6
+jr $ra
 
 
 quad_6x6color:
    beq $t6,$s5,quad_6x6color_p2
    beq $t6,$s6,quad_6x6color_p1
    beq $t6,$s4,quad_6x6color_p3
+   beq $t6,$s7,quad_6x6color_p4
 jr $ra
 quad_6x6color_p2:
    beq $s3,6,acertou_6x6
@@ -1851,12 +2233,17 @@ quad_6x6color_p3:
    beq $t3,6,acertou_6x6
    bne $t3,6,quad_6x6
 jr $ra
+quad_6x6color_p4:
+   beq $t9,6,acertou_6x6
+   bne $t9,6,quad_6x6
+jr $ra
 
 
 quad_7x6color:
    beq $t6,$s5,quad_7x6color_p2
    beq $t6,$s6,quad_7x6color_p1
    beq $t6,$s4,quad_7x6color_p3
+   beq $t6,$s7,quad_7x6color_p4
 jr $ra
 quad_7x6color_p2:
    beq $s3,7,acertou_7x6
@@ -1870,12 +2257,17 @@ quad_7x6color_p3:
    beq $t3,7,acertou_7x6
    bne $t3,7,quad_7x6
 jr $ra
+quad_7x6color_p4:
+   beq $t9,7,acertou_7x6
+   bne $t9,7,quad_7x6
+jr $ra
 
 
 quad_8x6color:
    beq $t6,$s5,quad_8x6color_p2
    beq $t6,$s6,quad_8x6color_p1
    beq $t6,$s4,quad_8x6color_p3
+   beq $t6,$s7,quad_8x6color_p4
 jr $ra
 quad_8x6color_p2:
    beq $s3,8,acertou_8x6
@@ -1889,12 +2281,17 @@ quad_8x6color_p3:
    beq $t3,8,acertou_8x6
    bne $t3,8,quad_8x6
 jr $ra
+quad_8x6color_p4:
+   beq $t9,8,acertou_8x6
+   bne $t9,8,quad_8x6
+jr $ra
 
 
 quad_9x6color:
    beq $t6,$s5,quad_9x6color_p2
    beq $t6,$s6,quad_9x6color_p1
    beq $t6,$s4,quad_9x6color_p3
+   beq $t6,$s7,quad_9x6color_p4
 jr $ra
 quad_9x6color_p2:
    beq $s3,9,acertou_9x6
@@ -1908,6 +2305,10 @@ quad_9x6color_p3:
    beq $t3,9,acertou_9x6
    bne $t3,9,quad_9x6
 jr $ra
+quad_9x6color_p4:
+   beq $t9,9,acertou_9x6
+   bne $t9,9,quad_9x6
+jr $ra
 
 
 # linha7
@@ -1915,6 +2316,7 @@ quad_0x7color:
    beq $t6,$s5,quad_0x7color_p2
    beq $t6,$s6,quad_0x7color_p1
    beq $t6,$s4,quad_0x7color_p3
+   beq $t6,$s7,quad_0x7color_p4
 jr $ra
 quad_0x7color_p2:
    beq $s3,0,acertou_0x7
@@ -1928,12 +2330,17 @@ quad_0x7color_p3:
    beq $t3,0,acertou_0x7
    bne $t3,0,quad_0x7
 jr $ra
+quad_0x7color_p4:
+   beq $t9,0,acertou_0x7
+   bne $t9,0,quad_0x7
+jr $ra
 
 
 quad_1x7color:
    beq $t6,$s5,quad_1x7color_p2
    beq $t6,$s6,quad_1x7color_p1
    beq $t6,$s4,quad_1x7color_p3
+   beq $t6,$s7,quad_1x7color_p4
 jr $ra
 quad_1x7color_p2:
    beq $s3,1,acertou_1x7
@@ -1947,12 +2354,17 @@ quad_1x7color_p3:
    beq $t3,1,acertou_1x7
    bne $t3,1,quad_1x7
 jr $ra
+quad_1x7color_p4:
+   beq $t9,1,acertou_1x7
+   bne $t9,1,quad_1x7
+jr $ra
 
 
 quad_2x7color:
    beq $t6,$s5,quad_2x7color_p2
    beq $t6,$s6,quad_2x7color_p1
    beq $t6,$s4,quad_2x7color_p3
+   beq $t6,$s7,quad_2x7color_p4
 jr $ra
 quad_2x7color_p2:
    beq $s3,2,acertou_2x7
@@ -1966,12 +2378,17 @@ quad_2x7color_p3:
    beq $t3,2,acertou_2x7
    bne $t3,2,quad_2x7
 jr $ra
+quad_2x7color_p4:
+   beq $t9,2,acertou_2x7
+   bne $t9,2,quad_2x7
+jr $ra
 
 
 quad_3x7color:
    beq $t6,$s5,quad_3x7color_p2
    beq $t6,$s6,quad_3x7color_p1
    beq $t6,$s4,quad_3x7color_p3
+   beq $t6,$s7,quad_3x7color_p4
 jr $ra
 quad_3x7color_p2:
    beq $s3,3,acertou_3x7
@@ -1985,12 +2402,17 @@ quad_3x7color_p3:
    beq $t3,3,acertou_3x7
    bne $t3,3,quad_3x7
 jr $ra
+quad_3x7color_p4:
+   beq $t9,3,acertou_3x7
+   bne $t9,3,quad_3x7
+jr $ra
 
 
 quad_4x7color:
    beq $t6,$s5,quad_4x7color_p2
    beq $t6,$s6,quad_4x7color_p1
    beq $t6,$s4,quad_4x7color_p3
+   beq $t6,$s7,quad_4x7color_p4
 jr $ra
 quad_4x7color_p2:
    beq $s3,4,acertou_4x7
@@ -2004,12 +2426,17 @@ quad_4x7color_p3:
    beq $t3,4,acertou_4x7
    bne $t3,4,quad_4x7
 jr $ra
+quad_4x7color_p4:
+   beq $t9,4,acertou_4x7
+   bne $t9,4,quad_4x7
+jr $ra
 
 
 quad_5x7color:
    beq $t6,$s5,quad_5x7color_p2
    beq $t6,$s6,quad_5x7color_p1
    beq $t6,$s4,quad_5x7color_p3
+   beq $t6,$s7,quad_5x7color_p4
 jr $ra
 quad_5x7color_p2:
    beq $s3,5,acertou_5x7
@@ -2023,12 +2450,17 @@ quad_5x7color_p3:
    beq $t3,5,acertou_5x7
    bne $t3,5,quad_5x7
 jr $ra
+quad_5x7color_p4:
+   beq $t9,5,acertou_5x7
+   bne $t9,5,quad_5x7
+jr $ra
 
 
 quad_6x7color:
    beq $t6,$s5,quad_6x7color_p2
    beq $t6,$s6,quad_6x7color_p1
    beq $t6,$s4,quad_6x7color_p3
+   beq $t6,$s7,quad_6x7color_p4
 jr $ra
 quad_6x7color_p2:
    beq $s3,6,acertou_6x7
@@ -2042,12 +2474,17 @@ quad_6x7color_p3:
    beq $t3,6,acertou_6x7
    bne $t3,6,quad_6x7
 jr $ra
+quad_6x7color_p4:
+   beq $t9,6,acertou_6x7
+   bne $t9,6,quad_6x7
+jr $ra
 
 
 quad_7x7color:
    beq $t6,$s5,quad_7x7color_p2
    beq $t6,$s6,quad_7x7color_p1
    beq $t6,$s4,quad_7x7color_p3
+   beq $t6,$s7,quad_7x7color_p4
 jr $ra
 quad_7x7color_p2:
    beq $s3,7,acertou_7x7
@@ -2061,12 +2498,17 @@ quad_7x7color_p3:
    beq $t3,7,acertou_7x7
    bne $t3,7,quad_7x7
 jr $ra
+quad_7x7color_p4:
+   beq $t9,7,acertou_7x7
+   bne $t9,7,quad_7x7
+jr $ra
 
 
 quad_8x7color:
    beq $t6,$s5,quad_8x7color_p2
    beq $t6,$s6,quad_8x7color_p1
    beq $t6,$s4,quad_8x7color_p3
+   beq $t6,$s7,quad_8x7color_p4
 jr $ra
 quad_8x7color_p2:
    beq $s3,8,acertou_8x7
@@ -2080,12 +2522,17 @@ quad_8x7color_p3:
    beq $t3,8,acertou_8x7
    bne $t3,8,quad_8x7
 jr $ra
+quad_8x7color_p4:
+   beq $t9,8,acertou_8x7
+   bne $t9,8,quad_8x7
+jr $ra
 
 
 quad_9x7color:
    beq $t6,$s5,quad_9x7color_p2
    beq $t6,$s6,quad_9x7color_p1
    beq $t6,$s4,quad_9x7color_p3
+   beq $t6,$s7,quad_9x7color_p4
 jr $ra
 quad_9x7color_p2:
    beq $s3,9,acertou_9x7
@@ -2099,6 +2546,10 @@ quad_9x7color_p3:
    beq $t3,9,acertou_9x7
    bne $t3,9,quad_9x7
 jr $ra
+quad_9x7color_p4:
+   beq $t9,9,acertou_9x7
+   bne $t9,9,quad_9x7
+jr $ra
 
 
 # linha8
@@ -2106,6 +2557,7 @@ quad_0x8color:
    beq $t6,$s5,quad_0x8color_p2
    beq $t6,$s6,quad_0x8color_p1
    beq $t6,$s4,quad_0x8color_p3
+   beq $t6,$s7,quad_0x8color_p4
 jr $ra
 quad_0x8color_p2:
    beq $s3,0,acertou_0x8
@@ -2119,12 +2571,17 @@ quad_0x8color_p3:
    beq $t3,0,acertou_0x8
    bne $t3,0,quad_0x8
 jr $ra
+quad_0x8color_p4:
+   beq $t9,0,acertou_0x8
+   bne $t9,0,quad_0x8
+jr $ra
 
 
 quad_1x8color:
    beq $t6,$s5,quad_1x8color_p2
    beq $t6,$s6,quad_1x8color_p1
    beq $t6,$s4,quad_1x8color_p3
+   beq $t6,$s7,quad_1x8color_p4
 jr $ra
 quad_1x8color_p2:
    beq $s3,1,acertou_1x8
@@ -2138,12 +2595,17 @@ quad_1x8color_p3:
    beq $t3,1,acertou_1x8
    bne $t3,1,quad_1x8
 jr $ra
+quad_1x8color_p4:
+   beq $t9,1,acertou_1x8
+   bne $t9,1,quad_1x8
+jr $ra
 
 
 quad_2x8color:
    beq $t6,$s5,quad_2x8color_p2
    beq $t6,$s6,quad_2x8color_p1
    beq $t6,$s4,quad_2x8color_p3
+   beq $t6,$s7,quad_2x8color_p4
 jr $ra
 quad_2x8color_p2:
    beq $s3,2,acertou_2x8
@@ -2157,12 +2619,17 @@ quad_2x8color_p3:
    beq $t3,2,acertou_2x8
    bne $t3,2,quad_2x8
 jr $ra
+quad_2x8color_p4:
+   beq $t9,2,acertou_2x8
+   bne $t9,2,quad_2x8
+jr $ra
 
 
 quad_3x8color:
    beq $t6,$s5,quad_3x8color_p2
    beq $t6,$s6,quad_3x8color_p1
    beq $t6,$s4,quad_3x8color_p3
+   beq $t6,$s7,quad_3x8color_p4
 jr $ra
 quad_3x8color_p2:
    beq $s3,3,acertou_3x8
@@ -2176,12 +2643,17 @@ quad_3x8color_p3:
    beq $t3,3,acertou_3x8
    bne $t3,3,quad_3x8
 jr $ra
+quad_3x8color_p4:
+   beq $t9,3,acertou_3x8
+   bne $t9,3,quad_3x8
+jr $ra
 
 
 quad_4x8color:
    beq $t6,$s5,quad_4x8color_p2
    beq $t6,$s6,quad_4x8color_p1
    beq $t6,$s4,quad_4x8color_p3
+   beq $t6,$s7,quad_4x8color_p4
 jr $ra
 quad_4x8color_p2:
    beq $s3,4,acertou_4x8
@@ -2195,12 +2667,17 @@ quad_4x8color_p3:
    beq $t3,4,acertou_4x8
    bne $t3,4,quad_4x8
 jr $ra
+quad_4x8color_p4:
+   beq $t9,4,acertou_4x8
+   bne $t9,4,quad_4x8
+jr $ra
 
 
 quad_5x8color:
    beq $t6,$s5,quad_5x8color_p2
    beq $t6,$s6,quad_5x8color_p1
    beq $t6,$s4,quad_5x8color_p3
+   beq $t6,$s7,quad_5x8color_p4
 jr $ra
 quad_5x8color_p2:
    beq $s3,5,acertou_5x8
@@ -2214,12 +2691,17 @@ quad_5x8color_p3:
    beq $t3,5,acertou_5x8
    bne $t3,5,quad_5x8
 jr $ra
+quad_5x8color_p4:
+   beq $t9,5,acertou_5x8
+   bne $t9,5,quad_5x8
+jr $ra
 
 
 quad_6x8color:
    beq $t6,$s5,quad_6x8color_p2
    beq $t6,$s6,quad_6x8color_p1
    beq $t6,$s4,quad_6x8color_p3
+   beq $t6,$s7,quad_6x8color_p4
 jr $ra
 quad_6x8color_p2:
    beq $s3,6,acertou_6x8
@@ -2233,12 +2715,17 @@ quad_6x8color_p3:
    beq $t3,6,acertou_6x8
    bne $t3,6,quad_6x8
 jr $ra
+quad_6x8color_p4:
+   beq $t9,6,acertou_6x8
+   bne $t9,6,quad_6x8
+jr $ra
 
 
 quad_7x8color:
    beq $t6,$s5,quad_7x8color_p2
    beq $t6,$s6,quad_7x8color_p1
    beq $t6,$s4,quad_7x8color_p3
+   beq $t6,$s7,quad_7x8color_p4
 jr $ra
 quad_7x8color_p2:
    beq $s3,7,acertou_7x8
@@ -2252,12 +2739,17 @@ quad_7x8color_p3:
    beq $t3,7,acertou_7x8
    bne $t3,7,quad_7x8
 jr $ra
+quad_7x8color_p4:
+   beq $t9,7,acertou_7x8
+   bne $t9,7,quad_7x8
+jr $ra
 
 
 quad_8x8color:
    beq $t6,$s5,quad_8x8color_p2
    beq $t6,$s6,quad_8x8color_p1
    beq $t6,$s4,quad_8x8color_p3
+   beq $t6,$s7,quad_8x8color_p4
 jr $ra
 quad_8x8color_p2:
    beq $s3,8,acertou_8x8
@@ -2271,12 +2763,17 @@ quad_8x8color_p3:
    beq $t3,8,acertou_8x8
    bne $t3,8,quad_8x8
 jr $ra
+quad_8x8color_p4:
+   beq $t9,8,acertou_8x8
+   bne $t9,8,quad_8x8
+jr $ra
 
 
 quad_9x8color:
    beq $t6,$s5,quad_9x8color_p2
    beq $t6,$s6,quad_9x8color_p1
    beq $t6,$s4,quad_9x8color_p3
+   beq $t6,$s7,quad_9x8color_p4
 jr $ra
 quad_9x8color_p2:
    beq $s3,9,acertou_9x8
@@ -2290,7 +2787,10 @@ quad_9x8color_p3:
    beq $t3,9,acertou_9x8
    bne $t3,9,quad_9x8
 jr $ra
-
+quad_9x8color_p4:
+   beq $t9,9,acertou_9x8
+   bne $t9,9,quad_9x8
+jr $ra
 
 #============================  LINHAS DO TABULEIRO  ===========================
 #==============================================================================
@@ -2301,9 +2801,11 @@ row_0x0:
     beq $t6,$s5,linha_s5x0x0
     beq $t6,$s6,linha_s6x0x0
     beq $t6,$s4,linha_s4x0x0
+    beq $t6,$s7,linha_s7x0x0
         bne $t6,$s5,p_0x0
         p_0x0:bne $t6,$s6,p_0x0x0
-        p_0x0x0: bne $t6,$s4,quad_0x0
+        p_0x0x0: bne $t6,$s4,p_0x0x0x0
+        p_0x0x0x0: bne $t6,$s7,quad_0x0
 jr $ra
 linha_s5x0x0:
        beq $s5,0,quad_0x0color
@@ -2317,15 +2819,21 @@ linha_s4x0x0:
        beq $s4,0,quad_0x0color
        bne $s4,0,quad_0x0
 jr $ra
+linha_s7x0x0:
+       beq $s7,0,quad_0x0color
+       bne $s7,0,quad_0x0
+jr $ra
 
 
 row_1x0:
     beq $t6,$s5,linha_s5x1x0
     beq $t6,$s6,linha_s6x1x0
     beq $t6,$s4,linha_s4x1x0
+    beq $t6,$s7,linha_s7x1x0
         bne $t6,$s5,p_1x0
         p_1x0:bne $t6,$s6,p_1x0x0
-        p_1x0x0: bne $t6,$s4,quad_1x0
+        p_1x0x0: bne $t6,$s4,p_1x0x0x0
+        p_1x0x0x0: bne $t6,$s7,quad_1x0
 jr $ra
 linha_s5x1x0:
        beq $s5,0,quad_1x0color
@@ -2339,15 +2847,21 @@ linha_s4x1x0:
        beq $s4,0,quad_1x0color
        bne $s4,0,quad_1x0
 jr $ra
+linha_s7x1x0:
+       beq $s7,0,quad_1x0color
+       bne $s7,0,quad_1x0
+jr $ra
 
 
 row_2x0:
     beq $t6,$s5,linha_s5x2x0
     beq $t6,$s6,linha_s6x2x0
     beq $t6,$s4,linha_s4x2x0
+    beq $t6,$s7,linha_s7x2x0
         bne $t6,$s5,p_2x0
         p_2x0:bne $t6,$s6,p_2x0x0
-        p_2x0x0: bne $t6,$s4,quad_2x0
+        p_2x0x0: bne $t6,$s4,p_2x0x0x0
+        p_2x0x0x0: bne $t6,$s7,quad_2x0
 jr $ra
 linha_s5x2x0:
        beq $s5,0,quad_2x0color
@@ -2361,15 +2875,21 @@ linha_s4x2x0:
        beq $s4,0,quad_2x0color
        bne $s4,0,quad_2x0
 jr $ra
+linha_s7x2x0:
+       beq $s7,0,quad_2x0color
+       bne $s7,0,quad_2x0
+jr $ra
 
 
 row_3x0:
     beq $t6,$s5,linha_s5x3x0
     beq $t6,$s6,linha_s6x3x0
     beq $t6,$s4,linha_s4x3x0
+    beq $t6,$s7,linha_s7x3x0
         bne $t6,$s5,p_3x0
         p_3x0:bne $t6,$s6,p_3x0x0
-        p_3x0x0: bne $t6,$s4,quad_3x0
+        p_3x0x0: bne $t6,$s4,p_3x0x0x0
+        p_3x0x0x0: bne $t6,$s7,quad_3x0
 jr $ra
 linha_s5x3x0:
        beq $s5,0,quad_3x0color
@@ -2383,15 +2903,21 @@ linha_s4x3x0:
        beq $s4,0,quad_3x0color
        bne $s4,0,quad_3x0
 jr $ra
+linha_s7x3x0:
+       beq $s7,0,quad_3x0color
+       bne $s7,0,quad_3x0
+jr $ra
 
 
 row_4x0:
     beq $t6,$s5,linha_s5x4x0
     beq $t6,$s6,linha_s6x4x0
     beq $t6,$s4,linha_s4x4x0
+    beq $t6,$s7,linha_s7x4x0
         bne $t6,$s5,p_4x0
         p_4x0:bne $t6,$s6,p_4x0x0
-        p_4x0x0: bne $t6,$s4,quad_4x0
+        p_4x0x0: bne $t6,$s4,p_4x0x0x0
+        p_4x0x0x0: bne $t6,$s7,quad_4x0
 jr $ra
 linha_s5x4x0:
        beq $s5,0,quad_4x0color
@@ -2405,15 +2931,21 @@ linha_s4x4x0:
        beq $s4,0,quad_4x0color
        bne $s4,0,quad_4x0
 jr $ra
+linha_s7x4x0:
+       beq $s7,0,quad_4x0color
+       bne $s7,0,quad_4x0
+jr $ra
 
 
 row_5x0:
     beq $t6,$s5,linha_s5x5x0
     beq $t6,$s6,linha_s6x5x0
     beq $t6,$s4,linha_s4x5x0
+    beq $t6,$s7,linha_s7x5x0
         bne $t6,$s5,p_5x0
         p_5x0:bne $t6,$s6,p_5x0x0
-        p_5x0x0: bne $t6,$s4,quad_5x0
+        p_5x0x0: bne $t6,$s4,p_5x0x0x0
+        p_5x0x0x0: bne $t6,$s7,quad_5x0
 jr $ra
 linha_s5x5x0:
        beq $s5,0,quad_5x0color
@@ -2427,15 +2959,21 @@ linha_s4x5x0:
        beq $s4,0,quad_5x0color
        bne $s4,0,quad_5x0
 jr $ra
+linha_s7x5x0:
+       beq $s7,0,quad_5x0color
+       bne $s7,0,quad_5x0
+jr $ra
 
 
 row_6x0:
     beq $t6,$s5,linha_s5x6x0
     beq $t6,$s6,linha_s6x6x0
     beq $t6,$s4,linha_s4x6x0
+    beq $t6,$s7,linha_s7x6x0
         bne $t6,$s5,p_6x0
         p_6x0:bne $t6,$s6,p_6x0x0
-        p_6x0x0: bne $t6,$s4,quad_6x0
+        p_6x0x0: bne $t6,$s4,p_6x0x0x0
+        p_6x0x0x0: bne $t6,$s7,quad_6x0
 jr $ra
 linha_s5x6x0:
        beq $s5,0,quad_6x0color
@@ -2449,15 +2987,21 @@ linha_s4x6x0:
        beq $s4,0,quad_6x0color
        bne $s4,0,quad_6x0
 jr $ra
+linha_s7x6x0:
+       beq $s7,0,quad_6x0color
+       bne $s7,0,quad_6x0
+jr $ra
 
 
 row_7x0:
     beq $t6,$s5,linha_s5x7x0
     beq $t6,$s6,linha_s6x7x0
     beq $t6,$s4,linha_s4x7x0
+    beq $t6,$s7,linha_s7x7x0
         bne $t6,$s5,p_7x0
         p_7x0:bne $t6,$s6,p_7x0x0
-        p_7x0x0: bne $t6,$s4,quad_7x0
+        p_7x0x0: bne $t6,$s4,p_7x0x0x0
+        p_7x0x0x0: bne $t6,$s7,quad_7x0
 jr $ra
 linha_s5x7x0:
        beq $s5,0,quad_7x0color
@@ -2471,15 +3015,21 @@ linha_s4x7x0:
        beq $s4,0,quad_7x0color
        bne $s4,0,quad_7x0
 jr $ra
+linha_s7x7x0:
+       beq $s7,0,quad_7x0color
+       bne $s7,0,quad_7x0
+jr $ra
 
 
 row_8x0:
     beq $t6,$s5,linha_s5x8x0
     beq $t6,$s6,linha_s6x8x0
     beq $t6,$s4,linha_s4x8x0
+    beq $t6,$s7,linha_s7x8x0
         bne $t6,$s5,p_8x0
         p_8x0:bne $t6,$s6,p_8x0x0
-        p_8x0x0: bne $t6,$s4,quad_8x0
+        p_8x0x0: bne $t6,$s4,p_8x0x0x0
+        p_8x0x0x0: bne $t6,$s7,quad_8x0
 jr $ra
 linha_s5x8x0:
        beq $s5,0,quad_8x0color
@@ -2493,15 +3043,21 @@ linha_s4x8x0:
        beq $s4,0,quad_8x0color
        bne $s4,0,quad_8x0
 jr $ra
+linha_s7x8x0:
+       beq $s7,0,quad_8x0color
+       bne $s7,0,quad_8x0
+jr $ra
 
 
 row_9x0:
     beq $t6,$s5,linha_s5x9x0
     beq $t6,$s6,linha_s6x9x0
     beq $t6,$s4,linha_s4x9x0
+    beq $t6,$s7,linha_s7x9x0
         bne $t6,$s5,p_9x0
         p_9x0:bne $t6,$s6,p_9x0x0
-        p_9x0x0: bne $t6,$s4,quad_9x0
+        p_9x0x0: bne $t6,$s4,p_9x0x0x0
+        p_9x0x0x0: bne $t6,$s7,quad_9x0
 jr $ra
 linha_s5x9x0:
        beq $s5,0,quad_9x0color
@@ -2515,6 +3071,10 @@ linha_s4x9x0:
        beq $s4,0,quad_9x0color
        bne $s4,0,quad_9x0
 jr $ra
+linha_s7x9x0:
+       beq $s7,0,quad_9x0color
+       bne $s7,0,quad_9x0
+jr $ra
 
 
 # ==================== linha 1================== 
@@ -2522,9 +3082,11 @@ row_0x1:
     beq $t6,$s5,linha_s5x0x1
     beq $t6,$s6,linha_s6x0x1
     beq $t6,$s4,linha_s4x0x1
+    beq $t6,$s7,linha_s7x0x1
         bne $t6,$s5,p_0x1
         p_0x1:bne $t6,$s6,p_0x1x1
-        p_0x1x1: bne $t6,$s4,quad_0x1
+        p_0x1x1: bne $t6,$s4,p_0x1x1x1
+        p_0x1x1x1: bne $t6,$s7,quad_0x1
 jr $ra
 linha_s5x0x1:
        beq $s5,1,quad_0x1color
@@ -2538,15 +3100,21 @@ linha_s4x0x1:
        beq $s4,1,quad_0x1color
        bne $s4,1,quad_0x1
 jr $ra
+linha_s7x0x1:
+       beq $s7,1,quad_0x1color
+       bne $s7,1,quad_0x1
+jr $ra
 
 
 row_1x1:
     beq $t6,$s5,linha_s5x1x1
     beq $t6,$s6,linha_s6x1x1
     beq $t6,$s4,linha_s4x1x1
+    beq $t6,$s7,linha_s7x1x1
         bne $t6,$s5,p_1x1
         p_1x1:bne $t6,$s6,p_1x1x1
-        p_1x1x1: bne $t6,$s4,quad_1x1
+        p_1x1x1: bne $t6,$s4,p_1x1x1x1
+        p_1x1x1x1: bne $t6,$s7,quad_1x1
 jr $ra
 linha_s5x1x1:
        beq $s5,1,quad_1x1color
@@ -2560,15 +3128,21 @@ linha_s4x1x1:
        beq $s4,1,quad_1x1color
        bne $s4,1,quad_1x1
 jr $ra
+linha_s7x1x1:
+       beq $s7,1,quad_1x1color
+       bne $s7,1,quad_1x1
+jr $ra
 
 
 row_2x1:
     beq $t6,$s5,linha_s5x2x1
     beq $t6,$s6,linha_s6x2x1
     beq $t6,$s4,linha_s4x2x1
+    beq $t6,$s7,linha_s7x2x1
         bne $t6,$s5,p_2x1
         p_2x1:bne $t6,$s6,p_2x1x1
-        p_2x1x1: bne $t6,$s4,quad_2x1
+        p_2x1x1: bne $t6,$s4,p_2x1x1x1
+        p_2x1x1x1: bne $t6,$s7,quad_2x1
 jr $ra
 linha_s5x2x1:
        beq $s5,1,quad_2x1color
@@ -2582,15 +3156,21 @@ linha_s4x2x1:
        beq $s4,1,quad_2x1color
        bne $s4,1,quad_2x1
 jr $ra
+linha_s7x2x1:
+       beq $s7,1,quad_2x1color
+       bne $s7,1,quad_2x1
+jr $ra
 
 
 row_3x1:
     beq $t6,$s5,linha_s5x3x1
     beq $t6,$s6,linha_s6x3x1
     beq $t6,$s4,linha_s4x3x1
+    beq $t6,$s7,linha_s7x3x1
         bne $t6,$s5,p_3x1
         p_3x1:bne $t6,$s6,p_3x1x1
-        p_3x1x1: bne $t6,$s4,quad_3x1
+        p_3x1x1: bne $t6,$s4,p_3x1x1x1
+        p_3x1x1x1: bne $t6,$s7,quad_3x1
 jr $ra
 linha_s5x3x1:
        beq $s5,1,quad_3x1color
@@ -2604,15 +3184,21 @@ linha_s4x3x1:
        beq $s4,1,quad_3x1color
        bne $s4,1,quad_3x1
 jr $ra
+linha_s7x3x1:
+       beq $s7,1,quad_3x1color
+       bne $s7,1,quad_3x1
+jr $ra
 
 
 row_4x1:
     beq $t6,$s5,linha_s5x4x1
     beq $t6,$s6,linha_s6x4x1
     beq $t6,$s4,linha_s4x4x1
+    beq $t6,$s7,linha_s7x4x1
         bne $t6,$s5,p_4x1
         p_4x1:bne $t6,$s6,p_4x1x1
-        p_4x1x1: bne $t6,$s4,quad_4x1
+        p_4x1x1: bne $t6,$s4,p_4x1x1x1
+        p_4x1x1x1: bne $t6,$s7,quad_4x1
 jr $ra
 linha_s5x4x1:
        beq $s5,1,quad_4x1color
@@ -2626,15 +3212,21 @@ linha_s4x4x1:
        beq $s4,1,quad_4x1color
        bne $s4,1,quad_4x1
 jr $ra
+linha_s7x4x1:
+       beq $s7,1,quad_4x1color
+       bne $s7,1,quad_4x1
+jr $ra
 
 
 row_5x1:
     beq $t6,$s5,linha_s5x5x1
     beq $t6,$s6,linha_s6x5x1
     beq $t6,$s4,linha_s4x5x1
+    beq $t6,$s7,linha_s7x5x1
         bne $t6,$s5,p_5x1
         p_5x1:bne $t6,$s6,p_5x1x1
-        p_5x1x1: bne $t6,$s4,quad_5x1
+        p_5x1x1: bne $t6,$s4,p_5x1x1x1
+        p_5x1x1x1: bne $t6,$s7,quad_5x1
 jr $ra
 linha_s5x5x1:
        beq $s5,1,quad_5x1color
@@ -2648,15 +3240,21 @@ linha_s4x5x1:
        beq $s4,1,quad_5x1color
        bne $s4,1,quad_5x1
 jr $ra
+linha_s7x5x1:
+       beq $s7,1,quad_5x1color
+       bne $s7,1,quad_5x1
+jr $ra
 
 
 row_6x1:
     beq $t6,$s5,linha_s5x6x1
     beq $t6,$s6,linha_s6x6x1
     beq $t6,$s4,linha_s4x6x1
+    beq $t6,$s7,linha_s7x6x1
         bne $t6,$s5,p_6x1
         p_6x1:bne $t6,$s6,p_6x1x1
-        p_6x1x1: bne $t6,$s4,quad_6x1
+        p_6x1x1: bne $t6,$s4,p_6x1x1x1
+        p_6x1x1x1: bne $t6,$s7,quad_6x1
 jr $ra
 linha_s5x6x1:
        beq $s5,1,quad_6x1color
@@ -2670,15 +3268,21 @@ linha_s4x6x1:
        beq $s4,1,quad_6x1color
        bne $s4,1,quad_6x1
 jr $ra
+linha_s7x6x1:
+       beq $s7,1,quad_6x1color
+       bne $s7,1,quad_6x1
+jr $ra
 
 
 row_7x1:
     beq $t6,$s5,linha_s5x7x1
     beq $t6,$s6,linha_s6x7x1
     beq $t6,$s4,linha_s4x7x1
+    beq $t6,$s7,linha_s7x7x1
         bne $t6,$s5,p_7x1
         p_7x1:bne $t6,$s6,p_7x1x1
-        p_7x1x1: bne $t6,$s4,quad_7x1
+        p_7x1x1: bne $t6,$s4,p_7x1x1x1
+        p_7x1x1x1: bne $t6,$s7,quad_7x1
 jr $ra
 linha_s5x7x1:
        beq $s5,1,quad_7x1color
@@ -2692,15 +3296,21 @@ linha_s4x7x1:
        beq $s4,1,quad_7x1color
        bne $s4,1,quad_7x1
 jr $ra
+linha_s7x7x1:
+       beq $s7,1,quad_7x1color
+       bne $s7,1,quad_7x1
+jr $ra
 
 
 row_8x1:
     beq $t6,$s5,linha_s5x8x1
     beq $t6,$s6,linha_s6x8x1
     beq $t6,$s4,linha_s4x8x1
+    beq $t6,$s7,linha_s7x8x1
         bne $t6,$s5,p_8x1
         p_8x1:bne $t6,$s6,p_8x1x1
-        p_8x1x1: bne $t6,$s4,quad_8x1
+        p_8x1x1: bne $t6,$s4,p_8x1x1x1
+        p_8x1x1x1: bne $t6,$s7,quad_8x1
 jr $ra
 linha_s5x8x1:
        beq $s5,1,quad_8x1color
@@ -2714,15 +3324,21 @@ linha_s4x8x1:
        beq $s4,1,quad_8x1color
        bne $s4,1,quad_8x1
 jr $ra
+linha_s7x8x1:
+       beq $s7,1,quad_8x1color
+       bne $s7,1,quad_8x1
+jr $ra
 
 
 row_9x1:
     beq $t6,$s5,linha_s5x9x1
     beq $t6,$s6,linha_s6x9x1
     beq $t6,$s4,linha_s4x9x1
+    beq $t6,$s7,linha_s7x9x1
         bne $t6,$s5,p_9x1
         p_9x1:bne $t6,$s6,p_9x1x1
-        p_9x1x1: bne $t6,$s4,quad_9x1
+        p_9x1x1: bne $t6,$s4,p_9x1x1x1
+        p_9x1x1x1: bne $t6,$s7,quad_9x1
 jr $ra
 linha_s5x9x1:
        beq $s5,1,quad_9x1color
@@ -2736,6 +3352,10 @@ linha_s4x9x1:
        beq $s4,1,quad_9x1color
        bne $s4,1,quad_9x1
 jr $ra
+linha_s7x9x1:
+       beq $s7,1,quad_9x1color
+       bne $s7,1,quad_9x1
+jr $ra
 
 
 # ==================== linha 2================== 
@@ -2743,9 +3363,11 @@ row_0x2:
     beq $t6,$s5,linha_s5x0x2
     beq $t6,$s6,linha_s6x0x2
     beq $t6,$s4,linha_s4x0x2
+    beq $t6,$s7,linha_s7x0x2
         bne $t6,$s5,p_0x2
         p_0x2:bne $t6,$s6,p_0x2x2
-        p_0x2x2: bne $t6,$s4,quad_0x2
+        p_0x2x2: bne $t6,$s4,p_0x2x2x2
+        p_0x2x2x2: bne $t6,$s7,quad_0x2
 jr $ra
 linha_s5x0x2:
        beq $s5,2,quad_0x2color
@@ -2759,15 +3381,21 @@ linha_s4x0x2:
        beq $s4,2,quad_0x2color
        bne $s4,2,quad_0x2
 jr $ra
+linha_s7x0x2:
+       beq $s7,2,quad_0x2color
+       bne $s7,2,quad_0x2
+jr $ra
 
 
 row_1x2:
     beq $t6,$s5,linha_s5x1x2
     beq $t6,$s6,linha_s6x1x2
     beq $t6,$s4,linha_s4x1x2
+    beq $t6,$s7,linha_s7x1x2
         bne $t6,$s5,p_1x2
         p_1x2:bne $t6,$s6,p_1x2x2
-        p_1x2x2: bne $t6,$s4,quad_1x2
+        p_1x2x2: bne $t6,$s4,p_1x2x2x2
+        p_1x2x2x2: bne $t6,$s7,quad_1x2
 jr $ra
 linha_s5x1x2:
        beq $s5,2,quad_1x2color
@@ -2781,15 +3409,21 @@ linha_s4x1x2:
        beq $s4,2,quad_1x2color
        bne $s4,2,quad_1x2
 jr $ra
+linha_s7x1x2:
+       beq $s7,2,quad_1x2color
+       bne $s7,2,quad_1x2
+jr $ra
 
 
 row_2x2:
     beq $t6,$s5,linha_s5x2x2
     beq $t6,$s6,linha_s6x2x2
     beq $t6,$s4,linha_s4x2x2
+    beq $t6,$s7,linha_s7x2x2
         bne $t6,$s5,p_2x2
         p_2x2:bne $t6,$s6,p_2x2x2
-        p_2x2x2: bne $t6,$s4,quad_2x2
+        p_2x2x2: bne $t6,$s4,p_2x2x2x2
+        p_2x2x2x2: bne $t6,$s7,quad_2x2
 jr $ra
 linha_s5x2x2:
        beq $s5,2,quad_2x2color
@@ -2803,15 +3437,21 @@ linha_s4x2x2:
        beq $s4,2,quad_2x2color
        bne $s4,2,quad_2x2
 jr $ra
+linha_s7x2x2:
+       beq $s7,2,quad_2x2color
+       bne $s7,2,quad_2x2
+jr $ra
 
 
 row_3x2:
     beq $t6,$s5,linha_s5x3x2
     beq $t6,$s6,linha_s6x3x2
     beq $t6,$s4,linha_s4x3x2
+    beq $t6,$s7,linha_s7x3x2
         bne $t6,$s5,p_3x2
         p_3x2:bne $t6,$s6,p_3x2x2
-        p_3x2x2: bne $t6,$s4,quad_3x2
+        p_3x2x2: bne $t6,$s4,p_3x2x2x2
+        p_3x2x2x2: bne $t6,$s7,quad_3x2
 jr $ra
 linha_s5x3x2:
        beq $s5,2,quad_3x2color
@@ -2825,15 +3465,21 @@ linha_s4x3x2:
        beq $s4,2,quad_3x2color
        bne $s4,2,quad_3x2
 jr $ra
+linha_s7x3x2:
+       beq $s7,2,quad_3x2color
+       bne $s7,2,quad_3x2
+jr $ra
 
 
 row_4x2:
     beq $t6,$s5,linha_s5x4x2
     beq $t6,$s6,linha_s6x4x2
     beq $t6,$s4,linha_s4x4x2
+    beq $t6,$s7,linha_s7x4x2
         bne $t6,$s5,p_4x2
         p_4x2:bne $t6,$s6,p_4x2x2
-        p_4x2x2: bne $t6,$s4,quad_4x2
+        p_4x2x2: bne $t6,$s4,p_4x2x2x2
+        p_4x2x2x2: bne $t6,$s7,quad_4x2
 jr $ra
 linha_s5x4x2:
        beq $s5,2,quad_4x2color
@@ -2847,15 +3493,21 @@ linha_s4x4x2:
        beq $s4,2,quad_4x2color
        bne $s4,2,quad_4x2
 jr $ra
+linha_s7x4x2:
+       beq $s7,2,quad_4x2color
+       bne $s7,2,quad_4x2
+jr $ra
 
 
 row_5x2:
     beq $t6,$s5,linha_s5x5x2
     beq $t6,$s6,linha_s6x5x2
     beq $t6,$s4,linha_s4x5x2
+    beq $t6,$s7,linha_s7x5x2
         bne $t6,$s5,p_5x2
         p_5x2:bne $t6,$s6,p_5x2x2
-        p_5x2x2: bne $t6,$s4,quad_5x2
+        p_5x2x2: bne $t6,$s4,p_5x2x2x2
+        p_5x2x2x2: bne $t6,$s7,quad_5x2
 jr $ra
 linha_s5x5x2:
        beq $s5,2,quad_5x2color
@@ -2869,15 +3521,21 @@ linha_s4x5x2:
        beq $s4,2,quad_5x2color
        bne $s4,2,quad_5x2
 jr $ra
+linha_s7x5x2:
+       beq $s7,2,quad_5x2color
+       bne $s7,2,quad_5x2
+jr $ra
 
 
 row_6x2:
     beq $t6,$s5,linha_s5x6x2
     beq $t6,$s6,linha_s6x6x2
     beq $t6,$s4,linha_s4x6x2
+    beq $t6,$s7,linha_s7x6x2
         bne $t6,$s5,p_6x2
         p_6x2:bne $t6,$s6,p_6x2x2
-        p_6x2x2: bne $t6,$s4,quad_6x2
+        p_6x2x2: bne $t6,$s4,p_6x2x2x2
+        p_6x2x2x2: bne $t6,$s7,quad_6x2
 jr $ra
 linha_s5x6x2:
        beq $s5,2,quad_6x2color
@@ -2891,15 +3549,21 @@ linha_s4x6x2:
        beq $s4,2,quad_6x2color
        bne $s4,2,quad_6x2
 jr $ra
+linha_s7x6x2:
+       beq $s7,2,quad_6x2color
+       bne $s7,2,quad_6x2
+jr $ra
 
 
 row_7x2:
     beq $t6,$s5,linha_s5x7x2
     beq $t6,$s6,linha_s6x7x2
     beq $t6,$s4,linha_s4x7x2
+    beq $t6,$s7,linha_s7x7x2
         bne $t6,$s5,p_7x2
         p_7x2:bne $t6,$s6,p_7x2x2
-        p_7x2x2: bne $t6,$s4,quad_7x2
+        p_7x2x2: bne $t6,$s4,p_7x2x2x2
+        p_7x2x2x2: bne $t6,$s7,quad_7x2
 jr $ra
 linha_s5x7x2:
        beq $s5,2,quad_7x2color
@@ -2913,15 +3577,21 @@ linha_s4x7x2:
        beq $s4,2,quad_7x2color
        bne $s4,2,quad_7x2
 jr $ra
+linha_s7x7x2:
+       beq $s7,2,quad_7x2color
+       bne $s7,2,quad_7x2
+jr $ra
 
 
 row_8x2:
     beq $t6,$s5,linha_s5x8x2
     beq $t6,$s6,linha_s6x8x2
     beq $t6,$s4,linha_s4x8x2
+    beq $t6,$s7,linha_s7x8x2
         bne $t6,$s5,p_8x2
         p_8x2:bne $t6,$s6,p_8x2x2
-        p_8x2x2: bne $t6,$s4,quad_8x2
+        p_8x2x2: bne $t6,$s4,p_8x2x2x2
+        p_8x2x2x2: bne $t6,$s7,quad_8x2
 jr $ra
 linha_s5x8x2:
        beq $s5,2,quad_8x2color
@@ -2935,15 +3605,21 @@ linha_s4x8x2:
        beq $s4,2,quad_8x2color
        bne $s4,2,quad_8x2
 jr $ra
+linha_s7x8x2:
+       beq $s7,2,quad_8x2color
+       bne $s7,2,quad_8x2
+jr $ra
 
 
 row_9x2:
     beq $t6,$s5,linha_s5x9x2
     beq $t6,$s6,linha_s6x9x2
     beq $t6,$s4,linha_s4x9x2
+    beq $t6,$s7,linha_s7x9x2
         bne $t6,$s5,p_9x2
         p_9x2:bne $t6,$s6,p_9x2x2
-        p_9x2x2: bne $t6,$s4,quad_9x2
+        p_9x2x2: bne $t6,$s4,p_9x2x2x2
+        p_9x2x2x2: bne $t6,$s7,quad_9x2
 jr $ra
 linha_s5x9x2:
        beq $s5,2,quad_9x2color
@@ -2957,6 +3633,10 @@ linha_s4x9x2:
        beq $s4,2,quad_9x2color
        bne $s4,2,quad_9x2
 jr $ra
+linha_s7x9x2:
+       beq $s7,2,quad_9x2color
+       bne $s7,2,quad_9x2
+jr $ra
 
 
 # ==================== linha 3================== 
@@ -2964,9 +3644,11 @@ row_0x3:
     beq $t6,$s5,linha_s5x0x3
     beq $t6,$s6,linha_s6x0x3
     beq $t6,$s4,linha_s4x0x3
+    beq $t6,$s7,linha_s7x0x3
         bne $t6,$s5,p_0x3
         p_0x3:bne $t6,$s6,p_0x3x3
-        p_0x3x3: bne $t6,$s4,quad_0x3
+        p_0x3x3: bne $t6,$s4,p_0x3x3x3
+        p_0x3x3x3: bne $t6,$s7,quad_0x3
 jr $ra
 linha_s5x0x3:
        beq $s5,3,quad_0x3color
@@ -2980,15 +3662,21 @@ linha_s4x0x3:
        beq $s4,3,quad_0x3color
        bne $s4,3,quad_0x3
 jr $ra
+linha_s7x0x3:
+       beq $s7,3,quad_0x3color
+       bne $s7,3,quad_0x3
+jr $ra
 
 
 row_1x3:
     beq $t6,$s5,linha_s5x1x3
     beq $t6,$s6,linha_s6x1x3
     beq $t6,$s4,linha_s4x1x3
+    beq $t6,$s7,linha_s7x1x3
         bne $t6,$s5,p_1x3
         p_1x3:bne $t6,$s6,p_1x3x3
-        p_1x3x3: bne $t6,$s4,quad_1x3
+        p_1x3x3: bne $t6,$s4,p_1x3x3x3
+        p_1x3x3x3: bne $t6,$s7,quad_1x3
 jr $ra
 linha_s5x1x3:
        beq $s5,3,quad_1x3color
@@ -3002,15 +3690,21 @@ linha_s4x1x3:
        beq $s4,3,quad_1x3color
        bne $s4,3,quad_1x3
 jr $ra
+linha_s7x1x3:
+       beq $s7,3,quad_1x3color
+       bne $s7,3,quad_1x3
+jr $ra
 
 
 row_2x3:
     beq $t6,$s5,linha_s5x2x3
     beq $t6,$s6,linha_s6x2x3
     beq $t6,$s4,linha_s4x2x3
+    beq $t6,$s7,linha_s7x2x3
         bne $t6,$s5,p_2x3
         p_2x3:bne $t6,$s6,p_2x3x3
-        p_2x3x3: bne $t6,$s4,quad_2x3
+        p_2x3x3: bne $t6,$s4,p_2x3x3x3
+        p_2x3x3x3: bne $t6,$s7,quad_2x3
 jr $ra
 linha_s5x2x3:
        beq $s5,3,quad_2x3color
@@ -3024,15 +3718,21 @@ linha_s4x2x3:
        beq $s4,3,quad_2x3color
        bne $s4,3,quad_2x3
 jr $ra
+linha_s7x2x3:
+       beq $s7,3,quad_2x3color
+       bne $s7,3,quad_2x3
+jr $ra
 
 
 row_3x3:
     beq $t6,$s5,linha_s5x3x3
     beq $t6,$s6,linha_s6x3x3
     beq $t6,$s4,linha_s4x3x3
+    beq $t6,$s7,linha_s7x3x3
         bne $t6,$s5,p_3x3
         p_3x3:bne $t6,$s6,p_3x3x3
-        p_3x3x3: bne $t6,$s4,quad_3x3
+        p_3x3x3: bne $t6,$s4,p_3x3x3x3
+        p_3x3x3x3: bne $t6,$s7,quad_3x3
 jr $ra
 linha_s5x3x3:
        beq $s5,3,quad_3x3color
@@ -3046,15 +3746,21 @@ linha_s4x3x3:
        beq $s4,3,quad_3x3color
        bne $s4,3,quad_3x3
 jr $ra
+linha_s7x3x3:
+       beq $s7,3,quad_3x3color
+       bne $s7,3,quad_3x3
+jr $ra
 
 
 row_4x3:
     beq $t6,$s5,linha_s5x4x3
     beq $t6,$s6,linha_s6x4x3
     beq $t6,$s4,linha_s4x4x3
+    beq $t6,$s7,linha_s7x4x3
         bne $t6,$s5,p_4x3
         p_4x3:bne $t6,$s6,p_4x3x3
-        p_4x3x3: bne $t6,$s4,quad_4x3
+        p_4x3x3: bne $t6,$s4,p_4x3x3x3
+        p_4x3x3x3: bne $t6,$s7,quad_4x3
 jr $ra
 linha_s5x4x3:
        beq $s5,3,quad_4x3color
@@ -3068,15 +3774,21 @@ linha_s4x4x3:
        beq $s4,3,quad_4x3color
        bne $s4,3,quad_4x3
 jr $ra
+linha_s7x4x3:
+       beq $s7,3,quad_4x3color
+       bne $s7,3,quad_4x3
+jr $ra
 
 
 row_5x3:
     beq $t6,$s5,linha_s5x5x3
     beq $t6,$s6,linha_s6x5x3
     beq $t6,$s4,linha_s4x5x3
+    beq $t6,$s7,linha_s7x5x3
         bne $t6,$s5,p_5x3
         p_5x3:bne $t6,$s6,p_5x3x3
-        p_5x3x3: bne $t6,$s4,quad_5x3
+        p_5x3x3: bne $t6,$s4,p_5x3x3x3
+        p_5x3x3x3: bne $t6,$s7,quad_5x3
 jr $ra
 linha_s5x5x3:
        beq $s5,3,quad_5x3color
@@ -3090,15 +3802,21 @@ linha_s4x5x3:
        beq $s4,3,quad_5x3color
        bne $s4,3,quad_5x3
 jr $ra
+linha_s7x5x3:
+       beq $s7,3,quad_5x3color
+       bne $s7,3,quad_5x3
+jr $ra
 
 
 row_6x3:
     beq $t6,$s5,linha_s5x6x3
     beq $t6,$s6,linha_s6x6x3
     beq $t6,$s4,linha_s4x6x3
+    beq $t6,$s7,linha_s7x6x3
         bne $t6,$s5,p_6x3
         p_6x3:bne $t6,$s6,p_6x3x3
-        p_6x3x3: bne $t6,$s4,quad_6x3
+        p_6x3x3: bne $t6,$s4,p_6x3x3x3
+        p_6x3x3x3: bne $t6,$s7,quad_6x3
 jr $ra
 linha_s5x6x3:
        beq $s5,3,quad_6x3color
@@ -3112,15 +3830,21 @@ linha_s4x6x3:
        beq $s4,3,quad_6x3color
        bne $s4,3,quad_6x3
 jr $ra
+linha_s7x6x3:
+       beq $s7,3,quad_6x3color
+       bne $s7,3,quad_6x3
+jr $ra
 
 
 row_7x3:
     beq $t6,$s5,linha_s5x7x3
     beq $t6,$s6,linha_s6x7x3
     beq $t6,$s4,linha_s4x7x3
+    beq $t6,$s7,linha_s7x7x3
         bne $t6,$s5,p_7x3
         p_7x3:bne $t6,$s6,p_7x3x3
-        p_7x3x3: bne $t6,$s4,quad_7x3
+        p_7x3x3: bne $t6,$s4,p_7x3x3x3
+        p_7x3x3x3: bne $t6,$s7,quad_7x3
 jr $ra
 linha_s5x7x3:
        beq $s5,3,quad_7x3color
@@ -3134,15 +3858,21 @@ linha_s4x7x3:
        beq $s4,3,quad_7x3color
        bne $s4,3,quad_7x3
 jr $ra
+linha_s7x7x3:
+       beq $s7,3,quad_7x3color
+       bne $s7,3,quad_7x3
+jr $ra
 
 
 row_8x3:
     beq $t6,$s5,linha_s5x8x3
     beq $t6,$s6,linha_s6x8x3
     beq $t6,$s4,linha_s4x8x3
+    beq $t6,$s7,linha_s7x8x3
         bne $t6,$s5,p_8x3
         p_8x3:bne $t6,$s6,p_8x3x3
-        p_8x3x3: bne $t6,$s4,quad_8x3
+        p_8x3x3: bne $t6,$s4,p_8x3x3x3
+        p_8x3x3x3: bne $t6,$s7,quad_8x3
 jr $ra
 linha_s5x8x3:
        beq $s5,3,quad_8x3color
@@ -3156,15 +3886,21 @@ linha_s4x8x3:
        beq $s4,3,quad_8x3color
        bne $s4,3,quad_8x3
 jr $ra
+linha_s7x8x3:
+       beq $s7,3,quad_8x3color
+       bne $s7,3,quad_8x3
+jr $ra
 
 
 row_9x3:
     beq $t6,$s5,linha_s5x9x3
     beq $t6,$s6,linha_s6x9x3
     beq $t6,$s4,linha_s4x9x3
+    beq $t6,$s7,linha_s7x9x3
         bne $t6,$s5,p_9x3
         p_9x3:bne $t6,$s6,p_9x3x3
-        p_9x3x3: bne $t6,$s4,quad_9x3
+        p_9x3x3: bne $t6,$s4,p_9x3x3x3
+        p_9x3x3x3: bne $t6,$s7,quad_9x3
 jr $ra
 linha_s5x9x3:
        beq $s5,3,quad_9x3color
@@ -3178,6 +3914,10 @@ linha_s4x9x3:
        beq $s4,3,quad_9x3color
        bne $s4,3,quad_9x3
 jr $ra
+linha_s7x9x3:
+       beq $s7,3,quad_9x3color
+       bne $s7,3,quad_9x3
+jr $ra
 
 
 # ==================== linha 4================== 
@@ -3185,9 +3925,11 @@ row_0x4:
     beq $t6,$s5,linha_s5x0x4
     beq $t6,$s6,linha_s6x0x4
     beq $t6,$s4,linha_s4x0x4
+    beq $t6,$s7,linha_s7x0x4
         bne $t6,$s5,p_0x4
         p_0x4:bne $t6,$s6,p_0x4x4
-        p_0x4x4: bne $t6,$s4,quad_0x4
+        p_0x4x4: bne $t6,$s4,p_0x4x4x4
+        p_0x4x4x4: bne $t6,$s7,quad_0x4
 jr $ra
 linha_s5x0x4:
        beq $s5,4,quad_0x4color
@@ -3201,15 +3943,21 @@ linha_s4x0x4:
        beq $s4,4,quad_0x4color
        bne $s4,4,quad_0x4
 jr $ra
+linha_s7x0x4:
+       beq $s7,4,quad_0x4color
+       bne $s7,4,quad_0x4
+jr $ra
 
 
 row_1x4:
     beq $t6,$s5,linha_s5x1x4
     beq $t6,$s6,linha_s6x1x4
     beq $t6,$s4,linha_s4x1x4
+    beq $t6,$s7,linha_s7x1x4
         bne $t6,$s5,p_1x4
         p_1x4:bne $t6,$s6,p_1x4x4
-        p_1x4x4: bne $t6,$s4,quad_1x4
+        p_1x4x4: bne $t6,$s4,p_1x4x4x4
+        p_1x4x4x4: bne $t6,$s7,quad_1x4
 jr $ra
 linha_s5x1x4:
        beq $s5,4,quad_1x4color
@@ -3223,15 +3971,21 @@ linha_s4x1x4:
        beq $s4,4,quad_1x4color
        bne $s4,4,quad_1x4
 jr $ra
+linha_s7x1x4:
+       beq $s7,4,quad_1x4color
+       bne $s7,4,quad_1x4
+jr $ra
 
 
 row_2x4:
     beq $t6,$s5,linha_s5x2x4
     beq $t6,$s6,linha_s6x2x4
     beq $t6,$s4,linha_s4x2x4
+    beq $t6,$s7,linha_s7x2x4
         bne $t6,$s5,p_2x4
         p_2x4:bne $t6,$s6,p_2x4x4
-        p_2x4x4: bne $t6,$s4,quad_2x4
+        p_2x4x4: bne $t6,$s4,p_2x4x4x4
+        p_2x4x4x4: bne $t6,$s7,quad_2x4
 jr $ra
 linha_s5x2x4:
        beq $s5,4,quad_2x4color
@@ -3245,15 +3999,21 @@ linha_s4x2x4:
        beq $s4,4,quad_2x4color
        bne $s4,4,quad_2x4
 jr $ra
+linha_s7x2x4:
+       beq $s7,4,quad_2x4color
+       bne $s7,4,quad_2x4
+jr $ra
 
 
 row_3x4:
     beq $t6,$s5,linha_s5x3x4
     beq $t6,$s6,linha_s6x3x4
     beq $t6,$s4,linha_s4x3x4
+    beq $t6,$s7,linha_s7x3x4
         bne $t6,$s5,p_3x4
         p_3x4:bne $t6,$s6,p_3x4x4
-        p_3x4x4: bne $t6,$s4,quad_3x4
+        p_3x4x4: bne $t6,$s4,p_3x4x4x4
+        p_3x4x4x4: bne $t6,$s7,quad_3x4
 jr $ra
 linha_s5x3x4:
        beq $s5,4,quad_3x4color
@@ -3267,15 +4027,21 @@ linha_s4x3x4:
        beq $s4,4,quad_3x4color
        bne $s4,4,quad_3x4
 jr $ra
+linha_s7x3x4:
+       beq $s7,4,quad_3x4color
+       bne $s7,4,quad_3x4
+jr $ra
 
 
 row_4x4:
     beq $t6,$s5,linha_s5x4x4
     beq $t6,$s6,linha_s6x4x4
     beq $t6,$s4,linha_s4x4x4
+    beq $t6,$s7,linha_s7x4x4
         bne $t6,$s5,p_4x4
         p_4x4:bne $t6,$s6,p_4x4x4
-        p_4x4x4: bne $t6,$s4,quad_4x4
+        p_4x4x4: bne $t6,$s4,p_4x4x4x4
+        p_4x4x4x4: bne $t6,$s7,quad_4x4
 jr $ra
 linha_s5x4x4:
        beq $s5,4,quad_4x4color
@@ -3289,15 +4055,21 @@ linha_s4x4x4:
        beq $s4,4,quad_4x4color
        bne $s4,4,quad_4x4
 jr $ra
+linha_s7x4x4:
+       beq $s7,4,quad_4x4color
+       bne $s7,4,quad_4x4
+jr $ra
 
 
 row_5x4:
     beq $t6,$s5,linha_s5x5x4
     beq $t6,$s6,linha_s6x5x4
     beq $t6,$s4,linha_s4x5x4
+    beq $t6,$s7,linha_s7x5x4
         bne $t6,$s5,p_5x4
         p_5x4:bne $t6,$s6,p_5x4x4
-        p_5x4x4: bne $t6,$s4,quad_5x4
+        p_5x4x4: bne $t6,$s4,p_5x4x4x4
+        p_5x4x4x4: bne $t6,$s7,quad_5x4
 jr $ra
 linha_s5x5x4:
        beq $s5,4,quad_5x4color
@@ -3311,15 +4083,21 @@ linha_s4x5x4:
        beq $s4,4,quad_5x4color
        bne $s4,4,quad_5x4
 jr $ra
+linha_s7x5x4:
+       beq $s7,4,quad_5x4color
+       bne $s7,4,quad_5x4
+jr $ra
 
 
 row_6x4:
     beq $t6,$s5,linha_s5x6x4
     beq $t6,$s6,linha_s6x6x4
     beq $t6,$s4,linha_s4x6x4
+    beq $t6,$s7,linha_s7x6x4
         bne $t6,$s5,p_6x4
         p_6x4:bne $t6,$s6,p_6x4x4
-        p_6x4x4: bne $t6,$s4,quad_6x4
+        p_6x4x4: bne $t6,$s4,p_6x4x4x4
+        p_6x4x4x4: bne $t6,$s7,quad_6x4
 jr $ra
 linha_s5x6x4:
        beq $s5,4,quad_6x4color
@@ -3333,15 +4111,21 @@ linha_s4x6x4:
        beq $s4,4,quad_6x4color
        bne $s4,4,quad_6x4
 jr $ra
+linha_s7x6x4:
+       beq $s7,4,quad_6x4color
+       bne $s7,4,quad_6x4
+jr $ra
 
 
 row_7x4:
     beq $t6,$s5,linha_s5x7x4
     beq $t6,$s6,linha_s6x7x4
     beq $t6,$s4,linha_s4x7x4
+    beq $t6,$s7,linha_s7x7x4
         bne $t6,$s5,p_7x4
         p_7x4:bne $t6,$s6,p_7x4x4
-        p_7x4x4: bne $t6,$s4,quad_7x4
+        p_7x4x4: bne $t6,$s4,p_7x4x4x4
+        p_7x4x4x4: bne $t6,$s7,quad_7x4
 jr $ra
 linha_s5x7x4:
        beq $s5,4,quad_7x4color
@@ -3355,15 +4139,21 @@ linha_s4x7x4:
        beq $s4,4,quad_7x4color
        bne $s4,4,quad_7x4
 jr $ra
+linha_s7x7x4:
+       beq $s7,4,quad_7x4color
+       bne $s7,4,quad_7x4
+jr $ra
 
 
 row_8x4:
     beq $t6,$s5,linha_s5x8x4
     beq $t6,$s6,linha_s6x8x4
     beq $t6,$s4,linha_s4x8x4
+    beq $t6,$s7,linha_s7x8x4
         bne $t6,$s5,p_8x4
         p_8x4:bne $t6,$s6,p_8x4x4
-        p_8x4x4: bne $t6,$s4,quad_8x4
+        p_8x4x4: bne $t6,$s4,p_8x4x4x4
+        p_8x4x4x4: bne $t6,$s7,quad_8x4
 jr $ra
 linha_s5x8x4:
        beq $s5,4,quad_8x4color
@@ -3377,15 +4167,21 @@ linha_s4x8x4:
        beq $s4,4,quad_8x4color
        bne $s4,4,quad_8x4
 jr $ra
+linha_s7x8x4:
+       beq $s7,4,quad_8x4color
+       bne $s7,4,quad_8x4
+jr $ra
 
 
 row_9x4:
     beq $t6,$s5,linha_s5x9x4
     beq $t6,$s6,linha_s6x9x4
     beq $t6,$s4,linha_s4x9x4
+    beq $t6,$s7,linha_s7x9x4
         bne $t6,$s5,p_9x4
         p_9x4:bne $t6,$s6,p_9x4x4
-        p_9x4x4: bne $t6,$s4,quad_9x4
+        p_9x4x4: bne $t6,$s4,p_9x4x4x4
+        p_9x4x4x4: bne $t6,$s7,quad_9x4
 jr $ra
 linha_s5x9x4:
        beq $s5,4,quad_9x4color
@@ -3399,6 +4195,10 @@ linha_s4x9x4:
        beq $s4,4,quad_9x4color
        bne $s4,4,quad_9x4
 jr $ra
+linha_s7x9x4:
+       beq $s7,4,quad_9x4color
+       bne $s7,4,quad_9x4
+jr $ra
 
 
 # ==================== linha 5================== 
@@ -3406,9 +4206,11 @@ row_0x5:
     beq $t6,$s5,linha_s5x0x5
     beq $t6,$s6,linha_s6x0x5
     beq $t6,$s4,linha_s4x0x5
+    beq $t6,$s7,linha_s7x0x5
         bne $t6,$s5,p_0x5
         p_0x5:bne $t6,$s6,p_0x5x5
-        p_0x5x5: bne $t6,$s4,quad_0x5
+        p_0x5x5: bne $t6,$s4,p_0x5x5x5
+        p_0x5x5x5: bne $t6,$s7,quad_0x5
 jr $ra
 linha_s5x0x5:
        beq $s5,5,quad_0x5color
@@ -3422,15 +4224,21 @@ linha_s4x0x5:
        beq $s4,5,quad_0x5color
        bne $s4,5,quad_0x5
 jr $ra
+linha_s7x0x5:
+       beq $s7,5,quad_0x5color
+       bne $s7,5,quad_0x5
+jr $ra
 
 
 row_1x5:
     beq $t6,$s5,linha_s5x1x5
     beq $t6,$s6,linha_s6x1x5
     beq $t6,$s4,linha_s4x1x5
+    beq $t6,$s7,linha_s7x1x5
         bne $t6,$s5,p_1x5
         p_1x5:bne $t6,$s6,p_1x5x5
-        p_1x5x5: bne $t6,$s4,quad_1x5
+        p_1x5x5: bne $t6,$s4,p_1x5x5x5
+        p_1x5x5x5: bne $t6,$s7,quad_1x5
 jr $ra
 linha_s5x1x5:
        beq $s5,5,quad_1x5color
@@ -3444,15 +4252,21 @@ linha_s4x1x5:
        beq $s4,5,quad_1x5color
        bne $s4,5,quad_1x5
 jr $ra
+linha_s7x1x5:
+       beq $s7,5,quad_1x5color
+       bne $s7,5,quad_1x5
+jr $ra
 
 
 row_2x5:
     beq $t6,$s5,linha_s5x2x5
     beq $t6,$s6,linha_s6x2x5
     beq $t6,$s4,linha_s4x2x5
+    beq $t6,$s7,linha_s7x2x5
         bne $t6,$s5,p_2x5
         p_2x5:bne $t6,$s6,p_2x5x5
-        p_2x5x5: bne $t6,$s4,quad_2x5
+        p_2x5x5: bne $t6,$s4,p_2x5x5x5
+        p_2x5x5x5: bne $t6,$s7,quad_2x5
 jr $ra
 linha_s5x2x5:
        beq $s5,5,quad_2x5color
@@ -3466,15 +4280,21 @@ linha_s4x2x5:
        beq $s4,5,quad_2x5color
        bne $s4,5,quad_2x5
 jr $ra
+linha_s7x2x5:
+       beq $s7,5,quad_2x5color
+       bne $s7,5,quad_2x5
+jr $ra
 
 
 row_3x5:
     beq $t6,$s5,linha_s5x3x5
     beq $t6,$s6,linha_s6x3x5
     beq $t6,$s4,linha_s4x3x5
+    beq $t6,$s7,linha_s7x3x5
         bne $t6,$s5,p_3x5
         p_3x5:bne $t6,$s6,p_3x5x5
-        p_3x5x5: bne $t6,$s4,quad_3x5
+        p_3x5x5: bne $t6,$s4,p_3x5x5x5
+        p_3x5x5x5: bne $t6,$s7,quad_3x5
 jr $ra
 linha_s5x3x5:
        beq $s5,5,quad_3x5color
@@ -3488,15 +4308,21 @@ linha_s4x3x5:
        beq $s4,5,quad_3x5color
        bne $s4,5,quad_3x5
 jr $ra
+linha_s7x3x5:
+       beq $s7,5,quad_3x5color
+       bne $s7,5,quad_3x5
+jr $ra
 
 
 row_4x5:
     beq $t6,$s5,linha_s5x4x5
     beq $t6,$s6,linha_s6x4x5
     beq $t6,$s4,linha_s4x4x5
+    beq $t6,$s7,linha_s7x4x5
         bne $t6,$s5,p_4x5
         p_4x5:bne $t6,$s6,p_4x5x5
-        p_4x5x5: bne $t6,$s4,quad_4x5
+        p_4x5x5: bne $t6,$s4,p_4x5x5x5
+        p_4x5x5x5: bne $t6,$s7,quad_4x5
 jr $ra
 linha_s5x4x5:
        beq $s5,5,quad_4x5color
@@ -3510,15 +4336,21 @@ linha_s4x4x5:
        beq $s4,5,quad_4x5color
        bne $s4,5,quad_4x5
 jr $ra
+linha_s7x4x5:
+       beq $s7,5,quad_4x5color
+       bne $s7,5,quad_4x5
+jr $ra
 
 
 row_5x5:
     beq $t6,$s5,linha_s5x5x5
     beq $t6,$s6,linha_s6x5x5
     beq $t6,$s4,linha_s4x5x5
+    beq $t6,$s7,linha_s7x5x5
         bne $t6,$s5,p_5x5
         p_5x5:bne $t6,$s6,p_5x5x5
-        p_5x5x5: bne $t6,$s4,quad_5x5
+        p_5x5x5: bne $t6,$s4,p_5x5x5x5
+        p_5x5x5x5: bne $t6,$s7,quad_5x5
 jr $ra
 linha_s5x5x5:
        beq $s5,5,quad_5x5color
@@ -3532,15 +4364,21 @@ linha_s4x5x5:
        beq $s4,5,quad_5x5color
        bne $s4,5,quad_5x5
 jr $ra
+linha_s7x5x5:
+       beq $s7,5,quad_5x5color
+       bne $s7,5,quad_5x5
+jr $ra
 
 
 row_6x5:
     beq $t6,$s5,linha_s5x6x5
     beq $t6,$s6,linha_s6x6x5
     beq $t6,$s4,linha_s4x6x5
+    beq $t6,$s7,linha_s7x6x5
         bne $t6,$s5,p_6x5
         p_6x5:bne $t6,$s6,p_6x5x5
-        p_6x5x5: bne $t6,$s4,quad_6x5
+        p_6x5x5: bne $t6,$s4,p_6x5x5x5
+        p_6x5x5x5: bne $t6,$s7,quad_6x5
 jr $ra
 linha_s5x6x5:
        beq $s5,5,quad_6x5color
@@ -3554,15 +4392,21 @@ linha_s4x6x5:
        beq $s4,5,quad_6x5color
        bne $s4,5,quad_6x5
 jr $ra
+linha_s7x6x5:
+       beq $s7,5,quad_6x5color
+       bne $s7,5,quad_6x5
+jr $ra
 
 
 row_7x5:
     beq $t6,$s5,linha_s5x7x5
     beq $t6,$s6,linha_s6x7x5
     beq $t6,$s4,linha_s4x7x5
+    beq $t6,$s7,linha_s7x7x5
         bne $t6,$s5,p_7x5
         p_7x5:bne $t6,$s6,p_7x5x5
-        p_7x5x5: bne $t6,$s4,quad_7x5
+        p_7x5x5: bne $t6,$s4,p_7x5x5x5
+        p_7x5x5x5: bne $t6,$s7,quad_7x5
 jr $ra
 linha_s5x7x5:
        beq $s5,5,quad_7x5color
@@ -3576,15 +4420,21 @@ linha_s4x7x5:
        beq $s4,5,quad_7x5color
        bne $s4,5,quad_7x5
 jr $ra
+linha_s7x7x5:
+       beq $s7,5,quad_7x5color
+       bne $s7,5,quad_7x5
+jr $ra
 
 
 row_8x5:
     beq $t6,$s5,linha_s5x8x5
     beq $t6,$s6,linha_s6x8x5
     beq $t6,$s4,linha_s4x8x5
+    beq $t6,$s7,linha_s7x8x5
         bne $t6,$s5,p_8x5
         p_8x5:bne $t6,$s6,p_8x5x5
-        p_8x5x5: bne $t6,$s4,quad_8x5
+        p_8x5x5: bne $t6,$s4,p_8x5x5x5
+        p_8x5x5x5: bne $t6,$s7,quad_8x5
 jr $ra
 linha_s5x8x5:
        beq $s5,5,quad_8x5color
@@ -3598,15 +4448,21 @@ linha_s4x8x5:
        beq $s4,5,quad_8x5color
        bne $s4,5,quad_8x5
 jr $ra
+linha_s7x8x5:
+       beq $s7,5,quad_8x5color
+       bne $s7,5,quad_8x5
+jr $ra
 
 
 row_9x5:
     beq $t6,$s5,linha_s5x9x5
     beq $t6,$s6,linha_s6x9x5
     beq $t6,$s4,linha_s4x9x5
+    beq $t6,$s7,linha_s7x9x5
         bne $t6,$s5,p_9x5
         p_9x5:bne $t6,$s6,p_9x5x5
-        p_9x5x5: bne $t6,$s4,quad_9x5
+        p_9x5x5: bne $t6,$s4,p_9x5x5x5
+        p_9x5x5x5: bne $t6,$s7,quad_9x5
 jr $ra
 linha_s5x9x5:
        beq $s5,5,quad_9x5color
@@ -3620,6 +4476,10 @@ linha_s4x9x5:
        beq $s4,5,quad_9x5color
        bne $s4,5,quad_9x5
 jr $ra
+linha_s7x9x5:
+       beq $s7,5,quad_9x5color
+       bne $s7,5,quad_9x5
+jr $ra
 
 
 # ==================== linha 6================== 
@@ -3627,9 +4487,11 @@ row_0x6:
     beq $t6,$s5,linha_s5x0x6
     beq $t6,$s6,linha_s6x0x6
     beq $t6,$s4,linha_s4x0x6
+    beq $t6,$s7,linha_s7x0x6
         bne $t6,$s5,p_0x6
         p_0x6:bne $t6,$s6,p_0x6x6
-        p_0x6x6: bne $t6,$s4,quad_0x6
+        p_0x6x6: bne $t6,$s4,p_0x6x6x6
+        p_0x6x6x6: bne $t6,$s7,quad_0x6
 jr $ra
 linha_s5x0x6:
        beq $s5,6,quad_0x6color
@@ -3643,15 +4505,21 @@ linha_s4x0x6:
        beq $s4,6,quad_0x6color
        bne $s4,6,quad_0x6
 jr $ra
+linha_s7x0x6:
+       beq $s7,6,quad_0x6color
+       bne $s7,6,quad_0x6
+jr $ra
 
 
 row_1x6:
     beq $t6,$s5,linha_s5x1x6
     beq $t6,$s6,linha_s6x1x6
     beq $t6,$s4,linha_s4x1x6
+    beq $t6,$s7,linha_s7x1x6
         bne $t6,$s5,p_1x6
         p_1x6:bne $t6,$s6,p_1x6x6
-        p_1x6x6: bne $t6,$s4,quad_1x6
+        p_1x6x6: bne $t6,$s4,p_1x6x6x6
+        p_1x6x6x6: bne $t6,$s7,quad_1x6
 jr $ra
 linha_s5x1x6:
        beq $s5,6,quad_1x6color
@@ -3665,15 +4533,21 @@ linha_s4x1x6:
        beq $s4,6,quad_1x6color
        bne $s4,6,quad_1x6
 jr $ra
+linha_s7x1x6:
+       beq $s7,6,quad_1x6color
+       bne $s7,6,quad_1x6
+jr $ra
 
 
 row_2x6:
     beq $t6,$s5,linha_s5x2x6
     beq $t6,$s6,linha_s6x2x6
     beq $t6,$s4,linha_s4x2x6
+    beq $t6,$s7,linha_s7x2x6
         bne $t6,$s5,p_2x6
         p_2x6:bne $t6,$s6,p_2x6x6
-        p_2x6x6: bne $t6,$s4,quad_2x6
+        p_2x6x6: bne $t6,$s4,p_2x6x6x6
+        p_2x6x6x6: bne $t6,$s7,quad_2x6
 jr $ra
 linha_s5x2x6:
        beq $s5,6,quad_2x6color
@@ -3687,15 +4561,21 @@ linha_s4x2x6:
        beq $s4,6,quad_2x6color
        bne $s4,6,quad_2x6
 jr $ra
+linha_s7x2x6:
+       beq $s7,6,quad_2x6color
+       bne $s7,6,quad_2x6
+jr $ra
 
 
 row_3x6:
     beq $t6,$s5,linha_s5x3x6
     beq $t6,$s6,linha_s6x3x6
     beq $t6,$s4,linha_s4x3x6
+    beq $t6,$s7,linha_s7x3x6
         bne $t6,$s5,p_3x6
         p_3x6:bne $t6,$s6,p_3x6x6
-        p_3x6x6: bne $t6,$s4,quad_3x6
+        p_3x6x6: bne $t6,$s4,p_3x6x6x6
+        p_3x6x6x6: bne $t6,$s7,quad_3x6
 jr $ra
 linha_s5x3x6:
        beq $s5,6,quad_3x6color
@@ -3709,15 +4589,21 @@ linha_s4x3x6:
        beq $s4,6,quad_3x6color
        bne $s4,6,quad_3x6
 jr $ra
+linha_s7x3x6:
+       beq $s7,6,quad_3x6color
+       bne $s7,6,quad_3x6
+jr $ra
 
 
 row_4x6:
     beq $t6,$s5,linha_s5x4x6
     beq $t6,$s6,linha_s6x4x6
     beq $t6,$s4,linha_s4x4x6
+    beq $t6,$s7,linha_s7x4x6
         bne $t6,$s5,p_4x6
         p_4x6:bne $t6,$s6,p_4x6x6
-        p_4x6x6: bne $t6,$s4,quad_4x6
+        p_4x6x6: bne $t6,$s4,p_4x6x6x6
+        p_4x6x6x6: bne $t6,$s7,quad_4x6
 jr $ra
 linha_s5x4x6:
        beq $s5,6,quad_4x6color
@@ -3731,15 +4617,21 @@ linha_s4x4x6:
        beq $s4,6,quad_4x6color
        bne $s4,6,quad_4x6
 jr $ra
+linha_s7x4x6:
+       beq $s7,6,quad_4x6color
+       bne $s7,6,quad_4x6
+jr $ra
 
 
 row_5x6:
     beq $t6,$s5,linha_s5x5x6
     beq $t6,$s6,linha_s6x5x6
     beq $t6,$s4,linha_s4x5x6
+    beq $t6,$s7,linha_s7x5x6
         bne $t6,$s5,p_5x6
         p_5x6:bne $t6,$s6,p_5x6x6
-        p_5x6x6: bne $t6,$s4,quad_5x6
+        p_5x6x6: bne $t6,$s4,p_5x6x6x6
+        p_5x6x6x6: bne $t6,$s7,quad_5x6
 jr $ra
 linha_s5x5x6:
        beq $s5,6,quad_5x6color
@@ -3753,15 +4645,21 @@ linha_s4x5x6:
        beq $s4,6,quad_5x6color
        bne $s4,6,quad_5x6
 jr $ra
+linha_s7x5x6:
+       beq $s7,6,quad_5x6color
+       bne $s7,6,quad_5x6
+jr $ra
 
 
 row_6x6:
     beq $t6,$s5,linha_s5x6x6
     beq $t6,$s6,linha_s6x6x6
     beq $t6,$s4,linha_s4x6x6
+    beq $t6,$s7,linha_s7x6x6
         bne $t6,$s5,p_6x6
         p_6x6:bne $t6,$s6,p_6x6x6
-        p_6x6x6: bne $t6,$s4,quad_6x6
+        p_6x6x6: bne $t6,$s4,p_6x6x6x6
+        p_6x6x6x6: bne $t6,$s7,quad_6x6
 jr $ra
 linha_s5x6x6:
        beq $s5,6,quad_6x6color
@@ -3775,15 +4673,21 @@ linha_s4x6x6:
        beq $s4,6,quad_6x6color
        bne $s4,6,quad_6x6
 jr $ra
+linha_s7x6x6:
+       beq $s7,6,quad_6x6color
+       bne $s7,6,quad_6x6
+jr $ra
 
 
 row_7x6:
     beq $t6,$s5,linha_s5x7x6
     beq $t6,$s6,linha_s6x7x6
     beq $t6,$s4,linha_s4x7x6
+    beq $t6,$s7,linha_s7x7x6
         bne $t6,$s5,p_7x6
         p_7x6:bne $t6,$s6,p_7x6x6
-        p_7x6x6: bne $t6,$s4,quad_7x6
+        p_7x6x6: bne $t6,$s4,p_7x6x6x6
+        p_7x6x6x6: bne $t6,$s7,quad_7x6
 jr $ra
 linha_s5x7x6:
        beq $s5,6,quad_7x6color
@@ -3797,15 +4701,21 @@ linha_s4x7x6:
        beq $s4,6,quad_7x6color
        bne $s4,6,quad_7x6
 jr $ra
+linha_s7x7x6:
+       beq $s7,6,quad_7x6color
+       bne $s7,6,quad_7x6
+jr $ra
 
 
 row_8x6:
     beq $t6,$s5,linha_s5x8x6
     beq $t6,$s6,linha_s6x8x6
     beq $t6,$s4,linha_s4x8x6
+    beq $t6,$s7,linha_s7x8x6
         bne $t6,$s5,p_8x6
         p_8x6:bne $t6,$s6,p_8x6x6
-        p_8x6x6: bne $t6,$s4,quad_8x6
+        p_8x6x6: bne $t6,$s4,p_8x6x6x6
+        p_8x6x6x6: bne $t6,$s7,quad_8x6
 jr $ra
 linha_s5x8x6:
        beq $s5,6,quad_8x6color
@@ -3819,15 +4729,21 @@ linha_s4x8x6:
        beq $s4,6,quad_8x6color
        bne $s4,6,quad_8x6
 jr $ra
+linha_s7x8x6:
+       beq $s7,6,quad_8x6color
+       bne $s7,6,quad_8x6
+jr $ra
 
 
 row_9x6:
     beq $t6,$s5,linha_s5x9x6
     beq $t6,$s6,linha_s6x9x6
     beq $t6,$s4,linha_s4x9x6
+    beq $t6,$s7,linha_s7x9x6
         bne $t6,$s5,p_9x6
         p_9x6:bne $t6,$s6,p_9x6x6
-        p_9x6x6: bne $t6,$s4,quad_9x6
+        p_9x6x6: bne $t6,$s4,p_9x6x6x6
+        p_9x6x6x6: bne $t6,$s7,quad_9x6
 jr $ra
 linha_s5x9x6:
        beq $s5,6,quad_9x6color
@@ -3841,6 +4757,10 @@ linha_s4x9x6:
        beq $s4,6,quad_9x6color
        bne $s4,6,quad_9x6
 jr $ra
+linha_s7x9x6:
+       beq $s7,6,quad_9x6color
+       bne $s7,6,quad_9x6
+jr $ra
 
 
 # ==================== linha 7================== 
@@ -3848,9 +4768,11 @@ row_0x7:
     beq $t6,$s5,linha_s5x0x7
     beq $t6,$s6,linha_s6x0x7
     beq $t6,$s4,linha_s4x0x7
+    beq $t6,$s7,linha_s7x0x7
         bne $t6,$s5,p_0x7
         p_0x7:bne $t6,$s6,p_0x7x7
-        p_0x7x7: bne $t6,$s4,quad_0x7
+        p_0x7x7: bne $t6,$s4,p_0x7x7x7
+        p_0x7x7x7: bne $t6,$s7,quad_0x7
 jr $ra
 linha_s5x0x7:
        beq $s5,7,quad_0x7color
@@ -3864,15 +4786,21 @@ linha_s4x0x7:
        beq $s4,7,quad_0x7color
        bne $s4,7,quad_0x7
 jr $ra
+linha_s7x0x7:
+       beq $s7,7,quad_0x7color
+       bne $s7,7,quad_0x7
+jr $ra
 
 
 row_1x7:
     beq $t6,$s5,linha_s5x1x7
     beq $t6,$s6,linha_s6x1x7
     beq $t6,$s4,linha_s4x1x7
+    beq $t6,$s7,linha_s7x1x7
         bne $t6,$s5,p_1x7
         p_1x7:bne $t6,$s6,p_1x7x7
-        p_1x7x7: bne $t6,$s4,quad_1x7
+        p_1x7x7: bne $t6,$s4,p_1x7x7x7
+        p_1x7x7x7: bne $t6,$s7,quad_1x7
 jr $ra
 linha_s5x1x7:
        beq $s5,7,quad_1x7color
@@ -3886,15 +4814,21 @@ linha_s4x1x7:
        beq $s4,7,quad_1x7color
        bne $s4,7,quad_1x7
 jr $ra
+linha_s7x1x7:
+       beq $s7,7,quad_1x7color
+       bne $s7,7,quad_1x7
+jr $ra
 
 
 row_2x7:
     beq $t6,$s5,linha_s5x2x7
     beq $t6,$s6,linha_s6x2x7
     beq $t6,$s4,linha_s4x2x7
+    beq $t6,$s7,linha_s7x2x7
         bne $t6,$s5,p_2x7
         p_2x7:bne $t6,$s6,p_2x7x7
-        p_2x7x7: bne $t6,$s4,quad_2x7
+        p_2x7x7: bne $t6,$s4,p_2x7x7x7
+        p_2x7x7x7: bne $t6,$s7,quad_2x7
 jr $ra
 linha_s5x2x7:
        beq $s5,7,quad_2x7color
@@ -3908,15 +4842,21 @@ linha_s4x2x7:
        beq $s4,7,quad_2x7color
        bne $s4,7,quad_2x7
 jr $ra
+linha_s7x2x7:
+       beq $s7,7,quad_2x7color
+       bne $s7,7,quad_2x7
+jr $ra
 
 
 row_3x7:
     beq $t6,$s5,linha_s5x3x7
     beq $t6,$s6,linha_s6x3x7
     beq $t6,$s4,linha_s4x3x7
+    beq $t6,$s7,linha_s7x3x7
         bne $t6,$s5,p_3x7
         p_3x7:bne $t6,$s6,p_3x7x7
-        p_3x7x7: bne $t6,$s4,quad_3x7
+        p_3x7x7: bne $t6,$s4,p_3x7x7x7
+        p_3x7x7x7: bne $t6,$s7,quad_3x7
 jr $ra
 linha_s5x3x7:
        beq $s5,7,quad_3x7color
@@ -3930,15 +4870,21 @@ linha_s4x3x7:
        beq $s4,7,quad_3x7color
        bne $s4,7,quad_3x7
 jr $ra
+linha_s7x3x7:
+       beq $s7,7,quad_3x7color
+       bne $s7,7,quad_3x7
+jr $ra
 
 
 row_4x7:
     beq $t6,$s5,linha_s5x4x7
     beq $t6,$s6,linha_s6x4x7
     beq $t6,$s4,linha_s4x4x7
+    beq $t6,$s7,linha_s7x4x7
         bne $t6,$s5,p_4x7
         p_4x7:bne $t6,$s6,p_4x7x7
-        p_4x7x7: bne $t6,$s4,quad_4x7
+        p_4x7x7: bne $t6,$s4,p_4x7x7x7
+        p_4x7x7x7: bne $t6,$s7,quad_4x7
 jr $ra
 linha_s5x4x7:
        beq $s5,7,quad_4x7color
@@ -3952,15 +4898,21 @@ linha_s4x4x7:
        beq $s4,7,quad_4x7color
        bne $s4,7,quad_4x7
 jr $ra
+linha_s7x4x7:
+       beq $s7,7,quad_4x7color
+       bne $s7,7,quad_4x7
+jr $ra
 
 
 row_5x7:
     beq $t6,$s5,linha_s5x5x7
     beq $t6,$s6,linha_s6x5x7
     beq $t6,$s4,linha_s4x5x7
+    beq $t6,$s7,linha_s7x5x7
         bne $t6,$s5,p_5x7
         p_5x7:bne $t6,$s6,p_5x7x7
-        p_5x7x7: bne $t6,$s4,quad_5x7
+        p_5x7x7: bne $t6,$s4,p_5x7x7x7
+        p_5x7x7x7: bne $t6,$s7,quad_5x7
 jr $ra
 linha_s5x5x7:
        beq $s5,7,quad_5x7color
@@ -3974,15 +4926,21 @@ linha_s4x5x7:
        beq $s4,7,quad_5x7color
        bne $s4,7,quad_5x7
 jr $ra
+linha_s7x5x7:
+       beq $s7,7,quad_5x7color
+       bne $s7,7,quad_5x7
+jr $ra
 
 
 row_6x7:
     beq $t6,$s5,linha_s5x6x7
     beq $t6,$s6,linha_s6x6x7
     beq $t6,$s4,linha_s4x6x7
+    beq $t6,$s7,linha_s7x6x7
         bne $t6,$s5,p_6x7
         p_6x7:bne $t6,$s6,p_6x7x7
-        p_6x7x7: bne $t6,$s4,quad_6x7
+        p_6x7x7: bne $t6,$s4,p_6x7x7x7
+        p_6x7x7x7: bne $t6,$s7,quad_6x7
 jr $ra
 linha_s5x6x7:
        beq $s5,7,quad_6x7color
@@ -3996,15 +4954,21 @@ linha_s4x6x7:
        beq $s4,7,quad_6x7color
        bne $s4,7,quad_6x7
 jr $ra
+linha_s7x6x7:
+       beq $s7,7,quad_6x7color
+       bne $s7,7,quad_6x7
+jr $ra
 
 
 row_7x7:
     beq $t6,$s5,linha_s5x7x7
     beq $t6,$s6,linha_s6x7x7
     beq $t6,$s4,linha_s4x7x7
+    beq $t6,$s7,linha_s7x7x7
         bne $t6,$s5,p_7x7
         p_7x7:bne $t6,$s6,p_7x7x7
-        p_7x7x7: bne $t6,$s4,quad_7x7
+        p_7x7x7: bne $t6,$s4,p_7x7x7x7
+        p_7x7x7x7: bne $t6,$s7,quad_7x7
 jr $ra
 linha_s5x7x7:
        beq $s5,7,quad_7x7color
@@ -4018,15 +4982,21 @@ linha_s4x7x7:
        beq $s4,7,quad_7x7color
        bne $s4,7,quad_7x7
 jr $ra
+linha_s7x7x7:
+       beq $s7,7,quad_7x7color
+       bne $s7,7,quad_7x7
+jr $ra
 
 
 row_8x7:
     beq $t6,$s5,linha_s5x8x7
     beq $t6,$s6,linha_s6x8x7
     beq $t6,$s4,linha_s4x8x7
+    beq $t6,$s7,linha_s7x8x7
         bne $t6,$s5,p_8x7
         p_8x7:bne $t6,$s6,p_8x7x7
-        p_8x7x7: bne $t6,$s4,quad_8x7
+        p_8x7x7: bne $t6,$s4,p_8x7x7x7
+        p_8x7x7x7: bne $t6,$s7,quad_8x7
 jr $ra
 linha_s5x8x7:
        beq $s5,7,quad_8x7color
@@ -4040,15 +5010,21 @@ linha_s4x8x7:
        beq $s4,7,quad_8x7color
        bne $s4,7,quad_8x7
 jr $ra
+linha_s7x8x7:
+       beq $s7,7,quad_8x7color
+       bne $s7,7,quad_8x7
+jr $ra
 
 
 row_9x7:
     beq $t6,$s5,linha_s5x9x7
     beq $t6,$s6,linha_s6x9x7
     beq $t6,$s4,linha_s4x9x7
+    beq $t6,$s7,linha_s7x9x7
         bne $t6,$s5,p_9x7
         p_9x7:bne $t6,$s6,p_9x7x7
-        p_9x7x7: bne $t6,$s4,quad_9x7
+        p_9x7x7: bne $t6,$s4,p_9x7x7x7
+        p_9x7x7x7: bne $t6,$s7,quad_9x7
 jr $ra
 linha_s5x9x7:
        beq $s5,7,quad_9x7color
@@ -4062,6 +5038,10 @@ linha_s4x9x7:
        beq $s4,7,quad_9x7color
        bne $s4,7,quad_9x7
 jr $ra
+linha_s7x9x7:
+       beq $s7,7,quad_9x7color
+       bne $s7,7,quad_9x7
+jr $ra
 
 
 # ==================== linha 8================== 
@@ -4069,9 +5049,11 @@ row_0x8:
     beq $t6,$s5,linha_s5x0x8
     beq $t6,$s6,linha_s6x0x8
     beq $t6,$s4,linha_s4x0x8
+    beq $t6,$s7,linha_s7x0x8
         bne $t6,$s5,p_0x8
         p_0x8:bne $t6,$s6,p_0x8x8
-        p_0x8x8: bne $t6,$s4,quad_0x8
+        p_0x8x8: bne $t6,$s4,p_0x8x8x8
+        p_0x8x8x8: bne $t6,$s7,quad_0x8
 jr $ra
 linha_s5x0x8:
        beq $s5,8,quad_0x8color
@@ -4085,15 +5067,21 @@ linha_s4x0x8:
        beq $s4,8,quad_0x8color
        bne $s4,8,quad_0x8
 jr $ra
+linha_s7x0x8:
+       beq $s7,8,quad_0x8color
+       bne $s7,8,quad_0x8
+jr $ra
 
 
 row_1x8:
     beq $t6,$s5,linha_s5x1x8
     beq $t6,$s6,linha_s6x1x8
     beq $t6,$s4,linha_s4x1x8
+    beq $t6,$s7,linha_s7x1x8
         bne $t6,$s5,p_1x8
         p_1x8:bne $t6,$s6,p_1x8x8
-        p_1x8x8: bne $t6,$s4,quad_1x8
+        p_1x8x8: bne $t6,$s4,p_1x8x8x8
+        p_1x8x8x8: bne $t6,$s7,quad_1x8
 jr $ra
 linha_s5x1x8:
        beq $s5,8,quad_1x8color
@@ -4107,15 +5095,21 @@ linha_s4x1x8:
        beq $s4,8,quad_1x8color
        bne $s4,8,quad_1x8
 jr $ra
+linha_s7x1x8:
+       beq $s7,8,quad_1x8color
+       bne $s7,8,quad_1x8
+jr $ra
 
 
 row_2x8:
     beq $t6,$s5,linha_s5x2x8
     beq $t6,$s6,linha_s6x2x8
     beq $t6,$s4,linha_s4x2x8
+    beq $t6,$s7,linha_s7x2x8
         bne $t6,$s5,p_2x8
         p_2x8:bne $t6,$s6,p_2x8x8
-        p_2x8x8: bne $t6,$s4,quad_2x8
+        p_2x8x8: bne $t6,$s4,p_2x8x8x8
+        p_2x8x8x8: bne $t6,$s7,quad_2x8
 jr $ra
 linha_s5x2x8:
        beq $s5,8,quad_2x8color
@@ -4129,15 +5123,21 @@ linha_s4x2x8:
        beq $s4,8,quad_2x8color
        bne $s4,8,quad_2x8
 jr $ra
+linha_s7x2x8:
+       beq $s7,8,quad_2x8color
+       bne $s7,8,quad_2x8
+jr $ra
 
 
 row_3x8:
     beq $t6,$s5,linha_s5x3x8
     beq $t6,$s6,linha_s6x3x8
     beq $t6,$s4,linha_s4x3x8
+    beq $t6,$s7,linha_s7x3x8
         bne $t6,$s5,p_3x8
         p_3x8:bne $t6,$s6,p_3x8x8
-        p_3x8x8: bne $t6,$s4,quad_3x8
+        p_3x8x8: bne $t6,$s4,p_3x8x8x8
+        p_3x8x8x8: bne $t6,$s7,quad_3x8
 jr $ra
 linha_s5x3x8:
        beq $s5,8,quad_3x8color
@@ -4151,15 +5151,21 @@ linha_s4x3x8:
        beq $s4,8,quad_3x8color
        bne $s4,8,quad_3x8
 jr $ra
+linha_s7x3x8:
+       beq $s7,8,quad_3x8color
+       bne $s7,8,quad_3x8
+jr $ra
 
 
 row_4x8:
     beq $t6,$s5,linha_s5x4x8
     beq $t6,$s6,linha_s6x4x8
     beq $t6,$s4,linha_s4x4x8
+    beq $t6,$s7,linha_s7x4x8
         bne $t6,$s5,p_4x8
         p_4x8:bne $t6,$s6,p_4x8x8
-        p_4x8x8: bne $t6,$s4,quad_4x8
+        p_4x8x8: bne $t6,$s4,p_4x8x8x8
+        p_4x8x8x8: bne $t6,$s7,quad_4x8
 jr $ra
 linha_s5x4x8:
        beq $s5,8,quad_4x8color
@@ -4173,15 +5179,21 @@ linha_s4x4x8:
        beq $s4,8,quad_4x8color
        bne $s4,8,quad_4x8
 jr $ra
+linha_s7x4x8:
+       beq $s7,8,quad_4x8color
+       bne $s7,8,quad_4x8
+jr $ra
 
 
 row_5x8:
     beq $t6,$s5,linha_s5x5x8
     beq $t6,$s6,linha_s6x5x8
     beq $t6,$s4,linha_s4x5x8
+    beq $t6,$s7,linha_s7x5x8
         bne $t6,$s5,p_5x8
         p_5x8:bne $t6,$s6,p_5x8x8
-        p_5x8x8: bne $t6,$s4,quad_5x8
+        p_5x8x8: bne $t6,$s4,p_5x8x8x8
+        p_5x8x8x8: bne $t6,$s7,quad_5x8
 jr $ra
 linha_s5x5x8:
        beq $s5,8,quad_5x8color
@@ -4195,15 +5207,21 @@ linha_s4x5x8:
        beq $s4,8,quad_5x8color
        bne $s4,8,quad_5x8
 jr $ra
+linha_s7x5x8:
+       beq $s7,8,quad_5x8color
+       bne $s7,8,quad_5x8
+jr $ra
 
 
 row_6x8:
     beq $t6,$s5,linha_s5x6x8
     beq $t6,$s6,linha_s6x6x8
     beq $t6,$s4,linha_s4x6x8
+    beq $t6,$s7,linha_s7x6x8
         bne $t6,$s5,p_6x8
         p_6x8:bne $t6,$s6,p_6x8x8
-        p_6x8x8: bne $t6,$s4,quad_6x8
+        p_6x8x8: bne $t6,$s4,p_6x8x8x8
+        p_6x8x8x8: bne $t6,$s7,quad_6x8
 jr $ra
 linha_s5x6x8:
        beq $s5,8,quad_6x8color
@@ -4217,15 +5235,21 @@ linha_s4x6x8:
        beq $s4,8,quad_6x8color
        bne $s4,8,quad_6x8
 jr $ra
+linha_s7x6x8:
+       beq $s7,8,quad_6x8color
+       bne $s7,8,quad_6x8
+jr $ra
 
 
 row_7x8:
     beq $t6,$s5,linha_s5x7x8
     beq $t6,$s6,linha_s6x7x8
     beq $t6,$s4,linha_s4x7x8
+    beq $t6,$s7,linha_s7x7x8
         bne $t6,$s5,p_7x8
         p_7x8:bne $t6,$s6,p_7x8x8
-        p_7x8x8: bne $t6,$s4,quad_7x8
+        p_7x8x8: bne $t6,$s4,p_7x8x8x8
+        p_7x8x8x8: bne $t6,$s7,quad_7x8
 jr $ra
 linha_s5x7x8:
        beq $s5,8,quad_7x8color
@@ -4239,15 +5263,21 @@ linha_s4x7x8:
        beq $s4,8,quad_7x8color
        bne $s4,8,quad_7x8
 jr $ra
+linha_s7x7x8:
+       beq $s7,8,quad_7x8color
+       bne $s7,8,quad_7x8
+jr $ra
 
 
 row_8x8:
     beq $t6,$s5,linha_s5x8x8
     beq $t6,$s6,linha_s6x8x8
     beq $t6,$s4,linha_s4x8x8
+    beq $t6,$s7,linha_s7x8x8
         bne $t6,$s5,p_8x8
         p_8x8:bne $t6,$s6,p_8x8x8
-        p_8x8x8: bne $t6,$s4,quad_8x8
+        p_8x8x8: bne $t6,$s4,p_8x8x8x8
+        p_8x8x8x8: bne $t6,$s7,quad_8x8
 jr $ra
 linha_s5x8x8:
        beq $s5,8,quad_8x8color
@@ -4261,15 +5291,21 @@ linha_s4x8x8:
        beq $s4,8,quad_8x8color
        bne $s4,8,quad_8x8
 jr $ra
+linha_s7x8x8:
+       beq $s7,8,quad_8x8color
+       bne $s7,8,quad_8x8
+jr $ra
 
 
 row_9x8:
     beq $t6,$s5,linha_s5x9x8
     beq $t6,$s6,linha_s6x9x8
     beq $t6,$s4,linha_s4x9x8
+    beq $t6,$s7,linha_s7x9x8
         bne $t6,$s5,p_9x8
         p_9x8:bne $t6,$s6,p_9x8x8
-        p_9x8x8: bne $t6,$s4,quad_9x8
+        p_9x8x8: bne $t6,$s4,p_9x8x8x8
+        p_9x8x8x8: bne $t6,$s7,quad_9x8
 jr $ra
 linha_s5x9x8:
        beq $s5,8,quad_9x8color
@@ -4283,6 +5319,14 @@ linha_s4x9x8:
        beq $s4,8,quad_9x8color
        bne $s4,8,quad_9x8
 jr $ra
+linha_s7x9x8:
+       beq $s7,8,quad_9x8color
+       bne $s7,8,quad_9x8
+jr $ra
+
+
+
+
 
 
 	coluna_0:			
@@ -4424,7 +5468,7 @@ jr $ra
 		lw $a2, 132($t2)
 		beq $a2, $s1, poss_jogada_0x0 #Se a posicao estiver em azul, e possivel jogar
 			poss_jogada_0x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 132($t2)	
 				sw $s2, 136($t2)
@@ -4439,7 +5483,7 @@ jr $ra
 	lw $a2, 516($t2)
 		bne $a2, $s2, possivel_jogada_0x1			     
 		possivel_jogada_0x1:
-			move $k0, $zero	
+			move $fp, $zero	
 			sw $s2, 516($t2)
 			sw $s2, 520($t2)
 			sw $s2, 644($t2)
@@ -4450,7 +5494,7 @@ jr $ra
 		lw $a2, 516($t2)
 		bne $a2, $s1, poss_jogada_0x1	
 			poss_jogada_0x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 516($t2)
 				sw $s2, 520($t2)
@@ -4464,7 +5508,7 @@ jr $ra
 	lw $a2, 900($t2)
 		bne $a2, $s2, possivel_jogada_0x2			     
 		possivel_jogada_0x2:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 900($t2)
 			sw $s2, 904($t2)
 			sw $s2, 1028($t2)
@@ -4475,7 +5519,7 @@ jr $ra
 		lw $a2, 900($t2)
 		bne $a2, $s1, poss_jogada_0x2
 			poss_jogada_0x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 900($t2)
 				sw $s2, 904($t2)
@@ -4489,7 +5533,7 @@ jr $ra
 	lw $a2, 1284($t2)
 		bne $a2, $s2, possivel_jogada_0x3			     
 		possivel_jogada_0x3:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 1284($t2)
 			sw $s2, 1288($t2)
 			sw $s2, 1412($t2)
@@ -4500,7 +5544,7 @@ jr $ra
 		lw $a2, 1284($t2)	
 		bne $a2, $s1, poss_jogada_0x3
 			poss_jogada_0x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1284($t2)
 				sw $s2, 1288($t2)
@@ -4515,7 +5559,7 @@ jr $ra
 	lw $a2, 1668($t2)
 		bne $a2, $s2, possivel_jogada_0x4			     
 		possivel_jogada_0x4:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 1668($t2)
 			sw $s2, 1672($t2)
 			sw $s2, 1796($t2)
@@ -4526,7 +5570,7 @@ jr $ra
 		lw $a2, 1668($t2)
 		bne $a2, $s1, poss_jogada_0x4
 			poss_jogada_0x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1668($t2)
 				sw $s2, 1672($t2)
@@ -4541,7 +5585,7 @@ jr $ra
 	lw $a2, 2052($t2)
 		bne $a2, $s2, possivel_jogada_0x5			     
 		possivel_jogada_0x5:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 2052($t2)
 			sw $s2, 2056($t2)
 			sw $s2, 2180($t2)
@@ -4552,7 +5596,7 @@ jr $ra
 		lw $a2, 2052($t2)
 		bne $a2, $s1, poss_jogada_0x5
 			poss_jogada_0x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2052($t2)
 				sw $s2, 2056($t2)
@@ -4566,7 +5610,7 @@ jr $ra
 	lw $a2, 2436($t2)
 		bne $a2, $s2, possivel_jogada_0x6			     
 		possivel_jogada_0x6:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 2436($t2)
 			sw $s2, 2440($t2)
 			sw $s2, 2564($t2)
@@ -4577,7 +5621,7 @@ jr $ra
 		lw $a2, 2436($t2)
 		bne $a2, $s1, poss_jogada_0x6
 			poss_jogada_0x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2436($t2)
 				sw $s2, 2440($t2)
@@ -4591,7 +5635,7 @@ jr $ra
 	lw $a2, 2820($t2)
 		bne $a2, $s2, possivel_jogada_0x7			     
 		possivel_jogada_0x7:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 2820($t2)
 			sw $s2, 2824($t2)
 			sw $s2, 2948($t2)
@@ -4602,7 +5646,7 @@ jr $ra
 		lw $a2, 2820($t2)
 		bne $a2, $s1, poss_jogada_0x7
 			poss_jogada_0x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2820($t2)
 				sw $s2, 2824($t2)
@@ -4616,7 +5660,7 @@ jr $ra
 	lw $a2, 3204($t2)
 		bne $a2, $s2, possivel_jogada_0x8			     
 		possivel_jogada_0x8:
-			move $k0, $zero
+			move $fp, $zero
 			sw $s2, 3204($t2)
 			sw $s2, 3208($t2)
 			sw $s2, 3332($t2)
@@ -4627,7 +5671,7 @@ jr $ra
 		lw $a2, 3204($t2)
 		bne $a2, $s1, poss_jogada_0x8
 			poss_jogada_0x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3204($t2)
 				sw $s2, 3208($t2)
@@ -4656,7 +5700,7 @@ jr $ra
 	lw $a2, 144($t2)
 		bne $a2, $s1, poss_jogada_1x0
 			poss_jogada_1x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 144($t2)
 				sw $s2, 148($t2)
@@ -4670,7 +5714,7 @@ jr $ra
 	lw $a2, 528($t2)
 		bne $a2, $s2, possivel_jogada_1x1			     
 		possivel_jogada_1x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 528($t2)
 			sw $s2, 532($t2)
 			sw $s2, 656($t2)
@@ -4681,7 +5725,7 @@ jr $ra
 	lw $a2, 528($t2)
 		bne $a2, $s1, poss_jogada_1x1
 			poss_jogada_1x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 528($t2)
 				sw $s2, 532($t2)
@@ -4695,7 +5739,7 @@ jr $ra
 	lw $a2, 912($t2)
 		bne $a2, $s2, possivel_jogada_1x2			     
 		possivel_jogada_1x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 912($t2)
 			sw $s2, 916($t2)
 			sw $s2, 1040($t2)
@@ -4706,7 +5750,7 @@ jr $ra
 	lw $a2, 912($t2)
 		bne $a2, $s1, poss_jogada_1x2
 			poss_jogada_1x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 912($t2)
 				sw $s2, 916($t2)
@@ -4720,7 +5764,7 @@ jr $ra
 	lw $a2, 1296($t2)
 		bne $a2, $s2, possivel_jogada_1x3			     
 		possivel_jogada_1x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1296($t2)
 			sw $s2, 1300($t2)
 			sw $s2, 1424($t2)
@@ -4732,7 +5776,7 @@ jr $ra
 	lw $a2, 1296($t2)
 		bne $a2, $s1, poss_jogada_1x3
 			poss_jogada_1x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1296($t2)
 				sw $s2, 1300($t2)
@@ -4746,7 +5790,7 @@ jr $ra
 	lw $a2, 1680($t2)
 		bne $a2, $s2, possivel_jogada_1x4			     
 		possivel_jogada_1x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1680($t2)
 			sw $s2, 1684($t2)
 			sw $s2, 1808($t2)
@@ -4757,7 +5801,7 @@ jr $ra
 	lw $a2, 1680($t2)
 		bne $a2, $s1, poss_jogada_1x4
 			poss_jogada_1x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1680($t2)
 				sw $s2, 1684($t2)
@@ -4771,7 +5815,7 @@ jr $ra
 	lw $a2, 2064($t2)
 		bne $a2, $s2, possivel_jogada_1x5			     
 		possivel_jogada_1x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2064($t2)
 			sw $s2, 2068($t2)
 			sw $s2, 2192($t2)
@@ -4782,7 +5826,7 @@ jr $ra
 	lw $a2, 2064($t2)
 		bne $a2, $s1, poss_jogada_1x5
 			poss_jogada_1x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2064($t2)
 				sw $s2, 2068($t2)
@@ -4796,7 +5840,7 @@ jr $ra
 	lw $a2, 2448($t2)
 		bne $a2, $s2, possivel_jogada_1x6		     
 		possivel_jogada_1x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2448($t2)
 			sw $s2, 2452($t2)
 			sw $s2, 2576($t2)
@@ -4807,7 +5851,7 @@ jr $ra
 	lw $a2, 2448($t2)
 		bne $a2, $s1, poss_jogada_1x6
 			poss_jogada_1x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2448($t2)
 				sw $s2, 2452($t2)
@@ -4821,7 +5865,7 @@ jr $ra
 	lw $a2, 2832($t2)
 		bne $a2, $s2, possivel_jogada_1x7		     
 		possivel_jogada_1x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2832($t2)
 			sw $s2, 2836($t2)
 			sw $s2, 2960($t2)
@@ -4832,7 +5876,7 @@ jr $ra
 	lw $a2, 2832($t2)
 		bne $a2, $s1, poss_jogada_1x7
 			poss_jogada_1x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2832($t2)
 				sw $s2, 2836($t2)
@@ -4846,7 +5890,7 @@ jr $ra
 	lw $a2, 3216($t2)
 		bne $a2, $s2, possivel_jogada_1x8		     
 		possivel_jogada_1x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3216($t2)
 			sw $s2, 3220($t2)
 			sw $s2, 3344($t2)
@@ -4857,7 +5901,7 @@ jr $ra
 	lw $a2, 3216($t2)
 		bne $a2, $s1, poss_jogada_1x8
 			poss_jogada_1x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3216($t2)
 				sw $s2, 3220($t2)
@@ -4877,7 +5921,7 @@ jr $ra
 	lw $a2, 156($t2)
 		bne $a2, $s2, possivel_jogada_2x0		     
 		possivel_jogada_2x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 156($t2)
 			sw $s2, 160($t2)
 			sw $s2, 284($t2)
@@ -4888,7 +5932,7 @@ jr $ra
 	lw $a2, 156($t2)
 		bne $a2, $s1, poss_jogada_2x0
 			poss_jogada_2x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 156($t2)
 				sw $s2, 160($t2)
@@ -4902,7 +5946,7 @@ jr $ra
 	lw $a2, 540($t2)
 		bne $a2, $s2, possivel_jogada_2x1		     
 		possivel_jogada_2x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 540($t2)
 			sw $s2, 544($t2)
 			sw $s2, 668($t2)
@@ -4913,7 +5957,7 @@ jr $ra
 	lw $a2, 540($t2)
 		bne $a2, $s1, poss_jogada_2x1
 			poss_jogada_2x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 540($t2)
 				sw $s2, 544($t2)
@@ -4927,7 +5971,7 @@ jr $ra
 	lw $a2, 924($t2)
 		bne $a2, $s2, possivel_jogada_2x2		     
 		possivel_jogada_2x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 924($t2)
 			sw $s2, 928($t2)
 			sw $s2, 1052($t2)
@@ -4938,7 +5982,7 @@ jr $ra
 	lw $a2, 924($t2)
 		bne $a2, $s1, poss_jogada_2x2
 			poss_jogada_2x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 924($t2)
 				sw $s2, 928($t2)
@@ -4952,7 +5996,7 @@ jr $ra
 	lw $a2, 1308($t2)
 		bne $a2, $s2, possivel_jogada_2x3		     
 		possivel_jogada_2x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1308($t2)
 			sw $s2, 1312($t2)
 			sw $s2, 1436($t2)
@@ -4963,7 +6007,7 @@ jr $ra
 	lw $a2, 1308($t2)
 		bne $a2, $s1, poss_jogada_2x3
 			poss_jogada_2x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1308($t2)
 				sw $s2, 1312($t2)
@@ -4977,7 +6021,7 @@ jr $ra
 	lw $a2, 1692($t2)
 		bne $a2, $s2, possivel_jogada_2x4		     
 		possivel_jogada_2x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1692($t2)
 			sw $s2, 1696($t2)
 			sw $s2, 1820($t2)
@@ -4988,7 +6032,7 @@ jr $ra
 	lw $a2, 1692($t2)
 		bne $a2, $s1, poss_jogada_2x4
 			poss_jogada_2x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1692($t2)
 				sw $s2, 1696($t2)
@@ -5002,7 +6046,7 @@ jr $ra
 	lw $a2, 2076($t2)
 		bne $a2, $s2, possivel_jogada_2x5		     
 		possivel_jogada_2x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2076($t2)
 			sw $s2, 2080($t2)
 			sw $s2, 2204($t2)
@@ -5013,7 +6057,7 @@ jr $ra
 	lw $a2, 2076($t2)
 		bne $a2, $s1, poss_jogada_2x5
 			poss_jogada_2x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2076($t2)
 				sw $s2, 2080($t2)
@@ -5027,7 +6071,7 @@ jr $ra
 	lw $a2, 2460($t2)
 		bne $a2, $s2, possivel_jogada_2x6		     
 		possivel_jogada_2x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2460($t2)
 			sw $s2, 2464($t2)
 			sw $s2, 2588($t2)
@@ -5038,7 +6082,7 @@ jr $ra
 	lw $a2, 2460($t2)
 		bne $a2, $s1, poss_jogada_2x6
 			poss_jogada_2x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2460($t2)
 				sw $s2, 2464($t2)
@@ -5052,7 +6096,7 @@ jr $ra
 	lw $a2, 2844($t2)
 		bne $a2, $s2, possivel_jogada_2x7		     
 		possivel_jogada_2x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2844($t2)
 			sw $s2, 2848($t2)
 			sw $s2, 2972($t2)
@@ -5063,7 +6107,7 @@ jr $ra
 	lw $a2, 2844($t2)
 		bne $a2, $s1, poss_jogada_2x7
 			poss_jogada_2x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2844($t2)
 				sw $s2, 2848($t2)
@@ -5077,7 +6121,7 @@ jr $ra
 	lw $a2, 3228($t2)
 		bne $a2, $s2, possivel_jogada_2x8		     
 		possivel_jogada_2x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3228($t2)
 			sw $s2, 3232($t2)
 			sw $s2, 3356($t2)
@@ -5088,7 +6132,7 @@ jr $ra
 	lw $a2, 3228($t2)
 		bne $a2, $s1, poss_jogada_2x8
 			poss_jogada_2x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3228($t2)
 				sw $s2, 3232($t2)
@@ -5107,7 +6151,7 @@ jr $ra
 	lw $a2, 168($t2)
 		bne $a2, $s2, possivel_jogada_3x0		     
 		possivel_jogada_3x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 168($t2)
 			sw $s2, 172($t2)
 			sw $s2, 296($t2)
@@ -5118,7 +6162,7 @@ jr $ra
 	lw $a2, 168($t2)
 		bne $a2, $s1, poss_jogada_3x0
 			poss_jogada_3x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 168($t2)
 				sw $s2, 172($t2)
@@ -5132,7 +6176,7 @@ jr $ra
 	lw $a2, 552($t2)
 		bne $a2, $s2, possivel_jogada_3x1		     
 		possivel_jogada_3x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 552($t2)
 			sw $s2, 556($t2)
 			sw $s2, 680($t2)
@@ -5143,7 +6187,7 @@ jr $ra
 	lw $a2, 552($t2)
 		bne $a2, $s1, poss_jogada_3x1
 			poss_jogada_3x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 552($t2)
 				sw $s2, 556($t2)
@@ -5157,7 +6201,7 @@ jr $ra
 	lw $a2, 936($t2)
 		bne $a2, $s2, possivel_jogada_3x2		     
 		possivel_jogada_3x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 936($t2)
 			sw $s2, 940($t2)
 			sw $s2, 1064($t2)
@@ -5168,7 +6212,7 @@ jr $ra
 	lw $a2, 936($t2)
 		bne $a2, $s1, poss_jogada_3x2
 			poss_jogada_3x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 936($t2)
 				sw $s2, 940($t2)
@@ -5182,7 +6226,7 @@ jr $ra
 	lw $a2, 1320($t2)
 		bne $a2, $s2, possivel_jogada_3x3		     
 		possivel_jogada_3x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1320($t2)
 			sw $s2, 1324($t2)
 			sw $s2, 1448($t2)
@@ -5193,7 +6237,7 @@ jr $ra
 	lw $a2, 1320($t2)
 		bne $a2, $s1, poss_jogada_3x3
 			poss_jogada_3x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1320($t2)
 				sw $s2, 1324($t2)
@@ -5207,7 +6251,7 @@ jr $ra
 	lw $a2, 1704($t2)
 		bne $a2, $s2, possivel_jogada_3x4	     
 		possivel_jogada_3x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1704($t2)
 			sw $s2, 1708($t2)
 			sw $s2, 1832($t2)
@@ -5218,7 +6262,7 @@ jr $ra
 	lw $a2, 1704($t2)
 		bne $a2, $s1, poss_jogada_3x4
 			poss_jogada_3x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1704($t2)
 				sw $s2, 1708($t2)
@@ -5232,7 +6276,7 @@ jr $ra
 	lw $a2, 2088($t2)
 		bne $a2, $s2, possivel_jogada_3x5     
 		possivel_jogada_3x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2088($t2)
 			sw $s2, 2092($t2)
 			sw $s2, 2216($t2)
@@ -5243,7 +6287,7 @@ jr $ra
 	lw $a2, 2088($t2)
 		bne $a2, $s1, poss_jogada_3x5
 			poss_jogada_3x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2088($t2)
 				sw $s2, 2092($t2)
@@ -5257,7 +6301,7 @@ jr $ra
 	lw $a2, 2472($t2)
 		bne $a2, $s2, possivel_jogada_3x6    
 		possivel_jogada_3x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2472($t2)
 			sw $s2, 2476($t2)
 			sw $s2, 2600($t2)
@@ -5268,7 +6312,7 @@ jr $ra
 	lw $a2, 2472($t2)
 		bne $a2, $s1, poss_jogada_3x6
 			poss_jogada_3x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2472($t2)
 				sw $s2, 2476($t2)
@@ -5282,7 +6326,7 @@ jr $ra
 	lw $a2, 2856($t2)
 		bne $a2, $s2, possivel_jogada_3x7 
 		possivel_jogada_3x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2856($t2)
 			sw $s2, 2860($t2)
 			sw $s2, 2984($t2)
@@ -5293,7 +6337,7 @@ jr $ra
 	lw $a2, 2856($t2)
 		bne $a2, $s1, poss_jogada_3x7
 			poss_jogada_3x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2856($t2)
 				sw $s2, 2860($t2)
@@ -5307,7 +6351,7 @@ jr $ra
 	lw $a2, 3240($t2)
 		bne $a2, $s2, possivel_jogada_3x8
 		possivel_jogada_3x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3240($t2)
 			sw $s2, 3244($t2)
 			sw $s2, 3368($t2)
@@ -5318,7 +6362,7 @@ jr $ra
 	lw $a2, 3240($t2)
 		bne $a2, $s1, poss_jogada_3x8
 			poss_jogada_3x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3240($t2)
 				sw $s2, 3244($t2)
@@ -5335,7 +6379,7 @@ jr $ra
 	lw $a2, 180($t2)
 		bne $a2, $s2, possivel_jogada_4x0
 		possivel_jogada_4x0:
-			move $k0, $zero	
+			move $fp, $zero	
 			sw $s2, 180($t2)
 			sw $s2, 184($t2)
 			sw $s2, 308($t2)
@@ -5346,7 +6390,7 @@ jr $ra
 	lw $a2, 180($t2)
 		bne $a2, $s1, poss_jogada_4x0
 			poss_jogada_4x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 180($t2)
 				sw $s2, 184($t2)
@@ -5360,7 +6404,7 @@ jr $ra
 	lw $a2, 564($t2)
 		bne $a2, $s2, possivel_jogada_4x1
 		possivel_jogada_4x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 564($t2)
 			sw $s2, 568($t2)
 			sw $s2, 692($t2)
@@ -5371,7 +6415,7 @@ jr $ra
 	lw $a2, 564($t2)
 		bne $a2, $s1, poss_jogada_4x1
 			poss_jogada_4x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 564($t2)
 				sw $s2, 568($t2)
@@ -5385,7 +6429,7 @@ jr $ra
 	lw $a2, 948($t2)
 		bne $a2, $s2, possivel_jogada_4x2
 		possivel_jogada_4x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 948($t2)
 			sw $s2, 952($t2)
 			sw $s2, 1076($t2)
@@ -5396,7 +6440,7 @@ jr $ra
 	lw $a2, 948($t2)
 		bne $a2, $s1, poss_jogada_4x2
 			poss_jogada_4x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 948($t2)
 				sw $s2, 952($t2)
@@ -5410,7 +6454,7 @@ jr $ra
 	lw $a2, 1332($t2)
 		bne $a2, $s2, possivel_jogada_4x3
 		possivel_jogada_4x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1332($t2)
 			sw $s2, 1336($t2)
 			sw $s2, 1460($t2)
@@ -5421,7 +6465,7 @@ jr $ra
 	lw $a2, 1332($t2)
 		bne $a2, $s1, poss_jogada_4x3
 			poss_jogada_4x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1332($t2)
 				sw $s2, 1336($t2)
@@ -5435,7 +6479,7 @@ jr $ra
 	lw $a2, 1716($t2)
 		bne $a2, $s2, possivel_jogada_4x4
 		possivel_jogada_4x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1716($t2)
 			sw $s2, 1720($t2)
 			sw $s2, 1844($t2)
@@ -5446,7 +6490,7 @@ jr $ra
 	lw $a2, 1716($t2)
 		bne $a2, $s1, poss_jogada_4x4
 			poss_jogada_4x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1716($t2)
 				sw $s2, 1720($t2)
@@ -5460,7 +6504,7 @@ jr $ra
 	lw $a2, 2100($t2)
 		bne $a2, $s2, possivel_jogada_4x5
 		possivel_jogada_4x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2100($t2)
 			sw $s2, 2104($t2)
 			sw $s2, 2228($t2)
@@ -5471,7 +6515,7 @@ jr $ra
 	lw $a2, 2100($t2)
 		bne $a2, $s1, poss_jogada_4x5
 			poss_jogada_4x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2100($t2)
 				sw $s2, 2104($t2)
@@ -5485,7 +6529,7 @@ jr $ra
 	lw $a2, 2484($t2)
 		bne $a2, $s2, possivel_jogada_4x6
 		possivel_jogada_4x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2484($t2)
 			sw $s2, 2488($t2)
 			sw $s2, 2612($t2)
@@ -5496,7 +6540,7 @@ jr $ra
 	lw $a2, 2484($t2)
 		bne $a2, $s1, poss_jogada_4x6
 			poss_jogada_4x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2484($t2)
 				sw $s2, 2488($t2)
@@ -5510,7 +6554,7 @@ jr $ra
 	lw $a2, 2868($t2)
 		bne $a2, $s2, possivel_jogada_4x7
 		possivel_jogada_4x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2868($t2)
 			sw $s2, 2872($t2)
 			sw $s2, 2996($t2)
@@ -5521,7 +6565,7 @@ jr $ra
 	lw $a2, 2868($t2)
 		bne $a2, $s1, poss_jogada_4x7
 			poss_jogada_4x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2868($t2)
 				sw $s2, 2872($t2)
@@ -5535,7 +6579,7 @@ jr $ra
 	lw $a2, 3252($t2)
 		bne $a2, $s2, possivel_jogada_4x8
 		possivel_jogada_4x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3252($t2)
 			sw $s2, 3256($t2)
 			sw $s2, 3380($t2)
@@ -5546,7 +6590,7 @@ jr $ra
 	lw $a2, 3252($t2)
 		bne $a2, $s1, poss_jogada_4x8
 			poss_jogada_4x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3252($t2)
 				sw $s2, 3256($t2)
@@ -5565,7 +6609,7 @@ jr $ra
 	lw $a2, 192($t2)
 		bne $a2, $s2, possivel_jogada_5x0
 		possivel_jogada_5x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 192($t2)
 			sw $s2, 196($t2)
 			sw $s2, 320($t2)
@@ -5576,7 +6620,7 @@ jr $ra
 	lw $a2, 192($t2)
 		bne $a2, $s1, poss_jogada_5x0
 			poss_jogada_5x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 192($t2)
 				sw $s2, 196($t2)
@@ -5590,7 +6634,7 @@ jr $ra
 	lw $a2, 576($t2)
 		bne $a2, $s2, possivel_jogada_5x1
 		possivel_jogada_5x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 576($t2)
 			sw $s2, 580($t2)
 			sw $s2, 704($t2)
@@ -5601,7 +6645,7 @@ jr $ra
 	lw $a2, 576($t2)
 		bne $a2, $s1, poss_jogada_5x1
 			poss_jogada_5x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 576($t2)
 				sw $s2, 580($t2)
@@ -5615,7 +6659,7 @@ jr $ra
 	lw $a2, 960($t2)
 		bne $a2, $s2, possivel_jogada_5x2
 		possivel_jogada_5x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 960($t2)
 			sw $s2, 964($t2)
 			sw $s2, 1088($t2)
@@ -5626,7 +6670,7 @@ jr $ra
 	lw $a2, 960($t2)
 		bne $a2, $s1, poss_jogada_5x2
 			poss_jogada_5x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 960($t2)
 				sw $s2, 964($t2)
@@ -5640,7 +6684,7 @@ jr $ra
 	lw $a2, 1344($t2)
 		bne $a2, $s2, possivel_jogada_5x3
 		possivel_jogada_5x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1344($t2)
 			sw $s2, 1348($t2)
 			sw $s2, 1472($t2)
@@ -5651,7 +6695,7 @@ jr $ra
 	lw $a2, 1344($t2)
 		bne $a2, $s1, poss_jogada_5x3
 			poss_jogada_5x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1344($t2)
 				sw $s2, 1348($t2)
@@ -5665,7 +6709,7 @@ jr $ra
 	lw $a2, 1728($t2)
 		bne $a2, $s2, possivel_jogada_5x4
 		possivel_jogada_5x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1728($t2)
 			sw $s2, 1732($t2)
 			sw $s2, 1856($t2)
@@ -5676,7 +6720,7 @@ jr $ra
 	lw $a2, 1728($t2)
 		bne $a2, $s1, poss_jogada_5x4
 			poss_jogada_5x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1728($t2)
 				sw $s2, 1732($t2)
@@ -5690,7 +6734,7 @@ jr $ra
 	lw $a2, 2112($t2)
 		bne $a2, $s2, possivel_jogada_5x5
 		possivel_jogada_5x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2112($t2)
 			sw $s2, 2116($t2)
 			sw $s2, 2240($t2)
@@ -5701,7 +6745,7 @@ jr $ra
 	lw $a2, 2112($t2)
 		bne $a2, $s1, poss_jogada_5x5
 			poss_jogada_5x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2112($t2)
 				sw $s2, 2116($t2)
@@ -5715,7 +6759,7 @@ jr $ra
 	lw $a2, 2496($t2)
 		bne $a2, $s2, possivel_jogada_5x6
 		possivel_jogada_5x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2496($t2)
 			sw $s2, 2500($t2)
 			sw $s2, 2624($t2)
@@ -5726,7 +6770,7 @@ jr $ra
 	lw $a2, 2496($t2)
 		bne $a2, $s1, poss_jogada_5x6
 			poss_jogada_5x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2496($t2)
 				sw $s2, 2500($t2)
@@ -5740,7 +6784,7 @@ jr $ra
 	lw $a2, 2880($t2)
 		bne $a2, $s2, possivel_jogada_5x7
 		possivel_jogada_5x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2880($t2)
 			sw $s2, 2884($t2)
 			sw $s2, 3008($t2)
@@ -5751,7 +6795,7 @@ jr $ra
 	lw $a2, 2880($t2)
 		bne $a2, $s1, poss_jogada_5x7
 			poss_jogada_5x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2880($t2)
 				sw $s2, 2884($t2)
@@ -5765,7 +6809,7 @@ jr $ra
 	lw $a2, 3264($t2)
 		bne $a2, $s2, possivel_jogada_5x8
 		possivel_jogada_5x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3264($t2)
 			sw $s2, 3268($t2)
 			sw $s2, 3392($t2)
@@ -5777,7 +6821,7 @@ jr $ra
 	lw $a2, 3264($t2)
 		bne $a2, $s1, poss_jogada_5x8
 			poss_jogada_5x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3264($t2)
 				sw $s2, 3268($t2)
@@ -5796,7 +6840,7 @@ jr $ra
 	lw $a2, 204($t2)
 		bne $a2, $s2, possivel_jogada_6x0
 		possivel_jogada_6x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 204($t2)
 			sw $s2, 208($t2)
 			sw $s2, 332($t2)
@@ -5807,7 +6851,7 @@ jr $ra
 	lw $a2,  204($t2)
 		bne $a2, $s1, poss_jogada_6x0
 			poss_jogada_6x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 204($t2)
 				sw $s2, 208($t2)
@@ -5821,7 +6865,7 @@ jr $ra
 	lw $a2, 588($t2)
 		bne $a2, $s2, possivel_jogada_6x1
 		possivel_jogada_6x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 588($t2)
 			sw $s2, 592($t2)
 			sw $s2, 716($t2)
@@ -5832,7 +6876,7 @@ jr $ra
 	lw $a2, 588($t2)
 		bne $a2, $s1, poss_jogada_6x1
 			poss_jogada_6x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 588($t2)
 				sw $s2, 592($t2)
@@ -5846,7 +6890,7 @@ jr $ra
 	lw $a2, 972($t2)
 		bne $a2, $s2, possivel_jogada_6x2
 		possivel_jogada_6x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 972($t2)
 			sw $s2, 976($t2)
 			sw $s2, 1100($t2)
@@ -5857,7 +6901,7 @@ jr $ra
 	lw $a2, 972($t2)
 		bne $a2, $s1, poss_jogada_6x2
 			poss_jogada_6x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 972($t2)
 				sw $s2, 976($t2)
@@ -5871,7 +6915,7 @@ jr $ra
 	lw $a2, 1356($t2)
 		bne $a2, $s2, possivel_jogada_6x3
 		possivel_jogada_6x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1356($t2)
 			sw $s2, 1360($t2)
 			sw $s2, 1484($t2)
@@ -5882,7 +6926,7 @@ jr $ra
 	lw $a2, 1356($t2)
 		bne $a2, $s1, poss_jogada_6x3
 			poss_jogada_6x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1356($t2)
 				sw $s2, 1360($t2)
@@ -5896,7 +6940,7 @@ jr $ra
 	lw $a2, 1740($t2)
 		bne $a2, $s2, possivel_jogada_6x4
 		possivel_jogada_6x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1740($t2)
 			sw $s2, 1744($t2)
 			sw $s2, 1868($t2)
@@ -5907,7 +6951,7 @@ jr $ra
 	lw $a2, 1740($t2)
 		bne $a2, $s1, poss_jogada_6x4
 			poss_jogada_6x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1740($t2)
 				sw $s2, 1744($t2)
@@ -5921,7 +6965,7 @@ jr $ra
 	lw $a2, 2124($t2)
 		bne $a2, $s2, possivel_jogada_6x5
 		possivel_jogada_6x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2124($t2)
 			sw $s2, 2128($t2)
 			sw $s2, 2252($t2)
@@ -5932,7 +6976,7 @@ jr $ra
 	lw $a2, 2124($t2)
 		bne $a2, $s1, poss_jogada_6x5
 			poss_jogada_6x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2124($t2)
 				sw $s2, 2128($t2)
@@ -5946,7 +6990,7 @@ jr $ra
 	lw $a2, 2508($t2)
 		bne $a2, $s2, possivel_jogada_6x6
 		possivel_jogada_6x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2508($t2)
 			sw $s2, 2512($t2)
 			sw $s2, 2636($t2)
@@ -5957,7 +7001,7 @@ jr $ra
 	lw $a2, 2508($t2)
 		bne $a2, $s1, poss_jogada_6x6
 			poss_jogada_6x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2508($t2)
 				sw $s2, 2512($t2)
@@ -5971,7 +7015,7 @@ jr $ra
 	lw $a2, 2892($t2)
 		bne $a2, $s2, possivel_jogada_6x7
 		possivel_jogada_6x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2892($t2)
 			sw $s2, 2896($t2)
 			sw $s2, 3020($t2)
@@ -5982,7 +7026,7 @@ jr $ra
 	lw $a2, 2892($t2)
 		bne $a2, $s1, poss_jogada_6x7
 			poss_jogada_6x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2892($t2)
 				sw $s2, 2896($t2)
@@ -5996,7 +7040,7 @@ jr $ra
 	lw $a2, 3276($t2)
 		bne $a2, $s2, possivel_jogada_6x8
 		possivel_jogada_6x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3276($t2)
 			sw $s2, 3280($t2)
 			sw $s2, 3404($t2)
@@ -6007,7 +7051,7 @@ jr $ra
 	lw $a2, 3276($t2)
 		bne $a2, $s1, poss_jogada_6x8
 			poss_jogada_6x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3276($t2)
 				sw $s2, 3280($t2)
@@ -6026,7 +7070,7 @@ jr $ra
 	lw $a2, 216($t2)
 		bne $a2, $s2, possivel_jogada_7x0
 		possivel_jogada_7x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 216($t2)
 			sw $s2, 220($t2)
 			sw $s2, 344($t2)
@@ -6037,7 +7081,7 @@ jr $ra
 	lw $a2, 216($t2)
 		bne $a2, $s1, poss_jogada_7x0
 			poss_jogada_7x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 216($t2)
 				sw $s2, 220($t2)
@@ -6051,7 +7095,7 @@ jr $ra
 	lw $a2, 600($t2)
 		bne $a2, $s2, possivel_jogada_7x1
 		possivel_jogada_7x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 600($t2)
 			sw $s2, 604($t2)
 			sw $s2, 728($t2)	
@@ -6062,7 +7106,7 @@ jr $ra
 	lw $a2, 600($t2)
 		bne $a2, $s1, poss_jogada_7x1
 			poss_jogada_7x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 600($t2)
 				sw $s2, 604($t2)
@@ -6076,7 +7120,7 @@ jr $ra
 	lw $a2, 984($t2)
 		bne $a2, $s2, possivel_jogada_7x2
 		possivel_jogada_7x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 984($t2)
 			sw $s2, 988($t2)
 			sw $s2, 1112($t2)
@@ -6087,7 +7131,7 @@ jr $ra
 	lw $a2, 984($t2)
 		bne $a2, $s1, poss_jogada_7x2
 			poss_jogada_7x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 984($t2)
 				sw $s2, 988($t2)
@@ -6101,7 +7145,7 @@ jr $ra
 	lw $a2, 1368($t2)
 		bne $a2, $s2, possivel_jogada_7x3
 		possivel_jogada_7x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1368($t2)
 			sw $s2, 1372($t2)
 			sw $s2, 1496($t2)
@@ -6112,7 +7156,7 @@ jr $ra
 	lw $a2, 1368($t2)
 		bne $a2, $s1, poss_jogada_7x3
 			poss_jogada_7x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1368($t2)
 				sw $s2, 1372($t2)
@@ -6126,7 +7170,7 @@ jr $ra
 	lw $a2, 1752($t2)
 		bne $a2, $s2, possivel_jogada_7x4
 		possivel_jogada_7x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1752($t2)
 			sw $s2, 1756($t2)
 			sw $s2, 1880($t2)
@@ -6137,7 +7181,7 @@ jr $ra
 	lw $a2, 1752($t2)
 		bne $a2, $s1, poss_jogada_7x4
 			poss_jogada_7x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1752($t2)
 				sw $s2, 1756($t2)
@@ -6151,7 +7195,7 @@ jr $ra
 	lw $a2, 2136($t2)
 		bne $a2, $s2, possivel_jogada_7x5
 		possivel_jogada_7x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2136($t2)
 			sw $s2, 2140($t2)
 			sw $s2, 2264($t2)
@@ -6162,7 +7206,7 @@ jr $ra
 	lw $a2, 2136($t2)
 		bne $a2, $s1, poss_jogada_7x5
 			poss_jogada_7x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2136($t2)
 				sw $s2, 2140($t2)
@@ -6176,7 +7220,7 @@ jr $ra
 	lw $a2, 2520($t2)
 		bne $a2, $s2, possivel_jogada_7x6
 		possivel_jogada_7x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2520($t2)
 			sw $s2, 2524($t2)
 			sw $s2, 2648($t2)
@@ -6187,7 +7231,7 @@ jr $ra
 	lw $a2, 2520($t2)
 		bne $a2, $s1, poss_jogada_7x6
 			poss_jogada_7x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2520($t2)
 				sw $s2, 2524($t2)
@@ -6201,7 +7245,7 @@ jr $ra
 	lw $a2, 2904($t2)
 		bne $a2, $s2, possivel_jogada_7x7
 		possivel_jogada_7x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2904($t2)
 			sw $s2, 2908($t2)
 			sw $s2, 3032($t2)
@@ -6212,7 +7256,7 @@ jr $ra
 	lw $a2, 2904($t2)
 		bne $a2, $s1, poss_jogada_7x7
 			poss_jogada_7x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2904($t2)
 				sw $s2, 2908($t2)
@@ -6226,7 +7270,7 @@ jr $ra
 	lw $a2, 3288($t2)
 		bne $a2, $s2, possivel_jogada_7x8
 		possivel_jogada_7x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3288($t2)
 			sw $s2, 3292($t2)
 			sw $s2, 3416($t2)
@@ -6237,7 +7281,7 @@ jr $ra
 	lw $a2, 3288($t2)
 		bne $a2, $s1, poss_jogada_7x8
 			poss_jogada_7x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3288($t2)
 				sw $s2, 3292($t2)
@@ -6256,7 +7300,7 @@ jr $ra
 	lw $a2, 228($t2)
 		bne $a2, $s2, possivel_jogada_8x0
 		possivel_jogada_8x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 228($t2)
 			sw $s2, 232($t2)
 			sw $s2, 356($t2)
@@ -6267,7 +7311,7 @@ jr $ra
 	lw $a2, 228($t2)
 		bne $a2, $s1, poss_jogada_8x0
 			poss_jogada_8x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 228($t2)
 				sw $s2, 232($t2)
@@ -6281,7 +7325,7 @@ jr $ra
 	lw $a2, 612($t2)
 		bne $a2, $s2, possivel_jogada_8x1
 		possivel_jogada_8x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 612($t2)
 			sw $s2, 616($t2)
 			sw $s2, 740($t2)		
@@ -6292,7 +7336,7 @@ jr $ra
 	lw $a2, 612($t2)
 		bne $a2, $s1, poss_jogada_8x1
 			poss_jogada_8x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 612($t2)
 				sw $s2, 616($t2)
@@ -6306,7 +7350,7 @@ jr $ra
 	lw $a2, 996($t2)
 		bne $a2, $s2, possivel_jogada_8x2
 		possivel_jogada_8x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 996($t2)
 			sw $s2, 1000($t2)
 			sw $s2, 1124($t2)
@@ -6317,7 +7361,7 @@ jr $ra
 	lw $a2, 996($t2)
 		bne $a2, $s1, poss_jogada_8x2
 			poss_jogada_8x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 996($t2)
 				sw $s2, 1000($t2)
@@ -6331,7 +7375,7 @@ jr $ra
 	lw $a2, 1380($t2)
 		bne $a2, $s2, possivel_jogada_8x3
 		possivel_jogada_8x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1380($t2)
 			sw $s2, 1384($t2)
 			sw $s2, 1508($t2)
@@ -6342,7 +7386,7 @@ jr $ra
 	lw $a2, 1380($t2)
 		bne $a2, $s1, poss_jogada_8x3
 			poss_jogada_8x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1380($t2)
 				sw $s2, 1384($t2)
@@ -6356,7 +7400,7 @@ jr $ra
 	lw $a2, 1764($t2)
 		bne $a2, $s2, possivel_jogada_8x4
 		possivel_jogada_8x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1764($t2)
 			sw $s2, 1768($t2)
 			sw $s2, 1892($t2)
@@ -6367,7 +7411,7 @@ jr $ra
 	lw $a2, 1764($t2)
 		bne $a2, $s1, poss_jogada_8x4
 			poss_jogada_8x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1764($t2)
 				sw $s2, 1768($t2)
@@ -6381,7 +7425,7 @@ jr $ra
 	lw $a2, 2148($t2)
 		bne $a2, $s2, possivel_jogada_8x5
 		possivel_jogada_8x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2148($t2)
 			sw $s2, 2152($t2)
 			sw $s2, 2276($t2)
@@ -6392,7 +7436,7 @@ jr $ra
 	lw $a2, 2148($t2)
 		bne $a2, $s1, poss_jogada_8x5
 			poss_jogada_8x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2148($t2)
 				sw $s2, 2152($t2)
@@ -6406,7 +7450,7 @@ jr $ra
 	lw $a2, 2532($t2)
 		bne $a2, $s2, possivel_jogada_8x6
 		possivel_jogada_8x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2532($t2)
 			sw $s2, 2536($t2)
 			sw $s2, 2660($t2)
@@ -6417,7 +7461,7 @@ jr $ra
 	lw $a2, 2532($t2)
 		bne $a2, $s1, poss_jogada_8x6
 			poss_jogada_8x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2532($t2)
 				sw $s2, 2536($t2)
@@ -6431,7 +7475,7 @@ jr $ra
 	lw $a2, 2916($t2)
 		bne $a2, $s2, possivel_jogada_8x7
 		possivel_jogada_8x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2916($t2)
 			sw $s2, 2920($t2)
 			sw $s2, 3044($t2)
@@ -6442,7 +7486,7 @@ jr $ra
 	lw $a2, 2916($t2)
 		bne $a2, $s1, poss_jogada_8x7
 			poss_jogada_8x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2916($t2)
 				sw $s2, 2920($t2)
@@ -6456,7 +7500,7 @@ jr $ra
 	lw $a2, 3300($t2)
 		bne $a2, $s2, possivel_jogada_8x8
 		possivel_jogada_8x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3300($t2)
 			sw $s2, 3304($t2)
 			sw $s2, 3428($t2)
@@ -6467,7 +7511,7 @@ jr $ra
 	lw $a2, 3300($t2)
 		bne $a2, $s1, poss_jogada_8x8
 			poss_jogada_8x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3300($t2)
 				sw $s2, 3304($t2)
@@ -6485,7 +7529,7 @@ jr $ra
 	lw $a2, 240($t2)
 		bne $a2, $s2, possivel_jogada_9x0
 		possivel_jogada_9x0:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 240($t2)
 			sw $s2, 244($t2)
 			sw $s2, 368($t2)
@@ -6496,7 +7540,7 @@ jr $ra
 	lw $a2, 240($t2)
 		bne $a2, $s1, poss_jogada_9x0
 			poss_jogada_9x0:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 240($t2)
 				sw $s2, 244($t2)
@@ -6510,7 +7554,7 @@ jr $ra
 	lw $a2, 624($t2)
 		bne $a2, $s2, possivel_jogada_9x1
 		possivel_jogada_9x1:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 624($t2)
 			sw $s2, 628($t2)
 			sw $s2, 752($t2)
@@ -6521,7 +7565,7 @@ jr $ra
 	lw $a2, 624($t2)
 		bne $a2, $s1, poss_jogada_9x1
 			poss_jogada_9x1:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 624($t2)
 				sw $s2, 628($t2)
@@ -6535,7 +7579,7 @@ jr $ra
 	lw $a2, 1008($t2)
 		bne $a2, $s2, possivel_jogada_9x2
 		possivel_jogada_9x2:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1008($t2)
 			sw $s2, 1012($t2)
 			sw $s2, 1136($t2)
@@ -6546,7 +7590,7 @@ jr $ra
 	lw $a2, 1008($t2)
 		bne $a2, $s1, poss_jogada_9x2
 			poss_jogada_9x2:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1008($t2)
 				sw $s2, 1012($t2)
@@ -6560,7 +7604,7 @@ jr $ra
 	lw $a2, 1392($t2)
 		bne $a2, $s2, possivel_jogada_9x3
 		possivel_jogada_9x3:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1392($t2)
 			sw $s2, 1396($t2)
 			sw $s2, 1520($t2)
@@ -6571,7 +7615,7 @@ jr $ra
 	lw $a2, 1392($t2)
 		bne $a2, $s1, poss_jogada_9x3
 			poss_jogada_9x3:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1392($t2)
 				sw $s2, 1396($t2)
@@ -6585,7 +7629,7 @@ jr $ra
 	lw $a2, 1776($t2)
 		bne $a2, $s2, possivel_jogada_9x4
 		possivel_jogada_9x4:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 1776($t2)
 			sw $s2, 1780($t2)
 			sw $s2, 1904($t2)
@@ -6596,7 +7640,7 @@ jr $ra
 	lw $a2, 1776($t2)
 		bne $a2, $s1, poss_jogada_9x4
 			poss_jogada_9x4:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 1776($t2)
 				sw $s2, 1780($t2)
@@ -6610,7 +7654,7 @@ jr $ra
 	lw $a2, 2160($t2)
 		bne $a2, $s2, possivel_jogada_9x5
 		possivel_jogada_9x5:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2160($t2)
 			sw $s2, 2164($t2)
 			sw $s2, 2288($t2)
@@ -6621,7 +7665,7 @@ jr $ra
 	lw $a2, 2160($t2)
 		bne $a2, $s1, poss_jogada_9x5
 			poss_jogada_9x5:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2160($t2)
 				sw $s2, 2164($t2)
@@ -6635,7 +7679,7 @@ jr $ra
 	lw $a2, 2544($t2)
 		bne $a2, $s2, possivel_jogada_9x6
 		possivel_jogada_9x6:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2544($t2)
 			sw $s2, 2548($t2)
 			sw $s2, 2672($t2)
@@ -6646,7 +7690,7 @@ jr $ra
 	lw $a2, 2544($t2)
 		bne $a2, $s1, poss_jogada_9x6
 			poss_jogada_9x6:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2544($t2)
 				sw $s2, 2548($t2)
@@ -6660,7 +7704,7 @@ jr $ra
 	lw $a2, 2928($t2)
 		bne $a2, $s2, possivel_jogada_9x7
 		possivel_jogada_9x7:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 2928($t2)
 			sw $s2, 2932($t2)
 			sw $s2, 3056($t2)
@@ -6671,7 +7715,7 @@ jr $ra
 	lw $a2, 2928($t2)
 		bne $a2, $s1, poss_jogada_9x7
 			poss_jogada_9x7:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 2928($t2)
 				sw $s2, 2932($t2)
@@ -6685,7 +7729,7 @@ jr $ra
 	lw $a2, 3312($t2)
 		bne $a2, $s2, possivel_jogada_9x8
 		possivel_jogada_9x8:
-			move $k0, $zero		
+			move $fp, $zero		
 			sw $s2, 3312($t2)
 			sw $s2, 3316($t2)
 			sw $s2, 3440($t2)
@@ -6696,7 +7740,7 @@ jr $ra
 	lw $a2, 3312($t2)
 		bne $a2, $s1, poss_jogada_9x8
 			poss_jogada_9x8:
-				addi $k0, $zero,1
+				addi $fp, $zero,1
 				addi $s2, $zero, 0x17FD04  #Amarela	     
 				sw $s2, 3312($t2)
 				sw $s2, 3316($t2)
