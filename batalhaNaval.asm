@@ -181,13 +181,13 @@
 		jal menu_game
 			
 		cores:
-<<<<<<< HEAD
+
 	     	addi $s1, $zero, 0x0040ff # Cor Azul (água)
 	     	addi $s2, $zero, 0xff3333 # Cor VERMELHA (Bombas)
-=======
+
 	     	addi $s1, $zero, 0x0040ff # Cor azul (água)
 	     	addi $s2, $zero, 0xff3333 # Cor vermelha (bombas)
->>>>>>> 4aa3e29652b6cd8285e443733094f45f6614fcf0
+
 		jr $ra
 	
 		define_fundo:
