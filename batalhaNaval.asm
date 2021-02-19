@@ -1,12 +1,9 @@
-#Abra o Bitmap Display do Mars para a visualiza��o do jogo
+#Abra o Bitmap Display do Mars para a visualizacao do jogo
 #Configure da seguinte forma:
 #	Unit Width/Height in pixels = 16
 #	Display Width/Height in Pixels = 512
 #	Base address = 0x10000000 (global data)
 
-
-#	$v1 pontos do player 1
-#	$t8 pontos do player 2
 
 .data	
 	Destroyer_1:
@@ -48,7 +45,7 @@
 
 .text
 	
-	#gera destroyers 1
+	# Gera destroyers 1
   	jal coordenada_inicial
   	loop:
   		beq $a2,16, saiDoLoop
@@ -72,7 +69,7 @@
   	saiDaImpressao:jal quebra_linha
   	
 
-	#gera destroyers 2
+	# Gera destroyers 2
   	jal coordenada_inicial
   	loop2:
   		beq $a3,16, saiDoLoop2
@@ -95,7 +92,7 @@
   	j imprime2
   	saiDaImpressao2:jal quebra_linha
 
-	#gera destroyers 3
+	# Gera destroyers 3
   	jal coordenada_inicial 
   	loop3:
   		beq $t7,16, saiDoLoop3
@@ -119,7 +116,7 @@
   	j imprime3
   	saiDaImpressao3:jal quebra_linha
 
-	#gera destroyers 4
+	# Gera destroyers 4
   	jal coordenada_inicial 
   	loop4:
   		beq $t0,16, saiDoLoop4
@@ -184,14 +181,14 @@
 		jal menu_game
 			
 		cores:
-	     	addi $s1, $zero, 0x0040ff #Azul 
-	     	addi $s2, $zero, 0xff3333 #VERMELHA
+	     	addi $s1, $zero, 0x0040ff # Cor azul (água)
+	     	addi $s2, $zero, 0xff3333 # Cor vermelha (bombas)
 		jr $ra
 	
 		define_fundo:
-	   		addi $t1, $zero, 1024	#mapa possui 1024 quadrados
+	   		addi $t1, $zero, 1024	# Mapa possui 1024 quadrados
 			add $t2, $zero, $t1
-			lui $t2, 0x1000		#posição inicial dos dados para serem pintados
+			lui $t2, 0x1000		# Posição inicial dos dados para serem pintados
 		jr $ra
 
 		titulo_jogo:	
@@ -217,15 +214,13 @@
 			
 			jal placar
 			jal jogada_player1
-	
 		jr $ra
-		
 	jr $ra
 
 	coordenada_inicial:
-  		li $v0, 42  # 42 � o codigo de chamada de sistema para gerar int
-		li $a1, 7 # $a1 limite
-		syscall     # gera o numero e coloca em $a0
+  		li $v0, 42  # 42 codigo de chamada de sistema para gerar int
+		li $a1, 7 	# $a1 limite
+		syscall     # Gera o numero e coloca em $a0
 	jr $ra
 	
 	placar:
@@ -265,7 +260,7 @@
 		li $v0, 4
 		syscall	
 		
-		li $v0, 5	#Le coluna 
+		li $v0, 5	# Le a coluna 
 		syscall
 		move $t5,$v0 
 			sge $a3,$t5,10
@@ -275,7 +270,7 @@
 		li $v0, 4
 		syscall	
 				
-		li $v0, 5	#Le linha  
+		li $v0, 5	# Le a linha  
 		syscall
 		move $t6,$v0
 			sge $a3,$t6, 9
@@ -287,11 +282,9 @@
 		jal conta4
 
 		jal get_coluna
-	
-    
+	  
 		beq, $fp,1,player1_acertou		
-		
-	
+
 	        #Se escolhida a opcao 1 
 	        beq $k0,1,maquina_escolhe_jogada
 	        jal jogada_player2 #SE NAO 
@@ -432,7 +425,6 @@
 		jal placar
 		add $a0, $v1, $t8
 		beq $a0, 16, verifica_vencedor
-
 
 			jal on_player_2	
 			la $a0, maquina_jogando
