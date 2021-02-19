@@ -287,26 +287,17 @@
 		jal conta4
 
 		jal get_coluna
-<<<<<<< HEAD
-	
-<<<<<<< HEAD
 		beq, $k0,1,player1_acertou			
 	
 	        #Se escolhida a opcao 1 no menu, ou seja, p1 vs IA
 	        beq $s7,1,maquina_escolhe_jogada
 	        jal jogada_player2 #SE NAO         		                       
-=======
-    
-=======
-	  
->>>>>>> 4aa3e29652b6cd8285e443733094f45f6614fcf0
+
 		beq, $fp,1,player1_acertou		
 
 	        #Se escolhida a opcao 1 
 	        beq $k0,1,maquina_escolhe_jogada
 	        jal jogada_player2 #SE NAO 
-	        		                       
->>>>>>> 326def65ae2f12b0c0a5b044228fe98fde5f2c03
 	jr $ra
 	
 	
